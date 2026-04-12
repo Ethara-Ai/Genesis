@@ -67,93 +67,80 @@ class Texture(object):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def sampler(self):
         """:class:`Sampler` : The sampler used by this texture."""
-        return self._sampler
+        pass
 
     @sampler.setter
     def sampler(self, value):
-        if value is None:
-            value = Sampler()
-        self._sampler = value
+        pass
 
     @property
     def source(self):
         """(h,w,c) uint8 or float or :class:`PIL.Image.Image` : The image
         used in this texture.
         """
-        return self._source
+        pass
 
     @source.setter
     def source(self, value):
-        if value is None:
-            self._source = None
-        else:
-            self._source = format_texture_source(value, self.source_channels)
-        self._is_transparent = False
+        pass
 
     @property
     def source_channels(self):
         """str : The channels that were extracted from the original source."""
-        return self._source_channels
+        pass
 
     @source_channels.setter
     def source_channels(self, value):
-        self._source_channels = value
+        pass
 
     @property
     def width(self):
         """int : The width of the texture buffer."""
-        return self._width
+        pass
 
     @width.setter
     def width(self, value):
-        self._width = value
+        pass
 
     @property
     def height(self):
         """int : The height of the texture buffer."""
-        return self._height
+        pass
 
     @height.setter
     def height(self, value):
-        self._height = value
+        pass
 
     @property
     def tex_type(self):
         """int : The type of the texture."""
-        return self._tex_type
+        pass
 
     @tex_type.setter
     def tex_type(self, value):
-        self._tex_type = value
+        pass
 
     @property
     def data_format(self):
         """int : The format of the texture data."""
-        return self._data_format
+        pass
 
     @data_format.setter
     def data_format(self, value):
-        self._data_format = value
+        pass
 
     def is_transparent(self, cutoff=1.0):
         """bool : If True, the texture is partially transparent."""
-        if self._is_transparent is None:
-            self._is_transparent = False
-            if self.source_channels == "RGBA" and self.source is not None:
-                if np.any(self.source[:, :, 3] < cutoff):
-                    self._is_transparent = True
-        return self._is_transparent
+        pass
 
     def delete(self):
         """Remove this texture from the OpenGL context."""
@@ -271,20 +258,20 @@ class CubeMapTexture(object):
     @property
     def width(self):
         """int : The width of the texture buffer."""
-        return self._width
+        pass
 
     @width.setter
     def width(self, value):
-        self._width = value
+        pass
 
     @property
     def height(self):
         """int : The height of the texture buffer."""
-        return self._height
+        pass
 
     @height.setter
     def height(self, value):
-        self._height = value
+        pass
 
     def delete(self):
         """Remove this texture from the OpenGL context."""

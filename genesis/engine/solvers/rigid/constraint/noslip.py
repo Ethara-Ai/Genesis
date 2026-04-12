@@ -390,34 +390,4 @@ def compute_A_diag(
     constraint_state: array_class.ConstraintState,
     static_rigid_sim_config: qd.template(),
 ):
-    _B = constraint_state.jac.shape[2]
-    n_dofs = constraint_state.jac.shape[1]
-    qd.loop_config(serialize=static_rigid_sim_config.para_level < gs.PARA_LEVEL.ALL)
-    for i_b in range(_B):
-        # For each constraint row i: Ai = Ji * M^{-1} * Ji^T
-        for i_c in range(constraint_state.n_constraints[i_b]):
-            # tmp = M^{-1} * Ji^T
-            for i_d in range(n_dofs):
-                constraint_state.Mgrad[i_d, i_b] = constraint_state.jac[i_c, i_d, i_b]
-
-            rigid_solver.func_solve_mass_batch(
-                i_b,
-                constraint_state.Mgrad,
-                constraint_state.Mgrad,
-                array_class.PLACEHOLDER,
-                entities_info=entities_info,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=False,
-            )
-
-            # Ai = Ji * tmp
-            aii = gs.qd_float(0.0)
-            if qd.static(static_rigid_sim_config.sparse_solve):
-                for i_d_ in range(constraint_state.jac_n_relevant_dofs[i_c, i_b]):
-                    i_d = constraint_state.jac_relevant_dofs[i_c, i_d_, i_b]
-                    aii += constraint_state.jac[i_c, i_d, i_b] * constraint_state.Mgrad[i_d, i_b]
-            else:
-                for i_d in range(n_dofs):
-                    aii += constraint_state.jac[i_c, i_d, i_b] * constraint_state.Mgrad[i_d, i_b]
-            constraint_state.efc_A_diag[i_c, i_b] = aii
+    pass

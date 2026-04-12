@@ -856,4 +856,4 @@ class TemperatureGridSensor(
 
     @property
     def link_temperatures(self) -> torch.Tensor:
-        return self._shared_metadata.link_temps
+        pass

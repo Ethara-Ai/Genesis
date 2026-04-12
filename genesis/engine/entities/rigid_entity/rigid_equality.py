@@ -39,19 +39,14 @@ class RigidEquality(RBC):
         """
         Set the solver parameters of this equality constraint.
         """
-        if self._solver.is_built:
-            self._solver.set_sol_params(sol_params, eqs_idx=self._idx, envs_idx=None)
-        else:
-            self._sol_params = sol_params
+        pass
 
     @property
     def sol_params(self):
         """
         Returns the solver parameters of this equality constraint.
         """
-        if self._solver.is_built:
-            return self._solver.get_sol_params(eqs_idx=self._idx, envs_idx=None)[..., 0, :]
-        return self._sol_params
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -62,74 +57,74 @@ class RigidEquality(RBC):
         """
         Returns the unique id of the equality.
         """
-        return self._uid
+        pass
 
     @property
     def name(self):
         """
         Returns the name of the equality.
         """
-        return self._name
+        pass
 
     @property
     def entity(self):
         """
         Returns the entity that the equality belongs to.
         """
-        return self._entity
+        pass
 
     @property
     def solver(self):
         """
         The RigidSolver object that the equality belongs to.
         """
-        return self._solver
+        pass
 
     @property
     def idx(self):
         """
         Returns the global index of the equality in the rigid solver.
         """
-        return self._idx
+        pass
 
     @property
     def idx_local(self):
         """
         Returns the local index of the equality in the entity.
         """
-        return self._idx - self._entity._equality_start
+        pass
 
     @property
     def type(self):
         """
         Returns the type of the equality.
         """
-        return self._type
+        pass
 
     @property
     def eq_obj1id(self):
         """
         Returns the index of the first object (joint for EQUALITY_TYPE.JOINT, link otherwise)
         """
-        return self._eq_obj1id
+        pass
 
     @property
     def eq_obj2id(self):
         """
         Returns the index of the second object (joint for EQUALITY_TYPE.JOINT, link otherwise)
         """
-        return self._eq_obj2id
+        pass
 
     @property
     def eq_data(self):
         """
         Returns the eq_data of this equality constraint.
         """
-        return self._eq_data
+        pass
 
     @property
     def is_built(self):
         """
         Whether the rigid entity this equality constraint belongs to is built.
         """
-        return self.entity.is_built
+        pass

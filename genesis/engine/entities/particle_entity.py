@@ -18,12 +18,7 @@ from .base_entity import Entity
 
 def assert_active(method):
     @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if not self.active:
-            gs.raise_exception(f"'{self.__class__.__name__}' is not active. Call `entity.activate()` first.")
-        return method(self, *args, **kwargs)
-
-    return wrapper
+    pass
 
 
 @qd.data_oriented
@@ -399,8 +394,7 @@ class ParticleEntity(Entity):
         ckpt_name : str
             Name of the checkpoint to load.
         """
-        for key in self._tgt_keys:
-            self._tgt_buffer[key] = list(self._ckpt[ckpt_name]["_tgt_buffer"][key])
+        pass
 
     def reset_grad(self):
         """
@@ -472,25 +466,13 @@ class ParticleEntity(Entity):
         Automatically applies the backward hooks for position, velocity, and actuation tensors.
         Clears the gradients in the solver to avoid double accumulation.
         """
-        _tgt_pos = self._tgt_buffer["pos"].pop()
-        if _tgt_pos is not None and _tgt_pos.requires_grad:
-            _tgt_pos._backward_from_qd(self._set_particles_pos_grad)
-
-        _tgt_vel = self._tgt_buffer["vel"].pop()
-        if _tgt_vel is not None and _tgt_vel.requires_grad:
-            _tgt_vel._backward_from_qd(self._set_particles_vel_grad)
-
-        # Manually zero the grad since manually setting state breaks gradient flow
-        if _tgt_vel is not None or _tgt_pos is not None:
-            self._reset_grad()
+        pass
 
     def collect_output_grads(self):
         """
         Collect gradients from external queried states.
         """
-        if self._sim.cur_step_global in self._queried_states:
-            for state in self._queried_states[self._sim.cur_step_global]:
-                self.add_grad_from_state(state)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ---------------------------------- io & control ------------------------------------
@@ -518,12 +500,7 @@ class ParticleEntity(Entity):
         envs_idx : None | int | array_like, shape (M,), optional
             The indices of the environments to set. If None, all environments will be considered. Defaults to None.
         """
-        # Determine whether the position of all the particles has been specified, or only the center of mass
-        poss = to_gs_tensor(value, dtype=gs.tc_float)
-        if poss.ndim == 1 or (poss.ndim == 2 and poss.shape[0] != self._n_particles):
-            poss = self._init_particles_offset + poss[..., None, :]
-
-        self._set_particles_target_state("pos", "position", (3,), gs.tc_float, poss, envs_idx)
+        pass
 
     @gs.assert_built
     def set_particles_pos(self, poss, particles_idx_local=None, envs_idx=None):
@@ -581,7 +558,7 @@ class ParticleEntity(Entity):
         envs_idx : None | array_like, optional
             The indices of the environments to set. If None, all environments will be considered. Defaults to None.
         """
-        self._set_particles_target_state("vel", "velocity", (3,), gs.tc_float, vels, envs_idx)
+        pass
 
     @gs.assert_built
     def set_particles_vel(self, vels, particles_idx_local=None, envs_idx=None):
@@ -653,8 +630,7 @@ class ParticleEntity(Entity):
         """
         Deactivate all particles of the entity in simulation, stopping them from receiving for updates.
         """
-        gs.logger.info(f"{self.__class__.__name__} <{self._uid}> deactivated.")
-        self.set_active(gs.INACTIVE)
+        pass
 
     @gs.assert_built
     def set_particles_active(self, actives, particles_idx_local=None, envs_idx=None):
@@ -729,18 +705,7 @@ class ParticleEntity(Entity):
         closest_idx : torch.Tensor, shape (M,)
             The index of the closest particle.
         """
-        pos = to_gs_tensor(pos, dtype=gs.tc_float)
-        if pos.ndim == 1:
-            pos = pos.reshape((1, 3)).expand((self._scene._B, 3))
-        if pos.shape != (self._scene._B, 3):
-            gs.raise_exception(f"Invalid tensor shape {pos.shape} (expected {pos}).")
-
-        cur_particles = self.get_particles_pos(envs_idx)
-        distances = torch.linalg.norm(cur_particles - pos[:, None], dim=-1)
-        closest_idx = torch.argmin(distances, dim=-1).to(dtype=gs.tc_int)
-        if self._scene.n_envs == 0:
-            closest_idx = closest_idx[0]
-        return closest_idx
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------
@@ -768,84 +733,84 @@ class ParticleEntity(Entity):
     @property
     def uid(self):
         """Unique identifier for the entity."""
-        return self._uid
+        pass
 
     @property
     def idx(self):
         """Index of the entity within the simulation."""
-        return self._idx
+        pass
 
     @property
     def morph(self):
         """Morphological representation used for particle sampling."""
-        return self._morph
+        pass
 
     @property
     def vmesh(self):
         """Visual mesh used for skinning and rendering."""
-        return self._vmesh
+        pass
 
     @property
     def n_vverts(self):
         """Number of visual mesh vertices."""
-        return len(self._vverts)
+        pass
 
     @property
     def n_vfaces(self):
         """Number of visual mesh faces."""
-        return len(self._vfaces)
+        pass
 
     @property
     def n_particles(self):
         """Number of particles"""
-        return self._n_particles
+        pass
 
     @property
     def particle_start(self):
         """Starting index of the entity's particles in the global buffer."""
-        return self._particle_start
+        pass
 
     @property
     def particle_end(self):
         """Ending index (exclusive) of the entity's particles."""
-        return self._particle_start + self._n_particles
+        pass
 
     @property
     def vvert_start(self):
         """Starting index for visual mesh vertices."""
-        return self._vvert_start
+        pass
 
     @property
     def vvert_end(self):
         """Ending index (exclusive) for visual mesh vertices."""
-        return self._vvert_start + self.n_vverts
+        pass
 
     @property
     def vface_start(self):
         """Starting index for visual mesh faces."""
-        return self._vface_start
+        pass
 
     @property
     def vface_end(self):
         """Ending index (exclusive) for visual mesh faces."""
-        return self._vface_start + self.n_vfaces
+        pass
 
     @property
     def particle_size(self):
         """Diameter of individual particles."""
-        return self._particle_size
+        pass
 
     @property
     def init_particles(self):
         """Initial sampled particle positions."""
-        return self._particles
+        pass
 
     @property
     def material(self):
         """Material of this entity."""
-        return self._material
+        pass
 
     @property
     def surface(self):
         """Surface for rendering."""
-        return self._surface
+        pass

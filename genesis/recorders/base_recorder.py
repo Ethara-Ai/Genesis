@@ -120,16 +120,7 @@ class Recorder(Generic[T]):
 
     def _process_data_loop(self):
         """Background thread that processes and outputs data."""
-        if self._data_queue is None:
-            return
-
-        while self._is_recording or not self._data_queue.empty():
-            try:
-                data, timestamp = self._data_queue.get(timeout=1.0)
-                self.process(data, timestamp)
-                self._data_queue.task_done()
-            except queue.Empty:
-                continue
+        pass
 
     @gs.assert_built
     def start(self):
@@ -236,4 +227,4 @@ class Recorder(Generic[T]):
 
     @property
     def is_built(self) -> bool:
-        return self._is_built
+        pass

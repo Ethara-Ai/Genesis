@@ -2,7 +2,7 @@ import random
 
 
 def random_scene():
-    return random.choice(["🏟️", "🏯", "🏰", "🌃", "🌇", "🌉", "🎡", "⛰️", "🏖️", "🏜️", "🏘️"])
+    pass
 
 
 def get_clock(t, speed=10):

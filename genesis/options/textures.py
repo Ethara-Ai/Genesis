@@ -77,13 +77,12 @@ class ColorTexture(Texture):
     @computed_field
     @cached_property
     def is_black(self) -> bool:
-        assert gs.EPS is not None
-        return all(c < gs.EPS for c in self.color)
+        pass
 
     @computed_field
     @cached_property
     def requires_uv(self) -> bool:
-        return False
+        pass
 
 
 class ImageTexture(Texture):
@@ -130,99 +129,27 @@ class ImageTexture(Texture):
     @model_validator(mode="before")
     @classmethod
     def _validate_and_load(cls, data: dict) -> dict:
-        image_path, image_array = data.get("image_path"), data.get("image_array")
-
-        if not ((image_path is not None) ^ (image_array is not None)):
-            gs.raise_exception("Please set either `image_path` or `image_array`.")
-
-        if image_path is not None:
-            # Look for absolute image path
-            if not os.path.exists(image_path):
-                candidate_image_path = os.path.join(gs.utils.get_assets_dir(), image_path)
-                if not os.path.exists(candidate_image_path):
-                    gs.raise_exception(
-                        f"File not found in either current directory or assets directory: '{image_path}'."
-                    )
-                image_path = candidate_image_path
-
-            # Load image_path as actual image_array, unless for special texture images (e.g. `.hdr` and `.exr`) that
-            # are only supported by Raytracer.
-            if image_path.endswith(HDR_EXTENSIONS):
-                data.setdefault("encoding", "linear")
-                if data["encoding"] != "linear":
-                    gs.raise_exception("HDR images requires linear encoding.")
-                if image_path.endswith((".exr")):
-                    image_path = mu.check_exr_compression(image_path)
-            else:
-                image_array = np.array(Image.open(image_path))
-        else:
-            # Normalize image array
-            if not isinstance(image_array, np.ndarray):
-                gs.raise_exception("`image_array` needs to be a numpy array.")
-            if image_array.dtype != np.uint8:
-                if np.issubdtype(image_array.dtype, np.floating):
-                    if image_array.max() <= 1.0:
-                        image_array = (image_array * 255.0).round()
-                    image_array = np.clip(image_array, 0.0, 255.0).astype(np.uint8)
-                elif np.issubdtype(image_array.dtype, np.integer):
-                    image_array = np.clip(image_array, 0, 255).astype(np.uint8)
-                elif image_array.dtype == np.bool_:
-                    image_array = image_array.astype(np.uint8) * 255
-                else:
-                    gs.raise_exception(
-                        f"Unsupported image dtype {image_array.dtype}. Only uint8, integer, floating-point, or bool "
-                        "types are supported."
-                    )
-        data["image_path"], data["image_array"] = image_path, image_array
-
-        # Resolve image color
-        image_color = data.get("image_color")
-        if image_array is None:
-            channel = 3
-        elif image_array.ndim == 3:
-            channel = image_array.shape[2]
-        else:
-            channel = 1
-        if image_color is None:
-            image_color = 1.0
-        if isinstance(image_color, Iterable):
-            image_color = tuple(image_color)[:channel]
-        else:
-            image_color = (image_color,) * channel
-        data["image_color"] = image_color
-
-        return data
+        pass
 
     @computed_field
     @cached_property
     def is_black(self) -> bool:
-        assert gs.EPS is not None
-        assert self.image_color is not None
-        if all(c < gs.EPS for c in self.image_color):
-            return True
-        assert self.image_array is not None
-        if np.max(self.image_array) == 0:
-            return True
-        return False
+        pass
 
     @computed_field
     @cached_property
     def requires_uv(self) -> bool:
-        return True
+        pass
 
     @computed_field
     @property
     def channel(self) -> int:
-        if self.image_array is None:
-            return 3
-        return self.image_array.shape[2] if self.image_array.ndim == 3 else 1
+        pass
 
     @computed_field
     @cached_property
     def mean_color(self) -> NDArrayType:
-        if self.image_array is None:
-            return np.ones(3, dtype=np.float16)
-        return cast(np.ndarray, (np.mean(self.image_array, axis=(0, 1), dtype=np.float32) / 255).astype(np.float16))
+        pass
 
     def check_dim(self, dim: int) -> Texture | None:
         if self.image_array is not None:
@@ -286,52 +213,7 @@ class BatchTexture(Texture):
             - 'srgb': Encoding of some RGB images.
             - 'linear': All generic images, such as opacity, roughness and normal, should be encoded with 'linear'.
         """
-        image_sources = (image_paths, image_folder, image_arrays)
-        if sum(x is not None for x in image_sources) != 1:
-            gs.raise_exception("Please set exactly one of `image_paths`, `image_folder`, `image_arrays`.")
-
-        image_textures = []
-        if image_folder is not None:
-            input_image_folder = image_folder
-            if not os.path.exists(image_folder):
-                image_folder = os.path.join(gs.utils.get_assets_dir(), image_folder)
-            if not os.path.exists(image_folder):
-                gs.raise_exception(
-                    f"Directory not found in either current directory or assets directory: '{input_image_folder}'."
-                )
-            image_paths = [
-                os.path.join(image_folder, image_path)
-                for image_path in sorted(os.listdir(image_folder))
-                if image_path.lower().endswith(IMAGE_EXTENSIONS)
-            ]
-
-        if image_paths is not None:
-            num_images = len(image_paths)
-        else:
-            assert image_arrays is not None
-            num_images = len(image_arrays)
-        if num_images == 0:
-            gs.raise_exception("No images found.")
-
-        if image_colors is not None:
-            if isinstance(image_colors[0], float):  # List[float]
-                image_colors = [image_colors for _ in range(num_images)]
-            else:  # List[List[float]]
-                if len(image_colors) != num_images:
-                    gs.raise_exception("The number of image colors must be the same as the number of images.")
-        else:
-            image_colors = [None] * num_images
-        assert image_colors is not None
-
-        if image_paths is not None:
-            for image_path, image_color in zip(image_paths, image_colors):
-                image_textures.append(ImageTexture(image_path=image_path, image_color=image_color, encoding=encoding))
-        else:
-            assert image_arrays is not None
-            for image_array, image_color in zip(image_arrays, image_colors):
-                image_textures.append(ImageTexture(image_array=image_array, image_color=image_color, encoding=encoding))
-
-        return BatchTexture(textures=image_textures)
+        pass
 
     @staticmethod
     def from_colors(
@@ -345,17 +227,17 @@ class BatchTexture(Texture):
         colors : List[List[float]]
             List of colors.
         """
-        return BatchTexture(textures=[ColorTexture(color=color) for color in colors])
+        pass
 
     @computed_field
     @cached_property
     def is_black(self) -> bool:
-        return all(texture is None or texture.is_black for texture in self.textures)
+        pass
 
     @computed_field
     @cached_property
     def requires_uv(self) -> bool:
-        return any(texture is not None and texture.requires_uv for texture in self.textures)
+        pass
 
     def check_dim(self, dim: int) -> "BatchTexture":
         return BatchTexture(

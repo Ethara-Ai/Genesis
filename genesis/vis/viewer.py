@@ -260,11 +260,7 @@ class Viewer(RBC):
         fix_orientation : bool, optional
             If True, the viewer will maintain its orientation relative to the world. If False, the viewer will look at the base link of the entity.
         """
-        self._followed_entity = entity
-        self._follow_fixed_axis = fixed_axis
-        self._follow_smoothing = smoothing
-        self._follow_fix_orientation = fix_orientation
-        self._follow_lookat = self._camera_init_lookat
+        pass
 
     def update_following(self):
         """
@@ -335,12 +331,7 @@ class Viewer(RBC):
         new_key_action : KeyAction, optional
             The new type of key action. If not provided, the key action of the old keybind is used.
         """
-        self._pyrender_viewer.remap_keybind(
-            keybind_name,
-            new_key,
-            new_key_mods,
-            new_key_action,
-        )
+        pass
 
     @gs.assert_built
     def remove_keybind(self, keybind_name: str) -> None:
@@ -352,7 +343,7 @@ class Viewer(RBC):
         keybind_name : str
             The name of the keybind to remove.
         """
-        self._pyrender_viewer.remove_keybind(keybind_name)
+        pass
 
     def add_plugin(self, plugin: "ViewerPlugin") -> "ViewerPlugin":
         """
@@ -363,10 +354,7 @@ class Viewer(RBC):
         plugin : ViewerPlugin
             The viewer plugin to add.
         """
-        self._viewer_plugins.append(plugin)
-        if self.is_built:
-            self._pyrender_viewer.register_plugin(plugin)
-        return plugin
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -374,47 +362,45 @@ class Viewer(RBC):
 
     @property
     def is_built(self):
-        return self._is_built
+        pass
 
     @property
     def res(self):
-        return self._res
+        pass
 
     @property
     def refresh_rate(self):
-        return self._refresh_rate
+        pass
 
     @property
     def max_FPS(self):
-        return self._max_FPS
+        pass
 
     @property
     def camera_pos(self):
         """
         Get the camera's current position.
         """
-        return np.array(self._pyrender_viewer._trackball._n_pose[:3, 3])
+        pass
 
     @property
     def camera_lookat(self):
         """
         Get the camera's current lookat point.
         """
-        pos = np.array(self._pyrender_viewer._trackball._n_pose[:3, 3])
-        z = self._pyrender_viewer._trackball._n_pose[:3, 2]
-        return pos - z
+        pass
 
     @property
     def camera_pose(self):
         """
         Get the camera's current pose represented by a 4x4 matrix.
         """
-        return np.array(self._pyrender_viewer._trackball._n_pose)
+        pass
 
     @property
     def camera_up(self):
-        return self._camera_up
+        pass
 
     @property
     def camera_fov(self):
-        return self._camera_fov
+        pass

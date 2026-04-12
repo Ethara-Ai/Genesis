@@ -37,7 +37,7 @@ class SDF:
 
     @property
     def is_active(self):
-        return self._is_active
+        pass
 
 
 @qd.kernel
@@ -204,19 +204,7 @@ def sdf_func_grad_world(
     geom_idx,
     batch_idx,
 ):
-    g_pos = geoms_state.pos[geom_idx, batch_idx]
-    g_quat = geoms_state.quat[geom_idx, batch_idx]
-
-    return sdf_func_grad_world_local(
-        geoms_info=geoms_info,
-        rigid_global_info=rigid_global_info,
-        collider_static_config=collider_static_config,
-        sdf_info=sdf_info,
-        pos_world=pos_world,
-        geom_idx=geom_idx,
-        geom_pos=g_pos,
-        geom_quat=g_quat,
-    )
+    pass
 
 
 @qd.func
@@ -400,13 +388,4 @@ def sdf_func_find_closest_vert(
     """
     Returns vert of geom that's closest to pos_world
     """
-    g_pos = geoms_state.pos[geom_idx, i_b]
-    g_quat = geoms_state.quat[geom_idx, i_b]
-    geom_sdf_res = sdf_info.geoms_info.sdf_res[geom_idx]
-    pos_mesh = gu.qd_inv_transform_by_trans_quat(pos_world, g_pos, g_quat)
-    pos_sdf = gu.qd_transform_by_T(pos_mesh, sdf_info.geoms_info.T_mesh_to_sdf[geom_idx])
-    nearest_cell = qd.cast(qd.min(qd.max(pos_sdf, 0), geom_sdf_res - 1), gs.qd_int)
-    return (
-        sdf_info.geoms_sdf_closest_vert[sdf_func_ravel_cell_idx(sdf_info, nearest_cell, geom_sdf_res, geom_idx)]
-        + geoms_info.vert_start[geom_idx]
-    )
+    pass

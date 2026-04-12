@@ -21,23 +21,19 @@ class SimState(RBC):
             self._solvers_state.append(solver.get_state(f_local))
 
     def serializable(self):
-        self.scene = None
-
-        for solver_state in self._solvers_state:
-            if solver_state is not None:
-                solver_state.serializable()
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
     @property
     def solvers_state(self):
-        return self._solvers_state
+        pass
 
     def __iter__(self):
         return iter(self._solvers_state)
@@ -68,16 +64,11 @@ class KinematicSolverState:
         self.i_pos_shift = gs.zeros((_B, scene.sim.kinematic_solver.n_links, 3), **args)
 
     def serializable(self):
-        self.scene = None
-        self.qpos = self.qpos.detach()
-        self.dofs_vel = self.dofs_vel.detach()
-        self.links_pos = self.links_pos.detach()
-        self.links_quat = self.links_quat.detach()
-        self.i_pos_shift = self.i_pos_shift.detach()
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
 
 class RigidSolverState:
@@ -106,19 +97,11 @@ class RigidSolverState:
         self.friction_ratio = gs.ones((_B, scene.sim.rigid_solver.n_geoms), **args)
 
     def serializable(self):
-        self.scene = None
-        self.qpos = self.qpos.detach()
-        self.dofs_vel = self.dofs_vel.detach()
-        self.dofs_acc = self.dofs_acc.detach()
-        self.links_pos = self.links_pos.detach()
-        self.links_quat = self.links_quat.detach()
-        self.i_pos_shift = self.i_pos_shift.detach()
-        self.mass_shift = self.mass_shift.detach()
-        self.friction_ratio = self.friction_ratio.detach()
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
 
 class ToolSolverState:
@@ -131,10 +114,7 @@ class ToolSolverState:
         self.entities = []
 
     def serializable(self):
-        self.scene = None
-
-        for entity_state in self.entities:
-            entity_state.serializable()
+        pass
 
     def __len__(self):
         return len(self.entities)
@@ -169,42 +149,35 @@ class MPMSolverState(RBC):
         self._active = gs.zeros((scene.sim._B, scene.sim.mpm_solver.n_particles), **args)
 
     def serializable(self):
-        self._scene = None
-
-        self._pos = self._pos.detach()
-        self._vel = self._vel.detach()
-        self._C = self._C.detach()
-        self._F = self._F.detach()
-        self._Jp = self._Jp.detach()
-        self._active = self._active.detach()
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def C(self):
-        return self._C
+        pass
 
     @property
     def F(self):
-        return self._F
+        pass
 
     @property
     def Jp(self):
-        return self._Jp
+        pass
 
     @property
     def active(self):
-        return self._active
+        pass
 
 
 class SPHSolverState:
@@ -227,19 +200,19 @@ class SPHSolverState:
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def active(self):
-        return self._active
+        pass
 
 
 class PBDSolverState:
@@ -262,19 +235,19 @@ class PBDSolverState:
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def free(self):
-        return self._free
+        pass
 
 
 class FEMSolverState:
@@ -292,24 +265,20 @@ class FEMSolverState:
         self._active = gs.zeros((scene.sim._B, scene.sim.fem_solver.n_elements), **args)
 
     def serializable(self):
-        self._scene = None
-
-        self._pos = self._pos.detach()
-        self._vel = self._vel.detach()
-        self._active = self._active.detach()
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def active(self):
-        return self._active
+        pass

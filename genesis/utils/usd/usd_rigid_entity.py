@@ -60,70 +60,13 @@ def _detect_generic_joint_type(joint_prim: Usd.Prim) -> Tuple[int, int, int, str
 
     Returns (joint_type, n_dofs, n_qs, detected_axis_str).
     """
-    has_any_config = False
-    enabled_dofs = set()
-    for dof_name in _DOF_NAMES:
-        if joint_prim.HasAPI(UsdPhysics.DriveAPI, dof_name):
-            has_any_config = True
-            enabled_dofs.add(dof_name)
-        elif joint_prim.HasAPI(UsdPhysics.LimitAPI, dof_name):
-            has_any_config = True
-            limit = UsdPhysics.LimitAPI.Get(joint_prim, dof_name)
-            low, high = limit.GetLowAttr().Get(), limit.GetHighAttr().Get()
-            if low is None or high is None or low < high:
-                enabled_dofs.add(dof_name)
-
-    # No DOF configuration at all → treat as FREE (all DOFs enabled)
-    if not has_any_config:
-        return gs.JOINT_TYPE.FREE, 6, 7, None
-
-    rot_dofs = enabled_dofs & _ROT_DOFS
-    trans_dofs = enabled_dofs - _ROT_DOFS
-
-    if not enabled_dofs:
-        return gs.JOINT_TYPE.FIXED, 0, 0, None
-    if not trans_dofs:
-        if len(rot_dofs) == 1:
-            return gs.JOINT_TYPE.REVOLUTE, 1, 1, _DOF_AXIS[next(iter(rot_dofs))]
-        return gs.JOINT_TYPE.SPHERICAL, 3, 4, None
-    if not rot_dofs and len(trans_dofs) == 1:
-        return gs.JOINT_TYPE.PRISMATIC, 1, 1, _DOF_AXIS[next(iter(trans_dofs))]
-    return gs.JOINT_TYPE.FREE, 6, 7, None
+    pass
 
 
 def _parse_joint_axis_pos(
     context: UsdContext, joint: UsdPhysics.Joint, child_link: Usd.Prim, is_body1: bool, axis_override: str | None = None
 ) -> Tuple[str, np.ndarray, np.ndarray]:
-    joint_pos_attr = joint.GetLocalPos1Attr() if is_body1 else joint.GetLocalPos0Attr()
-    joint_pos = usd_pos_to_numpy(joint_pos_attr.Get()) if joint_pos_attr.HasValue() else gu.zero_pos()
-    T = context.compute_transform(child_link)
-    joint_pos = gu.transform_by_T(joint_pos, T)
-    Q, S = context.compute_gs_transform(child_link)
-    Q_inv = np.linalg.inv(Q)
-    joint_pos = Q_inv[:3, :3] @ (joint_pos - Q[:3, 3])
-
-    if isinstance(joint, (UsdPhysics.PrismaticJoint, UsdPhysics.RevoluteJoint)):
-        joint_quat = usd_quat_to_numpy((joint.GetLocalRot1Attr() if is_body1 else joint.GetLocalRot0Attr()).Get())
-        joint_axis_str = joint.GetAxisAttr().Get() or "X"
-        joint_axis = gu.transform_by_quat(AXES_VECTOR[joint_axis_str], joint_quat)
-        joint_axis = gu.transform_by_R(joint_axis, T[:3, :3])
-        joint_axis = Q_inv[:3, :3] @ joint_axis
-        if np.linalg.norm(joint_axis) < gs.EPS:
-            gs.raise_exception(f"Joint axis is zero for joint {joint.GetPath()}.")
-        joint_axis /= np.linalg.norm(joint_axis)
-    elif axis_override is not None:
-        joint_quat = usd_quat_to_numpy((joint.GetLocalRot1Attr() if is_body1 else joint.GetLocalRot0Attr()).Get())
-        joint_axis = gu.transform_by_quat(AXES_VECTOR[axis_override], joint_quat)
-        joint_axis = gu.transform_by_R(joint_axis, T[:3, :3])
-        joint_axis = Q_inv[:3, :3] @ joint_axis
-        if np.linalg.norm(joint_axis) < gs.EPS:
-            gs.raise_exception(f"Joint axis is zero for joint {joint.GetPath()}.")
-        joint_axis /= np.linalg.norm(joint_axis)
-        joint_axis_str = axis_override
-    else:
-        joint_axis_str, joint_axis = None, None
-
-    return joint_axis_str, joint_axis, joint_pos
+    pass
 
 
 def _parse_link(

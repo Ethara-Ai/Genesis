@@ -188,7 +188,7 @@ def address_to_ptr(typingctx, src):
     sig = nb.core.types.voidptr(src)
 
     def codegen(cgctx, builder, sig, args):
-        return builder.inttoptr(args[0], nb.core.cgutils.voidptr_t)
+        pass
 
     return sig, codegen
 
@@ -801,27 +801,11 @@ class JITRenderer:
 
         @nb.jit(nb.float32[:, :](nb.float32[:, :, :]), cache=True)
         def update_normal_flat(p):
-            face_normal = np.cross(p[:, 1] - p[:, 0], p[:, 2] - p[:, 0])
-            vertex_normal = np.zeros((p.shape[0] * 3, 3), p.dtype)
-            for f in range(face_normal.shape[0]):
-                n = face_normal[f]
-                n /= np.linalg.norm(n)
-                vertex_normal[f * 3 + 0] = n
-                vertex_normal[f * 3 + 1] = n
-                vertex_normal[f * 3 + 2] = n
-            return vertex_normal
+            pass
 
         @nb.jit(nb.float32[:, :](nb.float32[:, :], nb.int32[:, :]), cache=True)
         def update_normal_smooth(p, idx):
-            face_normal = np.cross(p[idx[:, 1]] - p[idx[:, 0]], p[idx[:, 2]] - p[idx[:, 0]])
-            vertex_normal = np.zeros_like(p)
-            for f in range(face_normal.shape[0]):
-                vertex_normal[idx[f, 0]] += face_normal[f]
-                vertex_normal[idx[f, 1]] += face_normal[f]
-                vertex_normal[idx[f, 2]] += face_normal[f]
-            for v in range(vertex_normal.shape[0]):
-                vertex_normal[v] /= np.linalg.norm(vertex_normal[v])
-            return vertex_normal
+            pass
 
         @nb.jit(nb.none(nb.int64[:, :], self.gl.wrapper_type), cache=True)
         def update_buffer(updates, gl):

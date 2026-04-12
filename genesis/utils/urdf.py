@@ -74,17 +74,7 @@ def load_xacro(path, mappings):
     urdfpy.URDF
         The parsed URDF with absolute mesh paths.
     """
-    doc = xacro.process_file(path, mappings=dict(mappings))
-    node = ET.fromstring(doc.toxml())
-    source_dir = os.path.dirname(path)
-    robot = urdfpy.URDF._from_xml(node, node, source_dir)
-    for link in robot.links:
-        for geom_prop in (*link.collisions, *link.visuals):
-            if isinstance(geom_prop.geometry.geometry, urdfpy.Mesh):
-                geom_prop.geometry.geometry.filename = urdfpy.utils.get_filename(
-                    source_dir, geom_prop.geometry.geometry.filename
-                )
-    return robot
+    pass
 
 
 def _order_links(l_infos, j_infos, links_g_infos=None):
@@ -613,12 +603,7 @@ def merge_inertia(link1, link2):
 
 
 def transform_inertial(inertial, transform):
-    if inertial is None:
-        return None
-
-    new_origin = transform @ inertial
-
-    return urdfpy.Inertial(origin=new_origin, mass=inertial.mass, inertia=inertial.inertia)
+    pass
 
 
 def update_subtree(links, joints, root_name, transform):

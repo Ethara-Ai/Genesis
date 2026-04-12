@@ -27,19 +27,7 @@ class FontCache(object):
 
     def get_font(self, font_name, font_pt):
         # If it's a file, load it directly, else, try to load from font dir.
-        if os.path.isfile(font_name):
-            font_filename = font_name
-            _, font_name = os.path.split(font_name)
-            font_name, _ = os.path.split(font_name)
-        else:
-            font_filename = os.path.join(self.font_dir, font_name) + ".ttf"
-
-        cid = OpenGL.contextdata.getContext()
-        key = (cid, font_name, int(font_pt))
-
-        if key not in self._font_cache:
-            self._font_cache[key] = Font(font_filename, font_pt)
-        return self._font_cache[key]
+        pass
 
     def clear(self):
         for key in self._font_cache:
@@ -141,20 +129,20 @@ class Font(object):
     @property
     def font_file(self):
         """str : The file the font was loaded from."""
-        return self._font_file
+        pass
 
     @font_file.setter
     def font_file(self, value):
-        self._font_file = value
+        pass
 
     @property
     def font_pt(self):
         """int : The height of the font in pixels."""
-        return self._font_pt
+        pass
 
     @font_pt.setter
     def font_pt(self, value):
-        self._font_pt = int(value)
+        pass
 
     def _add_to_context(self):
         self._vao = glGenVertexArrays(1)
@@ -218,80 +206,4 @@ class Font(object):
             :attr:`.TextAlign.BOTTOM_LEFT` means that ``x`` and ``y`` indicate
             the position of the bottom-left corner of the textbox.
         """
-        glActiveTexture(GL_TEXTURE0)
-        glEnable(GL_BLEND)
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)
-        glDisable(GL_DEPTH_TEST)
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL)
-        self._bind()
-
-        # Determine width and height of text relative to x, y
-        width = 0.0
-        height = 0.0
-        for c in text:
-            ch = self._character_map[c]
-            height = max(height, ch.bearing[1] * scale)
-            width += (ch.advance >> 6) * scale
-
-        # Determine offsets based on alignments
-        xoff = 0
-        yoff = 0
-        if align == TextAlign.BOTTOM_RIGHT:
-            xoff = -width
-        elif align == TextAlign.BOTTOM_CENTER:
-            xoff = -width / 2.0
-        elif align == TextAlign.TOP_LEFT:
-            yoff = -height
-        elif align == TextAlign.TOP_RIGHT:
-            yoff = -height
-            xoff = -width
-        elif align == TextAlign.TOP_CENTER:
-            yoff = -height
-            xoff = -width / 2.0
-        elif align == TextAlign.CENTER:
-            xoff = -width / 2.0
-            yoff = -height / 2.0
-        elif align == TextAlign.CENTER_LEFT:
-            yoff = -height / 2.0
-        elif align == TextAlign.CENTER_RIGHT:
-            xoff = -width
-            yoff = -height / 2.0
-
-        x += xoff
-        y += yoff
-
-        ch = None
-        for c in text:
-            ch = self._character_map[c]
-            xpos = x + ch.bearing[0] * scale
-            ypos = y - (ch.size[1] - ch.bearing[1]) * scale
-            w = ch.size[0] * scale
-            h = ch.size[1] * scale
-
-            vertices = np.array(
-                [
-                    [xpos, ypos, 0.0, 0.0],
-                    [xpos + w, ypos, 1.0, 0.0],
-                    [xpos + w, ypos + h, 1.0, 1.0],
-                    [xpos + w, ypos + h, 1.0, 1.0],
-                    [xpos, ypos + h, 0.0, 1.0],
-                    [xpos, ypos, 0.0, 0.0],
-                ],
-                dtype=np.float32,
-            )
-
-            ch.texture._bind()
-
-            glBindBuffer(GL_ARRAY_BUFFER, self._vbo)
-            glBufferData(GL_ARRAY_BUFFER, FLOAT_SZ * 6 * 4, vertices, GL_DYNAMIC_DRAW)
-            # TODO MAKE THIS MORE EFFICIENT, glBufferSubData is broken
-            # glBufferSubData(
-            #     GL_ARRAY_BUFFER, 0, 6 * 4 * FLOAT_SZ,
-            #     np.ascontiguousarray(vertices.flatten)
-            # )
-            glDrawArrays(GL_TRIANGLES, 0, 6)
-            x += (ch.advance >> 6) * scale
-
-        self._unbind()
-        if ch:
-            ch.texture._unbind()
+        pass

@@ -85,35 +85,7 @@ def kernel_masked_forward_kinematics_links_geoms(
     rigid_global_info: array_class.RigidGlobalInfo,
     static_rigid_sim_config: qd.template(),
 ):
-    for i_b in range(envs_mask.shape[0]):
-        if envs_mask[i_b]:
-            func_update_cartesian_space_batch(
-                i_b=i_b,
-                links_state=links_state,
-                links_info=links_info,
-                joints_state=joints_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                dofs_info=dofs_info,
-                geoms_info=geoms_info,
-                geoms_state=geoms_state,
-                entities_info=entities_info,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                force_update_fixed_geoms=True,
-                is_backward=False,
-            )
-            func_forward_velocity_batch(
-                i_b=i_b,
-                entities_info=entities_info,
-                links_info=links_info,
-                links_state=links_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=False,
-            )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -183,45 +155,7 @@ def kernel_masked_forward_kinematics(
     rigid_global_info: array_class.RigidGlobalInfo,
     static_rigid_sim_config: qd.template(),
 ):
-    for i_b in range(envs_mask.shape[0]):
-        if envs_mask[i_b]:
-            func_forward_kinematics_batch(
-                i_b=i_b,
-                links_state=links_state,
-                links_info=links_info,
-                joints_state=joints_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                dofs_info=dofs_info,
-                entities_info=entities_info,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=False,
-            )
-            func_COM_links(
-                i_b=i_b,
-                links_state=links_state,
-                links_info=links_info,
-                joints_state=joints_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                dofs_info=dofs_info,
-                entities_info=entities_info,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=False,
-            )
-            func_forward_velocity_batch(
-                i_b=i_b,
-                entities_info=entities_info,
-                links_info=links_info,
-                links_state=links_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=False,
-            )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -236,19 +170,7 @@ def kernel_forward_velocity(
     static_rigid_sim_config: qd.template(),
     is_backward: qd.template(),
 ):
-    for i_b_ in range(envs_idx.shape[0]):
-        i_b = qd.cast(envs_idx[i_b_], qd.i32)
-        func_forward_velocity_batch(
-            i_b=i_b,
-            entities_info=entities_info,
-            links_info=links_info,
-            links_state=links_state,
-            joints_info=joints_info,
-            dofs_state=dofs_state,
-            rigid_global_info=rigid_global_info,
-            static_rigid_sim_config=static_rigid_sim_config,
-            is_backward=is_backward,
-        )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -263,19 +185,7 @@ def kernel_masked_forward_velocity(
     static_rigid_sim_config: qd.template(),
     is_backward: qd.template(),
 ):
-    for i_b in range(envs_mask.shape[0]):
-        if envs_mask[i_b]:
-            func_forward_velocity_batch(
-                i_b=i_b,
-                entities_info=entities_info,
-                links_info=links_info,
-                links_state=links_state,
-                joints_info=joints_info,
-                dofs_state=dofs_state,
-                rigid_global_info=rigid_global_info,
-                static_rigid_sim_config=static_rigid_sim_config,
-                is_backward=is_backward,
-            )
+    pass
 
 
 @qd.func
@@ -805,23 +715,7 @@ def kernel_forward_kinematics_entity(
     rigid_global_info: array_class.RigidGlobalInfo,
     static_rigid_sim_config: qd.template(),
 ):
-    for i_b_ in range(envs_idx.shape[0]):
-        i_b = qd.cast(envs_idx[i_b_], qd.i32)
-
-        func_forward_kinematics_entity(
-            i_e,
-            i_b,
-            links_state,
-            links_info,
-            joints_state,
-            joints_info,
-            dofs_state,
-            dofs_info,
-            entities_info,
-            rigid_global_info,
-            static_rigid_sim_config,
-            is_backward=False,
-        )
+    pass
 
 
 @qd.func
@@ -931,35 +825,7 @@ def func_update_geoms(
     is_backward: qd.template(),
 ):
     # This loop must be the outermost loop to be differentiable
-    if qd.static(static_rigid_sim_config.use_hibernation):
-        qd.loop_config(serialize=static_rigid_sim_config.para_level < gs.PARA_LEVEL.ALL)
-        for i_b in range(links_state.pos.shape[1]):
-            func_update_geoms_batch(
-                i_b,
-                entities_info,
-                geoms_info,
-                geoms_state,
-                links_state,
-                rigid_global_info,
-                static_rigid_sim_config,
-                force_update_fixed_geoms,
-                is_backward,
-            )
-    else:
-        qd.loop_config(serialize=qd.static(static_rigid_sim_config.para_level < gs.PARA_LEVEL.PARTIAL))
-        for i_e, i_b in qd.ndrange(entities_info.n_links.shape[0], links_state.pos.shape[1]):
-            func_update_geoms_entity(
-                i_e,
-                i_b,
-                entities_info,
-                geoms_info,
-                geoms_state,
-                links_state,
-                rigid_global_info,
-                static_rigid_sim_config,
-                force_update_fixed_geoms,
-                is_backward,
-            )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -1714,18 +1580,4 @@ def kernel_update_cartesian_space(
     force_update_fixed_geoms: qd.template(),
     is_backward: qd.template(),
 ):
-    func_update_cartesian_space(
-        links_state=links_state,
-        links_info=links_info,
-        joints_state=joints_state,
-        joints_info=joints_info,
-        dofs_state=dofs_state,
-        dofs_info=dofs_info,
-        geoms_info=geoms_info,
-        geoms_state=geoms_state,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        force_update_fixed_geoms=force_update_fixed_geoms,
-        is_backward=is_backward,
-    )
+    pass

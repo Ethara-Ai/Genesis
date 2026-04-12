@@ -231,7 +231,7 @@ class KinematicSolver(Solver):
 
     def _sanitize_geom_sol_params(self, sol_params):
         """Hook: sanitize geom constraint solver params. No-op in base (no constraints)."""
-        return sol_params
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- init methods -------------------------------------
@@ -467,41 +467,13 @@ class KinematicSolver(Solver):
         pass
 
     def add_grad_from_state(self, state):
-        if self.is_active:
-            qpos_grad = gs.zeros_like(state.qpos)
-            dofs_vel_grad = gs.zeros_like(state.dofs_vel)
-            links_pos_grad = gs.zeros_like(state.links_pos)
-            links_quat_grad = gs.zeros_like(state.links_quat)
-
-            if state.qpos.grad is not None:
-                qpos_grad = state.qpos.grad
-            if state.dofs_vel.grad is not None:
-                dofs_vel_grad = state.dofs_vel.grad
-            if state.links_pos.grad is not None:
-                links_pos_grad = state.links_pos.grad
-            if state.links_quat.grad is not None:
-                links_quat_grad = state.links_quat.grad
-
-            kernel_get_state_grad(
-                qpos_grad=qpos_grad,
-                vel_grad=dofs_vel_grad,
-                links_pos_grad=links_pos_grad,
-                links_quat_grad=links_quat_grad,
-                links_state=self.links_state,
-                dofs_state=self.dofs_state,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-            )
+        pass
 
     def collect_output_grads(self):
         """
         Collect gradients from downstream queried states.
         """
-        if self._sim.cur_step_global in self._queried_states:
-            # one step could have multiple states
-            assert len(self._queried_states[self._sim.cur_step_global]) == 1
-            state = self._queried_states[self._sim.cur_step_global][0]
-            self.add_grad_from_state(state)
+        pass
 
     def reset_grad(self):
         for entity in self._entities:
@@ -610,7 +582,7 @@ class KinematicSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_links > 0
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ control ---------------------------------------
@@ -693,23 +665,7 @@ class KinematicSolver(Solver):
             self._is_forward_vel_updated = False
 
     def set_base_links_pos_grad(self, links_idx, envs_idx, relative, pos_grad):
-        if links_idx is None:
-            links_idx = self._base_links_idx
-        pos_grad_, links_idx, envs_idx = self._sanitize_io_variables(
-            pos_grad.unsqueeze(-2), links_idx, self.n_links, "links_idx", envs_idx, (3,), skip_allocation=True
-        )
-        if self.n_envs == 0:
-            pos_grad_ = pos_grad_.unsqueeze(0)
-        kernel_set_links_pos_grad(
-            relative,
-            pos_grad_,
-            links_idx,
-            envs_idx,
-            links_info=self.links_info,
-            links_state=self.links_state,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
+        pass
 
     def set_base_links_quat(self, quat, links_idx=None, envs_idx=None, *, relative=False, skip_forward=False):
         if links_idx is None:
@@ -751,24 +707,7 @@ class KinematicSolver(Solver):
             self._is_forward_vel_updated = False
 
     def set_base_links_quat_grad(self, links_idx, envs_idx, relative, quat_grad):
-        if links_idx is None:
-            links_idx = self._base_links_idx
-        quat_grad_, links_idx, envs_idx = self._sanitize_io_variables(
-            quat_grad.unsqueeze(-2), links_idx, self.n_links, "links_idx", envs_idx, (4,), skip_allocation=True
-        )
-        if self.n_envs == 0:
-            quat_grad_ = quat_grad_.unsqueeze(0)
-        assert relative == False, "Backward pass for relative quaternion is not supported yet."
-        kernel_set_links_quat_grad(
-            relative,
-            quat_grad_,
-            links_idx,
-            envs_idx,
-            links_info=self.links_info,
-            links_state=self.links_state,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
+        pass
 
     def set_qpos(self, qpos, qs_idx=None, envs_idx=None, *, skip_forward=False):
         if gs.use_zerocopy:
@@ -895,14 +834,7 @@ class KinematicSolver(Solver):
             self._is_forward_vel_updated = False
 
     def set_dofs_velocity_grad(self, dofs_idx, envs_idx, velocity_grad):
-        velocity_grad_, dofs_idx, envs_idx = self._sanitize_io_variables(
-            velocity_grad, dofs_idx, self.n_dofs, "dofs_idx", envs_idx, skip_allocation=True
-        )
-        if self.n_envs == 0:
-            velocity_grad_ = velocity_grad_.unsqueeze(0)
-        kernel_set_dofs_velocity_grad(
-            velocity_grad_, dofs_idx, envs_idx, self.dofs_state, self._static_rigid_sim_config
-        )
+        pass
 
     def set_dofs_position(self, position, dofs_idx=None, envs_idx=None):
         position, dofs_idx, envs_idx = self._sanitize_io_variables(
@@ -972,14 +904,7 @@ class KinematicSolver(Solver):
 
     def _build_dof_to_q_map(self, dofs_idx_t):
         """Build a mapping from DOF indices to qpos indices for revolute/prismatic joints."""
-        dof_to_q = torch.zeros(self.n_dofs, dtype=torch.long, device=gs.device)
-        for entity in self._entities:
-            for joint in entity.joints:
-                if joint.n_dofs == 0:
-                    continue
-                for i in range(joint.n_dofs):
-                    dof_to_q[joint.dof_start - entity.dof_start + i] = joint.q_start - entity.q_start + i
-        return dof_to_q[dofs_idx_t]
+        pass
 
     def get_qpos(self, qs_idx=None, envs_idx=None):
         tensor = qd_to_torch(self.qpos, envs_idx, qs_idx, transpose=True, copy=True)
@@ -1011,72 +936,48 @@ class KinematicSolver(Solver):
 
     @property
     def links(self):
-        if self.is_built:
-            return self._links
-        return gs.List(link for entity in self._entities for link in entity.links)
+        pass
 
     @property
     def joints(self):
-        if self.is_built:
-            return self._joints
-        return gs.List(joint for entity in self._entities for joint in entity.joints)
+        pass
 
     @property
     def geoms(self):
-        if self.is_built:
-            return self._geoms
-        return gs.List(geom for entity in self._entities for geom in entity.geoms)
+        pass
 
     @property
     def vgeoms(self):
-        if self.is_built:
-            return self._vgeoms
-        return gs.List(vgeom for entity in self._entities for vgeom in entity.vgeoms)
+        pass
 
     @property
     def n_links(self):
-        if self.is_built:
-            return self._n_links
-        return len(self.links)
+        pass
 
     @property
     def n_joints(self):
-        if self.is_built:
-            return self._n_joints
-        return len(self.joints)
+        pass
 
     @property
     def n_vgeoms(self):
-        if self.is_built:
-            return self._n_vgeoms
-        return len(self.vgeoms)
+        pass
 
     @property
     def n_vverts(self):
-        if self.is_built:
-            return self._n_vverts
-        return sum(entity.n_vverts for entity in self._entities)
+        pass
 
     @property
     def n_vfaces(self):
-        if self.is_built:
-            return self._n_vfaces
-        return sum(entity.n_vfaces for entity in self._entities)
+        pass
 
     @property
     def n_qs(self):
-        if self.is_built:
-            return self._n_qs
-        return sum(entity.n_qs for entity in self._entities)
+        pass
 
     @property
     def n_dofs(self):
-        if self.is_built:
-            return self._n_dofs
-        return sum(entity.n_dofs for entity in self._entities)
+        pass
 
     @property
     def init_qpos(self):
-        if self._entities:
-            return np.concatenate([entity.init_qpos for entity in self._entities], dtype=gs.np_float)
-        return np.array([], dtype=gs.np_float)
+        pass

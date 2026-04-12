@@ -40,11 +40,7 @@ class JointControlGUI:
         canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
         def on_yscrollcommand(*args):
-            canvas.update_idletasks()
-            top, bot = canvas.yview()
-            if top < 0:
-                canvas.yview_moveto(0)
-            scrollbar.set(*canvas.yview())
+            pass
 
         canvas.configure(yscrollcommand=on_yscrollcommand)
         scrollbar.configure(command=canvas.yview)
@@ -68,35 +64,19 @@ class JointControlGUI:
                     canvas.yview_moveto(0)
 
         def on_frame_configure(event):
-            update_scroll_region_and_bar()
+            pass
 
         def on_canvas_configure(event):
-            canvas.itemconfig(window_id, width=event.width)
-            update_scroll_region_and_bar()
+            pass
 
         scrollable_frame.bind("<Configure>", on_frame_configure)
         canvas.bind("<Configure>", on_canvas_configure)
 
         def on_mousewheel(event):
-            if not event.delta:
-                return
-            canvas.update_idletasks()
-            if not scrollbar.winfo_ismapped():
-                return
-            canvas.yview_scroll(int(-1 * (event.delta / 120)), "units")
-            if canvas.yview()[0] < 0:
-                canvas.yview_moveto(0)
+            pass
 
         def on_linux_scroll(event):
-            canvas.update_idletasks()
-            if not scrollbar.winfo_ismapped():
-                return
-            if event.num == 4:
-                canvas.yview_scroll(-1, "units")
-            elif event.num == 5:
-                canvas.yview_scroll(1, "units")
-            if canvas.yview()[0] < 0:
-                canvas.yview_moveto(0)
+            pass
 
         canvas.bind_all("<MouseWheel>", on_mousewheel)
         canvas.bind_all("<Button-4>", on_linux_scroll)
@@ -201,39 +181,7 @@ def get_motors_info_for_view(entities):
 
 
 def _start_gui(display_items, motors_position_limit, motors_position, stop_event):
-    def on_close():
-        nonlocal after_id
-        if after_id is not None:
-            root.after_cancel(after_id)
-            after_id = None
-        stop_event.set()
-        root.destroy()
-        root.quit()
-
-    root = tk.Tk()
-    root.minsize(520, 400)
-
-    # Size window so content fits without vertical scroll when possible
-    row_heights = [50 if is_delimiter else 36 for _, is_delimiter in display_items]
-    content_h = sum(row_heights) + 100  # + reset button and padding
-    screen_h = root.winfo_screenheight()
-    height = min(content_h, max(400, screen_h - 120))
-    root.geometry(f"560x{height}")
-
-    # Store joint control gui to make sure it does not get garbage collected, just in case, because it may break tkinter
-    _app = JointControlGUI(root, display_items, motors_position_limit, motors_position)
-
-    root.protocol("WM_DELETE_WINDOW", on_close)
-
-    def check_event():
-        nonlocal after_id
-        if stop_event.is_set():
-            on_close()
-        elif root.winfo_exists():
-            after_id = root.after(100, check_event)
-
-    after_id = root.after(100, check_event)
-    root.mainloop()
+    pass
 
 
 def view(filename, collision, rotate, scale=1.0, show_link_frame=False):

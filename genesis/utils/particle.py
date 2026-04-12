@@ -30,7 +30,7 @@ except (AttributeError, TypeError):
 
 
 def n_particles_vol(p_size=0.01, volume=1.0):
-    return max(1, round(volume / p_size**3))
+    pass
 
 
 def n_particles_3D(p_size=0.01, size=(1.0, 1.0, 1.0)):
@@ -209,99 +209,19 @@ def _box_to_particles(p_size, pos, size, sampler):
 
 
 def box_to_particles(p_size=0.01, pos=(0, 0, 0), size=(1, 1, 1), sampler="random"):
-    if "pbs" in sampler:
-        mesh = trimesh.creation.box(extents=size)
-
-        try:
-            positions = trimesh_to_particles_pbs(mesh, p_size, sampler, pos=pos)
-        except gs.GenesisException:
-            sampler = "random"
-
-    if sampler in ("random", "regular"):
-        positions = _box_to_particles(
-            p_size=p_size,
-            pos=pos,
-            size=size,
-            sampler=sampler,
-        )
-
-    return positions
+    pass
 
 
 def cylinder_to_particles(p_size=0.01, pos=(0, 0, 0), radius=0.5, height=1.0, sampler="random"):
-    if "pbs" in sampler:
-        mesh = trimesh.creation.cylinder(radius=radius, height=height)
-        try:
-            positions = trimesh_to_particles_pbs(mesh, p_size, sampler, pos=pos)
-        except gs.GenesisException:
-            sampler = "random"
-
-    if sampler in ("random", "regular"):
-        # sample a cube first
-        size = np.array([2 * radius, 2 * radius, height])
-        positions = _box_to_particles(
-            p_size=p_size,
-            pos=pos,
-            size=size,
-            sampler=sampler,
-        )
-        # reject out-of-boundary particles
-        positions_r = np.linalg.norm(positions[:, [0, 1]] - np.array(pos)[[0, 1]], axis=1)
-        positions = positions[positions_r <= radius]
-
-    return positions
+    pass
 
 
 def sphere_to_particles(p_size=0.01, pos=(0, 0, 0), radius=0.5, sampler="random"):
-    if "pbs" in sampler:
-        mesh = trimesh.creation.icosphere(radius=radius)
-        try:
-            positions = trimesh_to_particles_pbs(mesh, p_size, sampler, pos=pos)
-        except gs.GenesisException:
-            sampler = "random"
-
-    if sampler in ("random", "regular"):
-        # sample a cube first
-        size = np.array([2 * radius, 2 * radius, 2 * radius])
-        positions = _box_to_particles(
-            p_size=p_size,
-            pos=pos,
-            size=size,
-            sampler=sampler,
-        )
-        # reject out-of-boundary particles
-        positions_r = np.linalg.norm(positions - np.array(pos), axis=1)
-        positions = positions[positions_r <= radius]
-
-    return positions
+    pass
 
 
 def shell_to_particles(p_size=0.01, pos=(0, 0, 0), inner_radius=0.5, outer_radius=0.7, sampler="random"):
-    if "pbs" in sampler:
-        mesh = trimesh.creation.icosphere(radius=outer_radius)
-        try:
-            positions = trimesh_to_particles_pbs(mesh, p_size, sampler, pos=pos)
-        except gs.GenesisException:
-            sampler = "random"
-
-    if sampler in ("random", "regular"):
-        # sample a cube first
-        size = np.array([2 * outer_radius, 2 * outer_radius, 2 * outer_radius])
-        positions = _box_to_particles(
-            p_size=p_size,
-            pos=pos,
-            size=size,
-            sampler=sampler,
-        )
-        # reject out-of-boundary particles
-        positions_r = np.linalg.norm(positions - np.array(pos), axis=1)
-        positions = positions[positions_r <= outer_radius]
-
-    # reject inner particles
-    positions_r = np.linalg.norm(positions - np.array(pos), axis=1)
-    positions = positions[positions_r >= inner_radius]
-
-    return positions
+    pass
 
 
 def _splashsurf_worker(positions, radius, args_dict, result_queue):
@@ -453,25 +373,4 @@ def generate_foam_particles(generator, positions, velocities):
 
 
 def filter_surface(positions, radii, particle_radius, half_width=8.0, radius_scale=1.0):
-    if sys.platform != "linux" or sys.version_info[:2] == (3, 9):
-        gs.raise_exception("This method is only supported on Linux and Python 3.9 specfically.")
-
-    import ParticleMesherPy
-
-    splitter = ParticleMesherPy.SurfaceSplitter(
-        ParticleMesherPy.SurfaceSplitterConfig(
-            particle_radius=particle_radius * radius_scale,
-            voxel_scale=0.25,
-            support_scale=4.0,
-            half_width=half_width,
-            surface_neighbor_max=20,
-        )
-    )
-
-    # surface_indices = splitter.split_surface_sdf(positions, radii * radius_scale)
-    surface_indices = splitter.split_surface_count(positions)
-    gs.logger.debug(
-        f"[ParticleMesher]: {surface_indices.info_msg}\n"
-        f"\tFrom {positions.shape[0]} to {np.sum(surface_indices.is_surface)}"
-    )
-    return surface_indices.is_surface
+    pass

@@ -48,46 +48,44 @@ class Sampler(object):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def magFilter(self):
         """int : Magnification filter type."""
-        return self._magFilter
+        pass
 
     @magFilter.setter
     def magFilter(self, value):
-        self._magFilter = value
+        pass
 
     @property
     def minFilter(self):
         """int : Minification filter type."""
-        return self._minFilter
+        pass
 
     @minFilter.setter
     def minFilter(self, value):
-        self._minFilter = value
+        pass
 
     @property
     def wrapS(self):
         """int : S (U) wrapping mode."""
-        return self._wrapS
+        pass
 
     @wrapS.setter
     def wrapS(self, value):
-        self._wrapS = value
+        pass
 
     @property
     def wrapT(self):
         """int : T (V) wrapping mode."""
-        return self._wrapT
+        pass
 
     @wrapT.setter
     def wrapT(self, value):
-        self._wrapT = value
+        pass

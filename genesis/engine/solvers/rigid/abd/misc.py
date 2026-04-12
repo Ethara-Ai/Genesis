@@ -684,9 +684,7 @@ def kernel_apply_links_external_torque(
 
 @qd.func
 def func_apply_coupling_force(pos, force, link_idx, env_idx, links_state: array_class.LinksState):
-    torque = (pos - links_state.root_COM[link_idx, env_idx]).cross(force)
-    links_state.cfrc_coupling_ang[link_idx, env_idx] -= torque
-    links_state.cfrc_coupling_vel[link_idx, env_idx] -= force
+    pass
 
 
 @qd.func
@@ -714,7 +712,7 @@ def func_apply_link_external_force(
 
 @qd.func
 def func_apply_external_torque(self, torque, link_idx, env_idx):
-    self.links_state.cfrc_applied_ang[link_idx, env_idx] -= torque
+    pass
 
 
 @qd.func
@@ -827,9 +825,7 @@ def kernel_set_zero(envs_idx: qd.types.ndarray(), tensor: array_class.V_ANNOTATI
 
 @qd.func
 def func_atomic_add_if(field: array_class.V_ANNOTATION, I, value, cond: qd.template()):
-    if qd.static(cond):
-        qd.atomic_add(field[I], value)
-    return value
+    pass
 
 
 @qd.func
@@ -845,21 +841,17 @@ def func_add_safe_backward(field: array_class.V_ANNOTATION, I, value, cond: qd.t
 
 @qd.func
 def func_read_field_if(field: array_class.V_ANNOTATION, I, value, cond: qd.template()):
-    return field[I] if qd.static(cond) else value
+    pass
 
 
 @qd.func
 def func_write_field_if(field: array_class.V_ANNOTATION, I, value, cond: qd.template()):
-    if qd.static(cond):
-        field[I] = value
-    return value
+    pass
 
 
 @qd.func
 def func_write_and_read_field_if(field: array_class.V_ANNOTATION, I, value, cond: qd.template()):
-    if qd.static(cond):
-        field[I] = value
-    return field[I] if qd.static(cond) else value
+    pass
 
 
 @qd.func

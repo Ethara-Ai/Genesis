@@ -65,22 +65,7 @@ class Base(Material["FEMEntity"]):
     _hessian_ready: bool = PrivateAttr(default=False)
 
     def model_post_init(self, context: Any) -> None:
-        self.mu = self.E / (2.0 * (1.0 + self.nu))
-        self.lam = self.E * self.nu / ((1.0 + self.nu) * (1.0 - 2.0 * self.nu))
-
-        # Set dispatch defaults
-        if self.build is None:
-            self.build = self._build_noop
-        if self.pre_compute is None:
-            self.pre_compute = self._pre_compute_noop
-        if self.update_stress is None:
-            self.update_stress = self._update_stress_noop
-        if self.compute_energy_gradient_hessian is None:
-            self.compute_energy_gradient_hessian = self._compute_energy_gradient_hessian_noop
-        if self.compute_energy_gradient is None:
-            self.compute_energy_gradient = self._compute_energy_gradient_noop
-        if self.compute_energy is None:
-            self.compute_energy = self._compute_energy_noop
+        pass
 
     def _build_noop(self, fem_solver):
         pass

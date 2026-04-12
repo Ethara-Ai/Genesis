@@ -241,7 +241,7 @@ class PBDSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_particles > 0
+        pass
 
     def add_entity(
         self, idx, material, morph, surface, name: str | None = None
@@ -924,11 +924,7 @@ class PBDSolver(Solver):
         envs_idx: qd.types.ndarray(),
         poss: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                poss[i_b_, i_p_, i] = self.particles[i_p, i_b].pos[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_vel(
@@ -951,8 +947,7 @@ class PBDSolver(Solver):
         links_state: LinksState,
         envs_idx=None,
     ) -> None:
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        self._sim._coupler.kernel_attach_pbd_to_rigid_link(particles_idx, envs_idx, link_idx, links_state)
+        pass
 
     @qd.kernel
     def _kernel_get_particles_vel(
@@ -962,11 +957,7 @@ class PBDSolver(Solver):
         envs_idx: qd.types.ndarray(),
         vels: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                vels[i_b_, i_p_, i] = self.particles[i_p, i_b].vel[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_active(
@@ -988,24 +979,15 @@ class PBDSolver(Solver):
         envs_idx: qd.types.ndarray(),
         actives: qd.types.ndarray(),  # shape [B, n_particles]
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            actives[i_b_, i_p_] = self.particles_ng[i_p, i_b].active
+        pass
 
     @qd.kernel
     def _kernel_fix_particles(self, particles_idx: qd.types.ndarray(), envs_idx: qd.types.ndarray()):
-        for i_p_, i_b_ in qd.ndrange(particles_idx.shape[1], envs_idx.shape[0]):
-            i_p = particles_idx[i_b_, i_p_]
-            i_b = envs_idx[i_b_]
-            self.particles[i_p, i_b].free = False
+        pass
 
     @qd.kernel
     def _kernel_release_particle(self, particles_idx: qd.types.ndarray(), envs_idx: qd.types.ndarray()):
-        for i_p_, i_b_ in qd.ndrange(particles_idx.shape[1], envs_idx.shape[0]):
-            i_p = particles_idx[i_b_, i_p_]
-            i_b = envs_idx[i_b_]
-            self.particles[i_p, i_b].free = True
+        pass
 
     @qd.kernel
     def _kernel_get_mass(
@@ -1024,66 +1006,52 @@ class PBDSolver(Solver):
 
     @property
     def n_particles(self):
-        if self.is_built:
-            return self._n_particles
-        return sum([entity.n_particles for entity in self._entities])
+        pass
 
     @property
     def n_fluid_particles(self):
-        if self.is_built:
-            return self._n_fluid_particles
-        return sum(entity.n_fluid_particles for entity in self._entities if isinstance(entity, PBDParticleEntity))
+        pass
 
     @property
     def n_edges(self):
-        if self.is_built:
-            return self._n_edges
-        return sum(entity.n_edges for entity in self._entities if isinstance(entity, PBDTetEntity))
+        pass
 
     @property
     def n_inner_edges(self):
-        if self.is_built:
-            return self._n_inner_edges
-        return sum(entity.n_inner_edges for entity in self._entities if isinstance(entity, PBD2DEntity))
+        pass
 
     @property
     def n_elems(self):
-        if self.is_built:
-            return self._n_elems
-        return sum(entity.n_elems for entity in self._entities if isinstance(entity, PBD3DEntity))
+        pass
 
     @property
     def n_vverts(self):
-        if self.is_built:
-            return self._n_vverts
-        return sum(entity.n_vverts for entity in self._entities)
+        pass
 
     @property
     def n_vfaces(self):
-        if self.is_built:
-            return self._n_vfaces
-        return sum(entity.n_vfaces for entity in self._entities)
+        pass
 
     @property
     def particle_size(self):
-        return self._particle_size
+        pass
 
     @property
     def particle_radius(self):
-        return self._particle_size / 2.0
+        pass
 
     @property
     def hash_grid_res(self):
-        return self.sh.grid_res
+        pass
 
     @property
     def hash_grid_cell_size(self):
-        return self.sh.cell_size
+        pass
 
     @property
     def upper_bound(self):
-        return self._upper_bound
+        pass
 
     @property
     def lower_bound(self):
-        return self._lower_bound
+        pass

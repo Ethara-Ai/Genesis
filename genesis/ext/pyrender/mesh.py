@@ -41,58 +41,38 @@ class Mesh(object):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def bounds(self):
         """(2,3) float : The axis-aligned bounds of the mesh."""
-        if self._bounds is None:
-            if self.primitives:
-                if len(self.primitives) > 1:
-                    self._bounds = np.stack(
-                        (
-                            np.min([p.bounds[0] for p in self.primitives], axis=0),
-                            np.max([p.bounds[1] for p in self.primitives], axis=0),
-                        ),
-                        axis=0,
-                    )
-                else:
-                    # In the vast majority of scenarios there is a single primitive
-                    self._bounds = self.primitives[0].bounds
-            else:
-                self._bounds = np.zeros((2, 3))
-        return self._bounds
+        pass
 
     @property
     def centroid(self):
         """(3,) float : The centroid of the mesh's axis-aligned bounding box
         (AABB).
         """
-        return np.mean(self.bounds, axis=0)
+        pass
 
     @property
     def extents(self):
         """(3,) float : The lengths of the axes of the mesh's AABB."""
-        return self.bounds[1] - self.bounds[0]
+        pass
 
     @property
     def scale(self):
         """(3,) float : The length of the diagonal of the mesh's AABB."""
-        return max(np.linalg.norm(self.extents), 1e-7)
+        pass
 
     @property
     def is_transparent(self):
         """bool : If True, the mesh is partially-transparent."""
-        for p in self.primitives:
-            if p.is_transparent:
-                return True
-        return False
+        pass
 
     @staticmethod
     def from_points(points, name=None, colors=None, normals=None, is_visible=True, poses=None, is_marker=False):
@@ -118,9 +98,7 @@ class Mesh(object):
         mesh : :class:`Mesh`
             The created mesh.
         """
-        primitive = Primitive(positions=points, normals=normals, color_0=colors, mode=GLTF.POINTS, poses=poses)
-        mesh = Mesh(primitives=[primitive], name=name, is_visible=is_visible, is_marker=is_marker)
-        return mesh
+        pass
 
     @staticmethod
     def from_trimesh(

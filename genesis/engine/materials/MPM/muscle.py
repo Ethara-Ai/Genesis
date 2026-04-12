@@ -37,17 +37,8 @@ class Muscle(Elastic):
     _update_stress_without_actuation: Any = PrivateAttr(default=None)
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-
-        self.stiffness = self.E
-        self._update_stress_without_actuation = self.update_stress
-        self.update_stress = self._update_stress_with_actuation
+        pass
 
     @qd.func
     def _update_stress_with_actuation(self, U, S, V, F_tmp, F_new, J, Jp, actu, m_dir):
-        stress = self._update_stress_without_actuation(U, S, V, F_tmp, F_new, J, Jp, actu, m_dir)
-
-        AAt = m_dir.outer_product(m_dir)
-        stress += self.stiffness * actu * F_tmp @ AAt @ F_tmp.transpose()
-
-        return stress
+        pass

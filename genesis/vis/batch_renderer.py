@@ -64,142 +64,15 @@ class GenesisGeomRetriever:
 
     # FIXME: Use a kernel to do it efficiently
     def retrieve_rigid_meshes_static(self):
-        args = {}
-        vgeoms = self.rigid_solver.vgeoms
-
-        # Retrieve geom data
-        mesh_vertices = self.rigid_solver.vverts_info.init_pos.to_numpy()
-        mesh_faces = self.rigid_solver.vfaces_info.vverts_idx.to_numpy()
-        mesh_vertex_offsets = self.rigid_solver.vgeoms_info.vvert_start.to_numpy()
-        mesh_face_starts = self.rigid_solver.vgeoms_info.vface_start.to_numpy()
-        mesh_face_ends = self.rigid_solver.vgeoms_info.vface_end.to_numpy()
-        total_uv_size = 0
-        mesh_uvs = []
-        mesh_uv_offsets = []
-        for i in range(self.n_vgeoms):
-            mesh_faces[mesh_face_starts[i] : mesh_face_ends[i]] -= mesh_vertex_offsets[i]
-
-        geom_data_ids = []
-        for vgeom in vgeoms:
-            seg_key = self.get_seg_key(vgeom)
-            seg_id = self.seg_color_map.seg_key_to_idxc(seg_key)
-            geom_data_ids.append(seg_id)
-            if vgeom.uvs is not None:
-                mesh_uvs.append(vgeom.uvs.astype(np.float32))
-                mesh_uv_offsets.append(total_uv_size)
-                total_uv_size += vgeom.uvs.shape[0]
-            else:
-                mesh_uv_offsets.append(-1)
-
-        args["mesh_vertices"] = mesh_vertices
-        args["mesh_vertex_offsets"] = mesh_vertex_offsets
-        args["mesh_faces"] = mesh_faces
-        args["mesh_face_offsets"] = mesh_face_starts
-        args["mesh_texcoords"] = np.concatenate(mesh_uvs, axis=0) if mesh_uvs else np.empty((0, 2), np.float32)
-        args["mesh_texcoord_offsets"] = np.array(mesh_uv_offsets, np.int32)
-        args["geom_types"] = np.full((self.n_vgeoms,), 7, dtype=np.int32)  # 7 stands for mesh
-        args["geom_groups"] = np.full((self.n_vgeoms,), self.default_geom_group, dtype=np.int32)
-        args["geom_data_ids"] = np.arange(self.n_vgeoms, dtype=np.int32)
-        args["geom_sizes"] = np.ones((self.n_vgeoms, 3), dtype=np.float32)
-        args["enabled_geom_groups"] = self.default_enabled_geom_groups
-
-        # Retrieve material data
-        geom_mat_ids = []
-        num_materials = 0
-        materials_indices = {}
-        mat_rgbas = []
-        mat_texture_indices = []
-        mat_texture_offsets = []
-        total_mat_textures = 0
-
-        num_textures = 0
-        texture_indices = {}
-        texture_widths = []
-        texture_heights = []
-        texture_nchans = []
-        texture_offsets = []
-        texture_data = []
-        total_texture_size = 0
-
-        for vgeom in vgeoms:
-            geom_surface = vgeom.surface
-            geom_textures = geom_surface.get_rgba(batch=True).textures
-
-            geom_texture_indices = []
-            for geom_texture in geom_textures:
-                if isinstance(geom_texture, gs.textures.ImageTexture) and geom_texture.image_array is not None:
-                    texture_id = geom_texture.image_path
-                    if texture_id not in texture_indices:
-                        texture_idx = num_textures
-                        if texture_id is not None:
-                            texture_indices[texture_id] = texture_idx
-                        texture_widths.append(geom_texture.image_array.shape[1])
-                        texture_heights.append(geom_texture.image_array.shape[0])
-                        assert geom_texture.channel == 4
-                        texture_nchans.append(geom_texture.channel)
-                        texture_offsets.append(total_texture_size)
-                        texture_data.append(geom_texture.image_array.flat)
-                        num_textures += 1
-                        total_texture_size += geom_texture.image_array.size
-                    else:
-                        texture_idx = texture_indices[texture_id]
-                    geom_texture_indices.append(texture_idx)
-
-            # TODO: support batch rgba
-            geom_rgbas = [
-                geom_texture.image_color if isinstance(geom_texture, gs.textures.ImageTexture) else geom_texture.color
-                for geom_texture in geom_textures
-            ]
-            for i in range(1, len(geom_rgbas)):
-                if not np.allclose(geom_rgbas[0], geom_rgbas[i], atol=gs.EPS):
-                    gs.logger.warning("Batch Color is not yet supported. Use the first texture's color instead.")
-                    break
-            geom_rgba = geom_rgbas[0]
-
-            mat_id = None
-            if len(geom_texture_indices) == 0:
-                geom_rgba_int = (np.array(geom_rgba) * 255.0).astype(np.uint32)
-                mat_id = geom_rgba_int[0] << 24 | geom_rgba_int[1] << 16 | geom_rgba_int[2] << 8 | geom_rgba_int[3]
-            if mat_id not in materials_indices:
-                material_idx = num_materials
-                if mat_id is not None:
-                    materials_indices[mat_id] = material_idx
-                mat_rgbas.append(geom_rgba)
-                mat_texture_indices.extend(geom_texture_indices)
-                mat_texture_offsets.append(total_mat_textures)
-                num_materials += 1
-                total_mat_textures += len(geom_texture_indices)
-            else:
-                material_idx = materials_indices[mat_id]
-            geom_mat_ids.append(material_idx)
-
-        args["geom_mat_ids"] = np.array(geom_mat_ids, np.int32)
-        args["tex_widths"] = np.array(texture_widths, np.int32)
-        args["tex_heights"] = np.array(texture_heights, np.int32)
-        args["tex_nchans"] = np.array(texture_nchans, np.int32)
-        args["tex_data"] = np.concatenate(texture_data, axis=0) if texture_data else np.array([], np.uint8)
-        args["tex_offsets"] = np.array(texture_offsets, np.int64)
-        args["mat_rgba"] = np.array(mat_rgbas, np.float32)
-        args["mat_tex_ids"] = np.array(mat_texture_indices, np.int32)
-        args["mat_tex_offsets"] = np.array(mat_texture_offsets, np.int32)
-
-        return args
+        pass
 
     # FIXME: Use a kernel to do it efficiently
     def retrieve_rigid_property_torch(self, num_worlds):
-        geom_rgb = torch.empty((0, self.n_vgeoms), dtype=torch.uint32, device=gs.device)
-        geom_mat_ids = torch.full((num_worlds, self.n_vgeoms), -1, dtype=torch.int32, device=gs.device)
-        geom_sizes = torch.ones((self.n_vgeoms, 3), dtype=torch.float32, device=gs.device)
-        geom_sizes = geom_sizes[None].repeat(num_worlds, 1, 1)
-        return geom_mat_ids, geom_rgb, geom_sizes
+        pass
 
     # FIXME: Use a kernel to do it efficiently
     def retrieve_rigid_state_torch(self):
-        geom_pos = qd_to_torch(self.rigid_solver.vgeoms_state.pos)
-        geom_rot = qd_to_torch(self.rigid_solver.vgeoms_state.quat)
-        geom_pos = geom_pos.transpose(0, 1).contiguous()
-        geom_rot = geom_rot.transpose(0, 1).contiguous()
-        return geom_pos, geom_rot
+        pass
 
 
 class Light:
@@ -215,39 +88,39 @@ class Light:
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def dir(self):
-        return self._dir
+        pass
 
     @property
     def color(self):
-        return self._color
+        pass
 
     @property
     def intensity(self):
-        return self._intensity
+        pass
 
     @property
     def directional(self):
-        return self._directional
+        pass
 
     @property
     def castshadow(self):
-        return self._castshadow
+        pass
 
     @property
     def cutoffRad(self):
-        return math.radians(self._cutoff)
+        pass
 
     @property
     def cutoffDeg(self):
-        return self._cutoff
+        pass
 
     @property
     def attenuation(self):
-        return self._attenuation
+        pass
 
 
 class BatchRenderer(RBC):
@@ -443,12 +316,12 @@ class BatchRenderer(RBC):
 
     @property
     def lights(self):
-        return self._lights
+        pass
 
     @property
     def cameras(self):
-        return self._cameras
+        pass
 
     @property
     def seg_idxc_map(self):
-        return self._geom_retriever.seg_color_map.idxc_map
+        pass

@@ -100,21 +100,15 @@ class IMUSensor(
 
     @gs.assert_built
     def set_acc_cross_axis_coupling(self, cross_axis_coupling: CrossCouplingAxisType, envs_idx=None):
-        envs_idx = self._sanitize_envs_idx(envs_idx)
-        rot_matrix = _get_cross_axis_coupling_to_alignment_matrix(cross_axis_coupling)
-        self._shared_metadata.alignment_rot_matrix[envs_idx, self._idx * 3, :, :] = rot_matrix
+        pass
 
     @gs.assert_built
     def set_gyro_cross_axis_coupling(self, cross_axis_coupling: CrossCouplingAxisType, envs_idx=None):
-        envs_idx = self._sanitize_envs_idx(envs_idx)
-        rot_matrix = _get_cross_axis_coupling_to_alignment_matrix(cross_axis_coupling)
-        self._shared_metadata.alignment_rot_matrix[envs_idx, self._idx * 3 + 1, :, :] = rot_matrix
+        pass
 
     @gs.assert_built
     def set_mag_cross_axis_coupling(self, cross_axis_coupling: CrossCouplingAxisType, envs_idx=None):
-        envs_idx = self._sanitize_envs_idx(envs_idx)
-        rot_matrix = _get_cross_axis_coupling_to_alignment_matrix(cross_axis_coupling)
-        self._shared_metadata.alignment_rot_matrix[envs_idx, self._idx * 3 + 2, :, :] = rot_matrix
+        pass
 
     # ================================ internal methods ================================
 

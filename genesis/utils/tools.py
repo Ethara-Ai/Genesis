@@ -44,11 +44,7 @@ def animate(imgs, filename=None, fps=60):
 
 
 def save_img_arr(arr, filename="img.png"):
-    assert isinstance(arr, np.ndarray)
-    os.makedirs(os.path.abspath(os.path.dirname(filename)), exist_ok=True)
-    img = Image.fromarray(arr)
-    img.save(filename)
-    gs.logger.info(f"Image saved to ~<{filename}>~.")
+    pass
 
 
 class Timer:
@@ -73,93 +69,17 @@ class Timer:
         self.prev_time = self.init_time = time.perf_counter()
 
     def _stamp(self, msg="", _ratio=1.0):
-        if self.skip:
-            return
-
-        if self.qd_sync:
-            qd.sync()
-
-        self.cur_time = time.perf_counter()
-        self.msg_width = max(self.msg_width, len(msg))
-        step_time = 1000 * (self.cur_time - self.prev_time) * _ratio
-        accu_time = 1000 * (self.cur_time - self.init_time) * _ratio
-
-        if msg not in self.accu_log:
-            self.accu_log[msg] = [1, step_time, accu_time]
-        else:
-            self.accu_log[msg][0] += 1
-            self.accu_log[msg][1] += step_time
-            self.accu_log[msg][2] += accu_time
-
-        if self.level > 0:
-            prefix = " │  " * (self.level - 1)
-            if self.just_reset:
-                prefix += " ╭──"
-            else:
-                prefix += " ├──"
-        else:
-            prefix = ""
-
-        print(
-            f"{prefix}[{msg.ljust(self.msg_width)}] step: {step_time:5.3f}ms | accu: {accu_time:5.3f}ms | step_avg: {self.accu_log[msg][1] / self.accu_log[msg][0]:5.3f}ms | accu_avg: {self.accu_log[msg][2] / self.accu_log[msg][0]:5.3f}ms"
-        )
-
-        self.prev_time = time.perf_counter()
-        self.just_reset = False
+        pass
 
     def stamp(self, msg="", _ratio=1.0):
-        return
-        if self.skip:
-            return
-
-        if self.qd_sync:
-            qd.sync()
-
-        self.cur_time = time.perf_counter()
-        self.msg_width = max(self.msg_width, len(msg))
-        step_time = 1000 * (self.cur_time - self.prev_time) * _ratio
-        accu_time = 1000 * (self.cur_time - self.init_time) * _ratio
-
-        if msg not in self.accu_log:
-            self.accu_log[msg] = [1, step_time, accu_time]
-        else:
-            self.accu_log[msg][0] += 1
-            self.accu_log[msg][1] += step_time
-            self.accu_log[msg][2] += accu_time
-
-        if self.level > 0:
-            prefix = " │  " * (self.level - 1)
-            if self.just_reset:
-                prefix += " ╭──"
-            else:
-                prefix += " ├──"
-        else:
-            prefix = ""
-
-        print(
-            f"{prefix}[{msg.ljust(self.msg_width)}] step: {step_time:5.3f}ms | accu: {accu_time:5.3f}ms | step_avg: {self.accu_log[msg][1] / self.accu_log[msg][0]:5.3f}ms | accu_avg: {self.accu_log[msg][2] / self.accu_log[msg][0]:5.3f}ms"
-        )
-
-        self.prev_time = time.perf_counter()
-        self.just_reset = False
+        pass
 
 
 timers = dict()
 
 
 def create_timer(name=None, new=False, level=0, qd_sync=False, skip_first_call=False):
-    if name is None:
-        return Timer()
-    else:
-        if name in timers and not new:
-            timer = timers[name]
-            timer.skip = False
-            timer.reset()
-            return timer
-        else:
-            timer = Timer(skip=skip_first_call, level=level, qd_sync=qd_sync)
-            timers[name] = timer
-            return timer
+    pass
 
 
 class Rate:

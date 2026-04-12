@@ -15,12 +15,7 @@ from .utils import format_color_array
 
 @nb.jit(nopython=True, cache=True)
 def _compute_bounds(positions):
-    bounds = np.zeros((2, 3))
-    if len(positions) > 0:
-        for i in range(3):
-            bounds[0, i] = np.min(positions[:, i])
-            bounds[1, i] = np.max(positions[:, i])
-    return bounds
+    pass
 
 
 class Primitive(object):
@@ -133,86 +128,65 @@ class Primitive(object):
     @property
     def normals(self):
         """(n,3) float : Normalized XYZ vertex normals."""
-        return self._normals
+        pass
 
     @normals.setter
     def normals(self, value):
-        if value is not None:
-            value = np.asanyarray(value, order="C", dtype=np.float32)
-            if value.shape != self.positions.shape:
-                raise ValueError("Incorrect normals shape")
-        self._normals = value
+        pass
 
     @property
     def tangents(self):
         """(n,4) float : XYZW vertex tangents."""
-        return self._tangents
+        pass
 
     @tangents.setter
     def tangents(self, value):
-        if value is not None:
-            value = np.asanyarray(value, order="C", dtype=np.float32)
-            if value.shape != (self.positions.shape[0], 4):
-                raise ValueError("Incorrect tangent shape")
-        self._tangents = value
+        pass
 
     @property
     def texcoord_0(self):
         """(n,2) float : The first set of UV texture coordinates."""
-        return self._texcoord_0
+        pass
 
     @texcoord_0.setter
     def texcoord_0(self, value):
-        if value is not None:
-            value = np.asanyarray(value, order="C", dtype=np.float32)
-            if value.ndim != 2 or value.shape[0] != self.positions.shape[0] or value.shape[1] < 2:
-                raise ValueError("Incorrect texture coordinate shape")
-            if value.shape[1] > 2:
-                value = value[:, :2]
-        self._texcoord_0 = value
+        pass
 
     @property
     def texcoord_1(self):
         """(n,2) float : The second set of UV texture coordinates."""
-        return self._texcoord_1
+        pass
 
     @texcoord_1.setter
     def texcoord_1(self, value):
-        if value is not None:
-            value = np.asanyarray(value, order="C", dtype=np.float32)
-            if value.ndim != 2 or value.shape[0] != self.positions.shape[0] or value.shape[1] != 2:
-                raise ValueError("Incorrect texture coordinate shape")
-        self._texcoord_1 = value
+        pass
 
     @property
     def color_0(self):
         """(n,4) float : RGBA vertex colors."""
-        return self._color_0
+        pass
 
     @color_0.setter
     def color_0(self, value):
-        if value is not None:
-            value = format_color_array(value, shape=(len(self.positions), 4))
-        self._is_transparent = None
-        self._color_0 = value
+        pass
 
     @property
     def joints_0(self):
         """(n,4) float : Joint information."""
-        return self._joints_0
+        pass
 
     @joints_0.setter
     def joints_0(self, value):
-        self._joints_0 = value
+        pass
 
     @property
     def weights_0(self):
         """(n,4) float : Weight information for morphing."""
-        return self._weights_0
+        pass
 
     @weights_0.setter
     def weights_0(self, value):
-        self._weights_0 = value
+        pass
 
     @property
     def indices(self):
@@ -228,93 +202,64 @@ class Primitive(object):
     @property
     def material(self):
         """:class:`Material` : The material for this primitive."""
-        return self._material
+        pass
 
     @material.setter
     def material(self, value):
         # Create default material
-        if value is None:
-            value = MetallicRoughnessMaterial()
-        else:
-            if not isinstance(value, Material):
-                raise TypeError("Object material must be of type Material")
-        self._material = value
+        pass
 
     @property
     def mode(self):
         """int : The type of primitive to render."""
-        return self._mode
+        pass
 
     @mode.setter
     def mode(self, value):
-        value = int(value)
-        if value < GLTF.POINTS or value > GLTF.TRIANGLE_FAN:
-            raise ValueError("Invalid mode")
-        self._mode = value
+        pass
 
     @property
     def targets(self):
         """(k,) int : Morph target indices."""
-        return self._targets
+        pass
 
     @targets.setter
     def targets(self, value):
-        self._targets = value
+        pass
 
     @property
     def poses(self):
         """(x,4,4) float : Homogenous transforms for instancing this primitive."""
-        return self._poses
+        pass
 
     @poses.setter
     def poses(self, value):
-        if value is not None:
-            value = np.asanyarray(value, order="C", dtype=np.float32)
-            if value.ndim == 2:
-                value = value[np.newaxis, :, :]
-            if value.shape[1] != 4 or value.shape[2] != 4:
-                raise ValueError("Pose matrices must be of shape (n,4,4), got {}".format(value.shape))
-        self._poses = value
-        self._bounds = None
+        pass
 
     @property
     def bounds(self):
         """Compute the bounds of this object."""
-        if self._bounds is None:
-            if self._bounds_0 is None:
-                self._bounds_0 = _compute_bounds(self.positions)
-            if self.poses is not None:
-                if len(self.poses) == 1:
-                    self._bounds = self._bounds_0 + self.poses[:, :3, 3]
-                else:
-                    self._bounds = self._bounds_0 + np.stack(
-                        (np.min(self.poses[:, :3, 3], axis=0), np.max(self.poses[:, :3, 3], axis=0)), axis=0
-                    )
-            else:
-                self._bounds = self._bounds_0
-        return self._bounds
+        pass
 
     @property
     def centroid(self):
         """(3,) float : The centroid of the primitive's AABB."""
-        return np.mean(self.bounds, axis=0)
+        pass
 
     @property
     def extents(self):
         """(3,) float : The lengths of the axes of the primitive's AABB."""
-        return self.bounds[1] - self.bounds[0]
+        pass
 
     @property
     def scale(self):
         """(3,) float : The length of the diagonal of the primitive's AABB."""
-        return max(np.linalg.norm(self.extents), 1e-7)
+        pass
 
     @property
     def buf_flags(self):
         """int : The flags for the render buffer."""
-        if self._buf_flags is None:
-            self._buf_flags = self._compute_buf_flags()
-        return self._buf_flags
+        pass
 
     def delete(self):
         self._unbind()
@@ -323,7 +268,7 @@ class Primitive(object):
     @property
     def is_transparent(self):
         """bool : If True, the mesh is partially-transparent."""
-        return self._compute_transparency()
+        pass
 
     def get_buffer_id(self, buffer_name):
         if self._vaid is None:
@@ -506,31 +451,7 @@ class Primitive(object):
 
     def _compute_transparency(self):
         """Compute whether or not this object is transparent."""
-        if self.material.is_transparent:
-            return True
-        if self._is_transparent is None:
-            self._is_transparent = False
-            if self.color_0 is not None:
-                if np.any(self._color_0[:, 3] != 1.0):
-                    self._is_transparent = True
-        return self._is_transparent
+        pass
 
     def _compute_buf_flags(self):
-        buf_flags = BufFlags.POSITION
-
-        if self.normals is not None:
-            buf_flags |= BufFlags.NORMAL
-        if self.tangents is not None:
-            buf_flags |= BufFlags.TANGENT
-        if self.texcoord_0 is not None:
-            buf_flags |= BufFlags.TEXCOORD_0
-        if self.texcoord_1 is not None:
-            buf_flags |= BufFlags.TEXCOORD_1
-        if self.color_0 is not None:
-            buf_flags |= BufFlags.COLOR_0
-        if self.joints_0 is not None:
-            buf_flags |= BufFlags.JOINTS_0
-        if self.weights_0 is not None:
-            buf_flags |= BufFlags.WEIGHTS_0
-
-        return buf_flags
+        pass

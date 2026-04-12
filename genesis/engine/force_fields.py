@@ -29,7 +29,7 @@ class ForceField(RBC):
         """
         Deactivate the force field.
         """
-        self._active[None] = False
+        pass
 
     @qd.func
     def get_acc(self, pos, vel, t, i):
@@ -43,7 +43,7 @@ class ForceField(RBC):
         """
         Whether the force field is active.
         """
-        return self._active[None]
+        pass
 
 
 class Constant(ForceField):
@@ -75,11 +75,11 @@ class Constant(ForceField):
 
     @property
     def direction(self):
-        return self._direction
+        pass
 
     @property
     def strength(self):
-        return self._strength
+        pass
 
 
 class Wind(ForceField):
@@ -129,19 +129,19 @@ class Wind(ForceField):
 
     @property
     def direction(self):
-        return self._direction
+        pass
 
     @property
     def strength(self):
-        return self._strength
+        pass
 
     @property
     def radius(self):
-        return self._radius
+        pass
 
     @property
     def center(self):
-        return self._center
+        pass
 
 
 class Point(ForceField):
@@ -191,11 +191,11 @@ class Point(ForceField):
 
     @property
     def strength(self):
-        return self._strength
+        pass
 
     @property
     def position(self):
-        return self._position
+        pass
 
 
 class Drag(ForceField):
@@ -222,11 +222,11 @@ class Drag(ForceField):
 
     @property
     def linear(self):
-        return self._linear
+        pass
 
     @property
     def quadratic(self):
-        return self._quadratic
+        pass
 
 
 class Noise(ForceField):
@@ -257,7 +257,7 @@ class Noise(ForceField):
 
     @property
     def strength(self):
-        return self._strength
+        pass
 
 
 class Vortex(ForceField):
@@ -338,35 +338,35 @@ class Vortex(ForceField):
 
     @property
     def direction(self):
-        return self._direction
+        pass
 
     @property
     def radius(self):
-        return self._radius
+        pass
 
     @property
     def center(self):
-        return self._center
+        pass
 
     @property
     def strength_perpendicular(self):
-        return self._strength_perpendicular
+        pass
 
     @property
     def strength_radial(self):
-        return self._strength_radial
+        pass
 
     @property
     def falloff_pow(self):
-        return self._falloff_pow
+        pass
 
     @property
     def falloff_min(self):
-        return self._falloff_min
+        pass
 
     @property
     def falloff_max(self):
-        return self._falloff_max
+        pass
 
 
 class Turbulence(ForceField):
@@ -414,11 +414,11 @@ class Turbulence(ForceField):
 
     @property
     def strength(self):
-        return self._strength
+        pass
 
     @property
     def frequency(self):
-        return self._frequency
+        pass
 
 
 class Custom(ForceField):

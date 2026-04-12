@@ -21,12 +21,7 @@ from .base_entity import Entity
 
 def assert_muscle(method):
     @wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if not isinstance(self.material, gs.materials.FEM.Muscle):
-            gs.raise_exception("This method is only supported by entities with 'FEM.Muscle' material.")
-        return method(self, *args, **kwargs)
-
-    return wrapper
+    pass
 
 
 @qd.data_oriented
@@ -130,34 +125,10 @@ class FEMEntity(Entity):
     # ------------------------------------------------------------------------------------
 
     def _sanitize_verts_idx_local(self, verts_idx_local=None, envs_idx=None):
-        if verts_idx_local is None:
-            verts_idx_local = range(self.n_vertices)
-
-        if envs_idx is None:
-            verts_idx_local_ = broadcast_tensor(verts_idx_local, gs.tc_int, (-1,), ("verts_idx",))
-        else:
-            verts_idx_local_ = broadcast_tensor(
-                verts_idx_local, gs.tc_int, (len(envs_idx), -1), ("envs_idx", "verts_idx")
-            )
-
-        # FIXME: This check is too expensive
-        # if not (0 <= verts_idx_local_ & verts_idx_local_ < self.n_vertices).all():
-        #     gs.raise_exception("Elements of `verts_idx_local' are out-of-range.")
-
-        return verts_idx_local_.contiguous()
+        pass
 
     def _sanitize_verts_tensor(self, tensor, dtype, verts_idx=None, envs_idx=None, element_shape=(), *, batched=True):
-        n_vertices = verts_idx.shape[-1] if verts_idx is not None else self.n_vertices
-        if batched:
-            assert envs_idx is not None
-            batch_shape = (len(envs_idx), n_vertices)
-            dim_names = ("envs_idx", "verts_idx", *("" for _ in element_shape))
-        else:
-            batch_shape = (n_vertices,)
-            dim_names = ("verts_idx", *("" for _ in element_shape))
-        tensor_shape = (*batch_shape, *element_shape)
-
-        return broadcast_tensor(tensor, dtype, tensor_shape, dim_names).contiguous()
+        pass
 
     def set_position(self, pos):
         """
@@ -177,36 +148,7 @@ class FEMEntity(Entity):
         Exception
             If the tensor shape is not supported.
         """
-        self._assert_active()
-        gs.logger.warning("Manually setting element positions. This is not recommended and could break gradient flow.")
-
-        pos = to_gs_tensor(pos)
-
-        is_valid = False
-        if pos.ndim == 1:
-            if pos.shape == (3,):
-                pos = self.init_positions_COM_offset + pos
-                self._tgt["pos"] = pos[None].tile((self._sim._B, 1, 1))
-                is_valid = True
-        elif pos.ndim == 2:
-            if pos.shape == (self.n_vertices, 3):
-                self._tgt["pos"] = pos[None].tile((self._sim._B, 1, 1))
-                is_valid = True
-            elif pos.shape == (self._sim._B, 3):
-                pos = self.init_positions_COM_offset[None] + pos[:, None]
-                self._tgt["pos"] = pos
-                is_valid = True
-        elif pos.ndim == 3:
-            if pos.shape == (self._sim._B, self.n_vertices, 3):
-                self._tgt["pos"] = pos
-                is_valid = True
-        if not is_valid:
-            gs.raise_exception("Tensor shape not supported.")
-
-        # Immediately flush to the solver's internal elements_v so that the
-        # visualizer can render the updated positions without scene.step().
-        if is_valid and self._tgt["pos"] is not None:
-            self.set_pos(self._sim.cur_substep_local, self._tgt["pos"])
+        pass
 
     def set_velocity(self, vel):
         """
@@ -226,29 +168,7 @@ class FEMEntity(Entity):
         Exception
             If the tensor shape is not supported.
         """
-        self._assert_active()
-        gs.logger.warning("Manually setting element velocities. This is not recommended and could break gradient flow.")
-
-        vel = to_gs_tensor(vel)
-
-        is_valid = False
-        if vel.ndim == 1:
-            if vel.shape == (3,):
-                self._tgt["vel"] = vel.tile((self._sim._B, self.n_vertices, 1))
-                is_valid = True
-        elif vel.ndim == 2:
-            if vel.shape == (self.n_vertices, 3):
-                self._tgt["vel"] = vel[None].tile((self._sim._B, 1, 1))
-                is_valid = True
-            elif vel.shape == (self._sim._B, 3):
-                self._tgt["vel"] = vel[:, None].tile((1, self.n_vertices, 1))
-                is_valid = True
-        elif vel.ndim == 3:
-            if vel.shape == (self._sim._B, self.n_vertices, 3):
-                self._tgt["vel"] = vel
-                is_valid = True
-        if not is_valid:
-            gs.raise_exception("Tensor shape not supported.")
+        pass
 
     @assert_muscle
     def set_actuation(self, actu):
@@ -268,27 +188,7 @@ class FEMEntity(Entity):
         Exception
             If the tensor shape is not supported or per-element actuation is attempted.
         """
-        self._assert_active()
-
-        actu = to_gs_tensor(actu)
-
-        is_valid = False
-        n_groups = self.material.n_groups
-        if actu.ndim == 0:
-            self._tgt["actu"] = actu.tile((self._sim._B, n_groups))
-            is_valid = True
-        elif actu.ndim == 1:
-            if actu.shape == (n_groups,):
-                self._tgt["actu"] = actu[None].tile((self._sim._B, 1))
-                is_valid = True
-            elif actu.shape == (self.n_elements,):
-                gs.raise_exception("Cannot set per-element actuation.")
-        elif actu.ndim == 2:
-            if actu.shape == (self._sim._B, n_groups):
-                self._tgt["actu"] = actu
-                is_valid = True
-        if not is_valid:
-            gs.raise_exception("Tensor shape not supported.")
+        pass
 
     def set_muscle(self, muscle_group=None, muscle_direction=None):
         """
@@ -336,9 +236,7 @@ class FEMEntity(Entity):
         return state
 
     def deactivate(self):
-        gs.logger.info(f"{self.__class__.__name__} <{self.id}> deactivated.")
-        self._tgt["act"] = gs.INACTIVE
-        self.active = False
+        pass
 
     def activate(self):
         gs.logger.info(f"{self.__class__.__name__} <{self.id}> activated.")
@@ -602,9 +500,7 @@ class FEMEntity(Entity):
         KeyError
             If the checkpoint name is not found.
         """
-
-        for key in self._tgt_keys:
-            self._tgt_buffer[key] = list(self._ckpt[ckpt_name]["_tgt_buffer"][key])
+        pass
 
     def reset_grad(self):
         """
@@ -668,22 +564,7 @@ class FEMEntity(Entity):
         Automatically applies the backward hooks for position, velocity, and actuation tensors.
         Clears the gradients in the solver to avoid double accumulation.
         """
-        _tgt_actu = self._tgt_buffer["actu"].pop()
-        _tgt_vel = self._tgt_buffer["vel"].pop()
-        _tgt_pos = self._tgt_buffer["pos"].pop()
-
-        if _tgt_actu is not None and _tgt_actu.requires_grad:
-            _tgt_actu._backward_from_qd(self.set_actu_grad, self._sim.cur_substep_local)
-
-        if _tgt_vel is not None and _tgt_vel.requires_grad:
-            _tgt_vel._backward_from_qd(self.set_vel_grad, self._sim.cur_substep_local)
-
-        if _tgt_pos is not None and _tgt_pos.requires_grad:
-            _tgt_pos._backward_from_qd(self.set_pos_grad, self._sim.cur_substep_local)
-
-        if _tgt_vel is not None or _tgt_pos is not None or _tgt_actu is not None:
-            # manually zero the grad since manually setting state breaks gradient flow
-            self.clear_grad(self._sim.cur_substep_local)
+        pass
 
     def _assert_active(self):
         if not self.active:
@@ -725,13 +606,7 @@ class FEMEntity(Entity):
         pos_grad : gs.Tensor
             Tensor of shape (n_envs, n_vertices, 3) containing gradients of positions.
         """
-
-        self._solver._kernel_set_elements_pos_grad(
-            f=f,
-            element_v_start=self._v_start,
-            n_vertices=self.n_vertices,
-            pos_grad=pos_grad,
-        )
+        pass
 
     def set_vel(self, f, vel):
         """
@@ -765,13 +640,7 @@ class FEMEntity(Entity):
         vel_grad : gs.Tensor
             Tensor of shape (n_envs, n_vertices, 3) containing gradients of velocities.
         """
-
-        self._solver._kernel_set_elements_vel_grad(
-            f=f,
-            element_v_start=self._v_start,
-            n_vertices=self.n_vertices,
-            vel_grad=vel_grad,
-        )
+        pass
 
     def set_actu(self, f, actu):
         """
@@ -806,13 +675,7 @@ class FEMEntity(Entity):
         actu_grad : gs.Tensor
             Tensor of shape (n_envs, n_groups) specifying gradients of actuation.
         """
-
-        self._solver._kernel_set_elements_actu(
-            f=f,
-            element_el_start=self._el_start,
-            n_elements=self.n_elements,
-            actu_grad=actu_grad,
-        )
+        pass
 
     def set_active(self, f, active):
         """
@@ -890,91 +753,20 @@ class FEMEntity(Entity):
             envs_idx : array_like, optional
                 List of environment indices to apply the constraints to. If None, applies to all environments.
         """
-        from genesis.engine.couplers import IPCCoupler
-
-        if self._solver._use_implicit_solver and not self._solver._enable_vertex_constraints:
-            gs.raise_exception(
-                "This feature is disabled. Please set 'enable_vertex_constraints=True' when using FEM implicit solver."
-            )
-
-        if isinstance(self.sim.coupler, IPCCoupler):
-            gs.raise_exception("This method is only supported by IPC coupler.")
-
-        if not self._solver._constraints_initialized:
-            self._solver.init_constraints()
-
-        use_current_poss = target_poss is None
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        verts_idx_local = self._sanitize_verts_idx_local(verts_idx_local, envs_idx)
-        verts_idx = verts_idx_local + self._v_start
-        target_poss = self._sanitize_verts_tensor(target_poss, gs.tc_float, verts_idx, envs_idx, (3,))
-
-        if use_current_poss:
-            self._kernel_get_verts_pos(self._sim.cur_substep_local, target_poss, verts_idx)
-
-        if link is None:
-            link_idx = -1
-            link_init_pos = torch.zeros((self._sim._B, 3), dtype=gs.tc_float, device=gs.device)
-            link_init_quat = torch.zeros((self._sim._B, 4), dtype=gs.tc_float, device=gs.device)
-        else:
-            assert isinstance(link, RigidLink), "Only RigidLink is supported for vertex constraints."
-            link_idx = link.idx
-            link_init_pos = link.get_pos()
-            link_init_quat = link.get_quat()
-            if self._scene.n_envs == 0:
-                link_init_pos = link_init_pos[None]
-                link_init_quat = link_init_quat[None]
-
-        self._solver._kernel_set_vertex_constraints(
-            self._sim.cur_substep_local,
-            verts_idx,
-            target_poss,
-            is_soft_constraint,
-            stiffness,
-            link_idx,
-            link_init_pos,
-            link_init_quat,
-            envs_idx,
-        )
+        pass
 
     def update_constraint_targets(self, verts_idx_local, target_poss, envs_idx=None):
         """Update target positions for existing constraints."""
-        if not self._solver._constraints_initialized:
-            gs.logger.warning("Ignoring update_constraint_targets; constraints have not been initialized.")
-            return
-
-        assert target_poss is not None
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        verts_idx_local = self._sanitize_verts_idx_local(verts_idx_local, envs_idx)
-        verts_idx = verts_idx_local + self._v_start
-        target_poss = self._sanitize_verts_tensor(target_poss, gs.tc_float, verts_idx, envs_idx, (3,))
-
-        self._solver._kernel_update_constraint_targets(verts_idx, target_poss, envs_idx)
+        pass
 
     def remove_vertex_constraints(self, verts_idx_local=None, envs_idx=None):
         """Remove constraints from specified vertices, or all if None."""
-        if not self._solver._constraints_initialized:
-            gs.logger.warning("Ignoring remove_vertex_constraints; constraints have not been initialized.")
-            return
-
-        # FIXME: Quadrants 'fill' method is very inefficient. Try using zero-copy if possible.
-        if verts_idx_local is None:
-            self._solver.vertex_constraints.is_constrained.fill(0)
-            return
-
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        verts_idx_local = self._sanitize_verts_idx_local(verts_idx_local, envs_idx)
-        verts_idx = verts_idx_local + self._v_start
-
-        self._solver._kernel_remove_specific_constraints(verts_idx, envs_idx)
+        pass
 
     @qd.kernel
     def _kernel_get_verts_pos(self, f: qd.i32, pos: qd.types.ndarray(), verts_idx: qd.types.ndarray()):
         # get current position of vertices
-        for i_b, i_v_ in qd.ndrange(verts_idx.shape[0], verts_idx.shape[1]):
-            i_v = verts_idx[i_b, i_v_] + self.v_start
-            for j in qd.static(range(3)):
-                pos[i_b, i_v_, j] = self._solver.elements_v[f, i_v, i_b].pos[j]
+        pass
 
     def get_el2v(self):
         """
@@ -985,9 +777,7 @@ class FEMEntity(Entity):
         el2v : gs.Tensor
             Tensor of shape (n_elements, 4) mapping each element to its vertex indices.
         """
-        el2v = gs.zeros((self.n_elements, 4), dtype=int, requires_grad=False, scene=self.scene)
-        self._solver._kernel_get_el2v(element_el_start=self._el_start, n_elements=self.n_elements, el2v=el2v)
-        return el2v
+        pass
 
     @qd.kernel
     def get_frame(self, f: qd.i32, pos: qd.types.ndarray(), vel: qd.types.ndarray(), active: qd.types.ndarray()):
@@ -1034,15 +824,7 @@ class FEMEntity(Entity):
         This method is primarily used during backward passes to manually reset gradients
         that may be corrupted by explicit state setting.
         """
-        # TODO: not well-tested
-        for i_v, i_b in qd.ndrange(self.n_vertices, self._sim._B):
-            i_global = i_v + self.v_start
-            self._solver.elements_v.grad[f, i_global, i_b].pos = 0
-            self._solver.elements_v.grad[f, i_global, i_b].vel = 0
-
-        for i_v, i_b in qd.ndrange(self.n_elements, self._sim._B):
-            i_global = i_v + self.el_start
-            self._solver.elements_el.grad[f, i_global, i_b].actu = 0
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------
@@ -1068,65 +850,64 @@ class FEMEntity(Entity):
     @property
     def n_vertices(self):
         """Number of vertices in the FEM entity."""
-        return len(self.init_positions)
+        pass
 
     @property
     def n_elements(self):
         """Number of tetrahedral elements in the FEM entity."""
-        return len(self.elems)
+        pass
 
     @property
     def n_surfaces(self):
         """Number of surface triangles extracted from the FEM mesh."""
-        return self._n_surfaces
+        pass
 
     @property
     def v_start(self):
         """Global vertex index offset for this entity."""
-        return self._v_start
+        pass
 
     @property
     def el_start(self):
         """Global element index offset for this entity."""
-        return self._el_start
+        pass
 
     @property
     def s_start(self):
         """Global surface triangle index offset for this entity."""
-        return self._s_start
+        pass
 
     @property
     def morph(self):
         """Morph specification used to generate the FEM mesh."""
-        return self._morph
+        pass
 
     @property
     def material(self):
         """Material properties of the FEM entity."""
-        return self._material
+        pass
 
     @property
     def surface(self):
         """Surface for rendering."""
-        return self._surface
+        pass
 
     @property
     def n_surface_vertices(self):
         """Number of unique vertices involved in surface triangles."""
-        return self._n_surface_vertices
+        pass
 
     @property
     def surface_triangles(self):
         """Surface triangles of the FEM mesh."""
-        return self._surface_tri_np
+        pass
 
     @property
     def uvs(self):
         """UV coordinates for this entity's vertices, or None if not available."""
-        return self._uvs
+        pass
 
     @property
     def tet_cfg(self):
         """Configuration of tetrahedralization."""
-        tet_cfg = mu.generate_tetgen_config_from_morph(self.morph)
-        return tet_cfg
+        pass

@@ -511,7 +511,7 @@ class RigidSolver(KinematicSolver):
         return _sanitize_sol_params(sol_params, self._sol_min_timeconst, self._sol_default_timeconst)
 
     def _sanitize_geom_sol_params(self, sol_params):
-        return _sanitize_sol_params(sol_params, self._sol_min_timeconst, self._sol_default_timeconst)
+        pass
 
     def _init_invweight_and_meaninertia(self, envs_idx=None, *, force_update=True):
         # Early return if no DoFs. This is essential to avoid segfault on CUDA.
@@ -1004,7 +1004,7 @@ class RigidSolver(KinematicSolver):
                 )
 
     def get_error_envs_mask(self):
-        return qd_to_torch(self._errno) > 0
+        pass
 
     def check_errno(self):
         # FIXME: qd.atomic_or return value is broken on Metal — always returns 0.
@@ -1034,19 +1034,11 @@ class RigidSolver(KinematicSolver):
             gs.raise_exception("Contact island buffer overflow. Please increase RigidOptions 'max_collision_pairs'.")
 
     def _kernel_detect_collision(self):
-        self.collider.clear()
-        self.collider.detection()
+        pass
 
     def detect_collision(self, env_idx=0):
         # TODO: support batching
-        self._kernel_detect_collision()
-
-        n_collision = qd_to_numpy(self.collider._collider_state.n_contacts)[env_idx]
-        collision_pairs = np.empty((n_collision, 2), dtype=np.int32)
-        collision_pairs[:, 0] = qd_to_numpy(self.collider._collider_state.contact_data.geom_a)[:n_collision, env_idx]
-        collision_pairs[:, 1] = qd_to_numpy(self.collider._collider_state.contact_data.geom_b)[:n_collision, env_idx]
-
-        return collision_pairs
+        pass
 
     def _func_constraint_force(self):
         if not self._disable_constraint:
@@ -1067,58 +1059,16 @@ class RigidSolver(KinematicSolver):
             self.constraint_solver.resolve()
 
     def _func_forward_dynamics(self):
-        kernel_forward_dynamics(
-            self.links_state,
-            self.links_info,
-            self.dofs_state,
-            self.dofs_info,
-            self.joints_info,
-            self.entities_state,
-            self.entities_info,
-            self.geoms_state,
-            self._rigid_global_info,
-            self._static_rigid_sim_config,
-            self.constraint_solver.contact_island.contact_island_state,
-        )
+        pass
 
     def _func_update_acc(self):
-        kernel_update_acc(
-            self.dofs_state,
-            self.links_info,
-            self.links_state,
-            self.entities_info,
-            self._rigid_global_info,
-            self._static_rigid_sim_config,
-        )
+        pass
 
     def _func_forward_kinematics_entity(self, i_e, envs_idx):
-        kernel_forward_kinematics_entity(
-            i_e,
-            envs_idx,
-            self.links_state,
-            self.links_info,
-            self.joints_state,
-            self.joints_info,
-            self.dofs_state,
-            self.dofs_info,
-            self.entities_info,
-            self._rigid_global_info,
-            self._static_rigid_sim_config,
-        )
+        pass
 
     def _func_integrate_dq_entity(self, dq, i_e, i_b, respect_joint_limit):
-        func_integrate_dq_entity(
-            dq,
-            i_e,
-            i_b,
-            respect_joint_limit,
-            links_info=self.links_info,
-            joints_info=self.joints_info,
-            dofs_info=self.dofs_info,
-            entities_info=self.entities_info,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
+        pass
 
     def _func_update_geoms(self, envs_idx, *, force_update_fixed_geoms=False):
         kernel_update_geoms(
@@ -1233,171 +1183,7 @@ class RigidSolver(KinematicSolver):
 
     def substep_pre_coupling_grad(self, f):
         # Change to backward mode
-        self._is_backward = True
-
-        # Run forward substep again to restore this step's information, this is needed because we do not store info
-        # of every substep.
-        kernel_prepare_backward_substep(
-            f=f,
-            links_state=self.links_state,
-            links_info=self.links_info,
-            joints_state=self.joints_state,
-            joints_info=self.joints_info,
-            dofs_state=self.dofs_state,
-            dofs_info=self.dofs_info,
-            geoms_state=self.geoms_state,
-            geoms_info=self.geoms_info,
-            entities_info=self.entities_info,
-            rigid_global_info=self._rigid_global_info,
-            dofs_state_adjoint_cache=self.dofs_state_adjoint_cache,
-            links_state_adjoint_cache=self.links_state_adjoint_cache,
-            joints_state_adjoint_cache=self.joints_state_adjoint_cache,
-            geoms_state_adjoint_cache=self.geoms_state_adjoint_cache,
-            rigid_adjoint_cache=self._rigid_adjoint_cache,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
-        self.substep(f)
-
-        # =================== Backward substep ======================
-        envs_idx = self._scene._sanitize_envs_idx(None)
-        if not self._enable_mujoco_compatibility:
-            kernel_forward_velocity.grad(
-                envs_idx=envs_idx,
-                links_state=self.links_state,
-                links_info=self.links_info,
-                joints_info=self.joints_info,
-                dofs_state=self.dofs_state,
-                entities_info=self.entities_info,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-                is_backward=True,
-            )
-            kernel_update_cartesian_space.grad(
-                links_state=self.links_state,
-                links_info=self.links_info,
-                joints_state=self.joints_state,
-                joints_info=self.joints_info,
-                dofs_state=self.dofs_state,
-                dofs_info=self.dofs_info,
-                geoms_state=self.geoms_state,
-                geoms_info=self.geoms_info,
-                entities_info=self.entities_info,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-                force_update_fixed_geoms=False,
-                is_backward=True,
-            )
-
-        is_grad_valid = kernel_begin_backward_substep(
-            f=f,
-            links_state=self.links_state,
-            links_info=self.links_info,
-            joints_state=self.joints_state,
-            joints_info=self.joints_info,
-            dofs_state=self.dofs_state,
-            dofs_info=self.dofs_info,
-            geoms_state=self.geoms_state,
-            geoms_info=self.geoms_info,
-            entities_info=self.entities_info,
-            rigid_global_info=self._rigid_global_info,
-            dofs_state_adjoint_cache=self.dofs_state_adjoint_cache,
-            links_state_adjoint_cache=self.links_state_adjoint_cache,
-            joints_state_adjoint_cache=self.joints_state_adjoint_cache,
-            geoms_state_adjoint_cache=self.geoms_state_adjoint_cache,
-            rigid_adjoint_cache=self._rigid_adjoint_cache,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
-        if not is_grad_valid:
-            gs.raise_exception(f"Nan grad in qpos or dofs_vel found at step {self._sim.cur_step_global}")
-
-        kernel_step_2.grad(
-            dofs_state=self.dofs_state,
-            dofs_info=self.dofs_info,
-            links_info=self.links_info,
-            links_state=self.links_state,
-            joints_info=self.joints_info,
-            joints_state=self.joints_state,
-            entities_state=self.entities_state,
-            entities_info=self.entities_info,
-            geoms_info=self.geoms_info,
-            geoms_state=self.geoms_state,
-            collider_state=self.collider._collider_state,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-            contact_island_state=self.constraint_solver.contact_island.contact_island_state,
-            is_backward=True,
-            errno=self._errno,
-        )
-
-        # We cannot use [kernel_forward_dynamics.grad] because we read [dofs_state.acc] and overwrite it in the kernel,
-        # which is prohibited (https://docs.taichi-lang.org/docs/differentiable_programming#global-data-access-rules).
-        # In [kernel_forward_dynamics], we read [acc] in [func_update_acc] and overwrite it in [kernel_compute_qacc].
-        # As [kenrel_compute_qacc] is called at the end of [kernel_forward_dynamics], we first backpropagate through
-        # [kernel_compute_qacc] and then restore the original [acc] from the adjoint cache. This copy operation
-        # cannot be merged with [kernel_compute_qacc.grad] because .grad function itself is a standalone kernel.
-        # We could possibly merge this small kernel later if (1) .grad function is regarded as a function instead of a
-        # kernel, (2) we add another variable to store the new [acc] from [kernel_compute_qacc] and thus can avoid
-        # the data access violation. However, both of these require major changes.
-        kernel_compute_qacc.grad(
-            dofs_state=self.dofs_state,
-            entities_info=self.entities_info,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-            is_backward=True,
-        )
-        kernel_copy_acc(
-            f=f,
-            dofs_state=self.dofs_state,
-            rigid_adjoint_cache=self._rigid_adjoint_cache,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
-
-        kernel_forward_dynamics_without_qacc.grad(
-            links_state=self.links_state,
-            links_info=self.links_info,
-            dofs_state=self.dofs_state,
-            dofs_info=self.dofs_info,
-            joints_info=self.joints_info,
-            entities_state=self.entities_state,
-            entities_info=self.entities_info,
-            geoms_state=self.geoms_state,
-            rigid_global_info=self._rigid_global_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-            contact_island_state=self.constraint_solver.contact_island.contact_island_state,
-            is_backward=True,
-        )
-
-        # If it was the very first substep, we need to backpropagate through the initial update of the cartesian space
-        if self._enable_mujoco_compatibility or self._sim.cur_substep_global == 0:
-            kernel_forward_velocity.grad(
-                envs_idx=envs_idx,
-                links_state=self.links_state,
-                links_info=self.links_info,
-                joints_info=self.joints_info,
-                dofs_state=self.dofs_state,
-                entities_info=self.entities_info,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-                is_backward=True,
-            )
-            kernel_update_cartesian_space.grad(
-                links_state=self.links_state,
-                links_info=self.links_info,
-                joints_state=self.joints_state,
-                joints_info=self.joints_info,
-                dofs_state=self.dofs_state,
-                dofs_info=self.dofs_info,
-                geoms_state=self.geoms_state,
-                geoms_info=self.geoms_info,
-                entities_info=self.entities_info,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-                force_update_fixed_geoms=False,
-                is_backward=True,
-            )
-
-        # Change back to forward mode
-        self._is_backward = False
+        pass
 
     def substep_post_coupling(self, f):
         from genesis.engine.couplers import SAPCoupler, IPCCoupler
@@ -1608,8 +1394,7 @@ class RigidSolver(KinematicSolver):
             entity.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for entity in self._entities:
-            entity.process_input_grad()
+        pass
 
     def save_ckpt(self, ckpt_name):
         # Save ckpt only if we need gradients, because this operation is costly
@@ -1626,29 +1411,7 @@ class RigidSolver(KinematicSolver):
 
     def load_ckpt(self, ckpt_name):
         # Set first frame
-        self._rigid_global_info.qpos.from_numpy(self._ckpt[ckpt_name]["qpos"][0])
-        self.dofs_state.vel.from_numpy(self._ckpt[ckpt_name]["dofs_vel"][0])
-        self.dofs_state.acc.from_numpy(self._ckpt[ckpt_name]["dofs_acc"][0])
-
-        if not self._enable_mujoco_compatibility:
-            kernel_update_cartesian_space(
-                links_state=self.links_state,
-                links_info=self.links_info,
-                joints_state=self.joints_state,
-                joints_info=self.joints_info,
-                dofs_state=self.dofs_state,
-                dofs_info=self.dofs_info,
-                geoms_state=self.geoms_state,
-                geoms_info=self.geoms_info,
-                entities_info=self.entities_info,
-                rigid_global_info=self._rigid_global_info,
-                static_rigid_sim_config=self._static_rigid_sim_config,
-                force_update_fixed_geoms=False,
-                is_backward=False,
-            )
-
-        for entity in self._entities:
-            entity.load_ckpt(ckpt_name)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ control ---------------------------------------
@@ -1848,81 +1611,19 @@ class RigidSolver(KinematicSolver):
             self._is_forward_vel_updated = False
 
     def set_links_mass_shift(self, mass, links_idx=None, envs_idx=None):
-        mass, links_idx, envs_idx = self._sanitize_io_variables(
-            mass, links_idx, self.n_links, "links_idx", envs_idx, skip_allocation=True
-        )
-        if self.n_envs == 0:
-            mass = mass[None]
-        kernel_set_links_mass_shift(
-            mass,
-            links_idx,
-            envs_idx,
-            links_state=self.links_state,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
+        pass
 
     def set_links_COM_shift(self, com, links_idx=None, envs_idx=None):
-        com, links_idx, envs_idx = self._sanitize_io_variables(
-            com, links_idx, self.n_links, "links_idx", envs_idx, (3,), skip_allocation=True
-        )
-        if self.n_envs == 0:
-            com = com[None]
-        kernel_set_links_COM_shift(com, links_idx, envs_idx, self.links_state, self._static_rigid_sim_config)
+        pass
 
     def set_links_inertial_mass(self, mass, links_idx=None, envs_idx=None):
-        mass, links_idx, envs_idx = self._sanitize_io_variables(
-            mass,
-            links_idx,
-            self.n_links,
-            "links_idx",
-            envs_idx,
-            batched=self._options.batch_links_info,
-            skip_allocation=True,
-        )
-        if self.n_envs == 0 and self._options.batch_links_info:
-            mass = mass[None]
-        kernel_set_links_inertial_mass(mass, links_idx, envs_idx, self.links_info, self._static_rigid_sim_config)
+        pass
 
     def set_links_inertia(self, ratio, links_idx=None, envs_idx=None):
-        if gs.use_zerocopy:
-            mass_data = qd_to_torch(self.links_info.inertial_mass, transpose=True, copy=False)
-            inertial_i_data = qd_to_torch(self.links_info.inertial_i, transpose=True, copy=False)
-            invweight_data = qd_to_torch(self.links_info.invweight, transpose=True, copy=False)
-            links_mask = indices_to_mask(links_idx)
-            if self._options.batch_links_info:
-                mask = (0, *links_mask) if self.n_envs == 0 else indices_to_mask(envs_idx, *links_mask)
-            else:
-                mask = links_mask
-            ratio_t = broadcast_tensor(ratio, gs.tc_float, mass_data[mask].shape)
-            assign_indexed_tensor(mass_data, mask, mass_data[mask] * ratio_t)
-            assign_indexed_tensor(inertial_i_data, mask, inertial_i_data[mask] * ratio_t[..., None, None])
-            assign_indexed_tensor(invweight_data, mask, invweight_data[mask] / ratio_t[..., None])
-            if gs.backend == gs.metal:
-                torch.mps.synchronize()
-            return
-
-        ratio, links_idx, envs_idx = self._sanitize_io_variables(
-            ratio,
-            links_idx,
-            self.n_links,
-            "links_idx",
-            envs_idx,
-            batched=self._options.batch_links_info,
-            skip_allocation=True,
-        )
-        if self.n_envs == 0 and self._options.batch_links_info:
-            ratio = ratio[None]
-        kernel_adjust_link_inertia(ratio, links_idx, envs_idx, self.links_info, self._static_rigid_sim_config)
+        pass
 
     def set_geoms_friction_ratio(self, friction_ratio, geoms_idx=None, envs_idx=None):
-        friction_ratio, geoms_idx, envs_idx = self._sanitize_io_variables(
-            friction_ratio, geoms_idx, self.n_geoms, "geoms_idx", envs_idx, skip_allocation=True
-        )
-        if self.n_envs == 0:
-            friction_ratio = friction_ratio[None]
-        kernel_set_geoms_friction_ratio(
-            friction_ratio, geoms_idx, envs_idx, self.geoms_state, self._static_rigid_sim_config
-        )
+        pass
 
     def set_qpos(self, qpos, qs_idx=None, envs_idx=None, *, skip_forward=False):
         if self.collider is not None:
@@ -2003,11 +1704,7 @@ class RigidSolver(KinematicSolver):
             array of length 7 in which each element corresponds to
             (timeconst, dampratio, dmin, dmax, width, mid, power)
         """
-        sol_params_ = broadcast_tensor(sol_params, gs.tc_float, (7,), ("",))
-        sol_params_ = _sanitize_sol_params(sol_params_.clone(), self._sol_min_timeconst)
-        kernel_set_global_sol_params(
-            sol_params_, self.geoms_info, self.joints_info, self.equalities_info, self._static_rigid_sim_config
-        )
+        pass
 
     def set_sol_params(self, sol_params, geoms_idx=None, envs_idx=None, *, joints_idx=None, eqs_idx=None):
         """
@@ -2024,48 +1721,7 @@ class RigidSolver(KinematicSolver):
             array of length 7 in which each element corresponds to
             (timeconst, dampratio, dmin, dmax, width, mid, power)
         """
-        # Make sure that a single constraint type has been selected at once
-        if sum(inputs_idx is not None for inputs_idx in (geoms_idx, joints_idx, eqs_idx)) > 1:
-            gs.raise_exception("Cannot set more than one constraint type at once.")
-
-        # Select the right input type
-        if eqs_idx is not None:
-            constraint_type = 2
-            idx_name = "eqs_idx"
-            inputs_idx = eqs_idx
-            inputs_length = self.n_equalities
-            batched = True
-        elif joints_idx is not None:
-            constraint_type = 1
-            idx_name = "joints_idx"
-            inputs_idx = joints_idx
-            inputs_length = self.n_joints
-            batched = self._options.batch_joints_info
-        else:
-            constraint_type = 0
-            idx_name = "geoms_idx"
-            inputs_idx = geoms_idx
-            inputs_length = self.n_geoms
-            batched = False
-
-        # Sanitize input arguments
-        sol_params_, inputs_idx, envs_idx = self._sanitize_io_variables(
-            sol_params, inputs_idx, inputs_length, idx_name, envs_idx, (7,), batched=batched, skip_allocation=True
-        )
-        sol_params_ = _sanitize_sol_params(sol_params_.clone(), self._sol_min_timeconst)
-        if self.n_envs == 0 and batched:
-            sol_params_ = sol_params_[None]
-
-        kernel_set_sol_params(
-            constraint_type,
-            sol_params_,
-            inputs_idx,
-            envs_idx,
-            geoms_info=self.geoms_info,
-            joints_info=self.joints_info,
-            equalities_info=self.equalities_info,
-            static_rigid_sim_config=self._static_rigid_sim_config,
-        )
+        pass
 
     def _set_dofs_info(self, tensor_list, dofs_idx, name, envs_idx=None):
         if gs.use_zerocopy and name in {
@@ -2148,34 +1804,34 @@ class RigidSolver(KinematicSolver):
             gs.raise_exception(f"Invalid `name` {name}.")
 
     def set_dofs_kp(self, kp, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([kp], dofs_idx, "kp", envs_idx)
+        pass
 
     def set_dofs_kv(self, kv, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([kv], dofs_idx, "kv", envs_idx)
+        pass
 
     def set_dofs_act_gain(self, act_gain, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([act_gain], dofs_idx, "act_gain", envs_idx)
+        pass
 
     def set_dofs_act_bias(self, bias0, bias1, bias2, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([bias0, bias1, bias2], dofs_idx, "act_bias", envs_idx)
+        pass
 
     def set_dofs_force_range(self, lower, upper, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([lower, upper], dofs_idx, "force_range", envs_idx)
+        pass
 
     def set_dofs_stiffness(self, stiffness, dofs_idx=None, envs_idx=None):
         self._set_dofs_info([stiffness], dofs_idx, "stiffness", envs_idx)
 
     def set_dofs_armature(self, armature, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([armature], dofs_idx, "armature", envs_idx)
+        pass
 
     def set_dofs_damping(self, damping, dofs_idx=None, envs_idx=None):
         self._set_dofs_info([damping], dofs_idx, "damping", envs_idx)
 
     def set_dofs_frictionloss(self, frictionloss, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([frictionloss], dofs_idx, "frictionloss", envs_idx)
+        pass
 
     def set_dofs_limit(self, lower, upper, dofs_idx=None, envs_idx=None):
-        self._set_dofs_info([lower, upper], dofs_idx, "limit", envs_idx)
+        pass
 
     def set_dofs_position(self, position, dofs_idx=None, envs_idx=None):
         self.collider.reset(envs_idx)
@@ -2243,25 +1899,7 @@ class RigidSolver(KinematicSolver):
         kernel_control_dofs_force(force, dofs_idx, envs_idx, self.dofs_state, self._static_rigid_sim_config)
 
     def control_dofs_velocity(self, velocity, dofs_idx=None, envs_idx=None):
-        if gs.use_zerocopy:
-            mask = (0, *indices_to_mask(dofs_idx)) if self.n_envs == 0 else indices_to_mask(envs_idx, dofs_idx)
-            ctrl_mode = qd_to_torch(self.dofs_state.ctrl_mode, transpose=True, copy=False)
-            ctrl_mode[mask] = gs.CTRL_MODE.VELOCITY
-            ctrl_pos = qd_to_torch(self.dofs_state.ctrl_pos, transpose=True, copy=False)
-            ctrl_pos[mask] = 0.0
-            ctrl_vel = qd_to_torch(self.dofs_state.ctrl_vel, transpose=True, copy=False)
-            assign_indexed_tensor(ctrl_vel, mask, velocity)
-            if gs.backend == gs.metal:
-                torch.mps.synchronize()
-            return
-
-        velocity, dofs_idx, envs_idx = self._sanitize_io_variables(
-            velocity, dofs_idx, self.n_dofs, "dofs_idx", envs_idx, skip_allocation=True
-        )
-        if self.n_envs == 0:
-            velocity = velocity[None]
-
-        kernel_control_dofs_velocity(velocity, dofs_idx, envs_idx, self.dofs_state, self._static_rigid_sim_config)
+        pass
 
     def control_dofs_position(self, position, dofs_idx=None, envs_idx=None):
         if gs.use_zerocopy:
@@ -2285,54 +1923,13 @@ class RigidSolver(KinematicSolver):
         kernel_control_dofs_position(position, dofs_idx, envs_idx, self.dofs_state, self._static_rigid_sim_config)
 
     def control_dofs_position_velocity(self, position, velocity, dofs_idx=None, envs_idx=None):
-        if gs.use_zerocopy:
-            mask = (0, *indices_to_mask(dofs_idx)) if self.n_envs == 0 else indices_to_mask(envs_idx, dofs_idx)
-            ctrl_mode = qd_to_torch(self.dofs_state.ctrl_mode, transpose=True, copy=False)
-            ctrl_mode[mask] = gs.CTRL_MODE.POSITION
-            ctrl_pos = qd_to_torch(self.dofs_state.ctrl_pos, transpose=True, copy=False)
-            assign_indexed_tensor(ctrl_pos, mask, position)
-            ctrl_vel = qd_to_torch(self.dofs_state.ctrl_vel, transpose=True, copy=False)
-            assign_indexed_tensor(ctrl_vel, mask, velocity)
-            if gs.backend == gs.metal:
-                torch.mps.synchronize()
-            return
-
-        position, dofs_idx, _ = self._sanitize_io_variables(
-            position, dofs_idx, self.n_dofs, "dofs_idx", envs_idx, skip_allocation=True
-        )
-        velocity, dofs_idx, envs_idx = self._sanitize_io_variables(
-            velocity, dofs_idx, self.n_dofs, "dofs_idx", envs_idx, skip_allocation=True
-        )
-        if self.n_envs == 0:
-            position = position[None]
-            velocity = velocity[None]
-
-        kernel_control_dofs_position_velocity(
-            position, velocity, dofs_idx, envs_idx, self.dofs_state, self._static_rigid_sim_config
-        )
+        pass
 
     def get_sol_params(self, geoms_idx=None, envs_idx=None, *, joints_idx=None, eqs_idx=None):
         """
         Get constraint solver parameters.
         """
-        if eqs_idx is not None:
-            # Always batched
-            tensor = qd_to_torch(self.equalities_info.sol_params, envs_idx, eqs_idx, transpose=True, copy=True)
-            if self.n_envs == 0:
-                tensor = tensor[0]
-        elif joints_idx is not None:
-            # Conditionally batched
-            assert envs_idx is None
-            # batch_shape = (envs_idx, joints_idx) if self._options.batch_joints_info else (joints_idx,)
-            # tensor = qd_to_torch(self.joints_info.sol_params, *batch_shape, transpose=True)
-            tensor = qd_to_torch(self.joints_info.sol_params, envs_idx, joints_idx, transpose=True, copy=True)
-            if self.n_envs == 0 and self._options.batch_joints_info:
-                tensor = tensor[0]
-        else:  # geoms_idx is not None
-            # Never batched
-            assert envs_idx is None
-            tensor = qd_to_torch(self.geoms_info.sol_params, geoms_idx, transpose=True, copy=True)
-        return tensor
+        pass
 
     @staticmethod
     def _convert_ref_to_idx(ref: Literal["link_origin", "link_com", "root_com"]):
@@ -2413,162 +2010,70 @@ class RigidSolver(KinematicSolver):
         This corresponds to the global COM of each entity, assuming a single-rooted structure - that is, as long as no
         two successive links are connected by a free-floating joint (ie a joint that allows all 6 degrees of freedom).
         """
-        tensor = qd_to_torch(self.links_state.root_COM, envs_idx, links_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_links_mass_shift(self, links_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.links_state.mass_shift, envs_idx, links_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_links_COM_shift(self, links_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.links_state.i_pos_shift, envs_idx, links_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_links_inertial_mass(self, links_idx=None, envs_idx=None):
-        if self._options.batch_links_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched links info.")
-        tensor = qd_to_torch(self.links_info.inertial_mass, envs_idx, links_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_links_info else tensor
+        pass
 
     def get_links_invweight(self, links_idx=None, envs_idx=None):
-        if self._options.batch_links_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched links info.")
-        tensor = qd_to_torch(self.links_info.invweight, envs_idx, links_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_links_info else tensor
+        pass
 
     def get_geoms_friction_ratio(self, geoms_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.geoms_state.friction_ratio, envs_idx, geoms_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_geoms_pos(self, geoms_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.geoms_state.pos, envs_idx, geoms_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_geoms_quat(self, geoms_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.geoms_state.quat, envs_idx, geoms_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_dofs_control_force(self, dofs_idx=None, envs_idx=None):
-        _tensor, dofs_idx, envs_idx = self._sanitize_io_variables(None, dofs_idx, self.n_dofs, "dofs_idx", envs_idx)
-        tensor = _tensor[None] if self.n_envs == 0 else _tensor
-        kernel_get_dofs_control_force(
-            tensor, dofs_idx, envs_idx, self.dofs_state, self.dofs_info, self._static_rigid_sim_config
-        )
-        return _tensor
+        pass
 
     def get_dofs_force(self, dofs_idx=None, envs_idx=None):
-        tensor = qd_to_torch(self.dofs_state.force, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 else tensor
+        pass
 
     def get_dofs_kp(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        gain = qd_to_torch(self.dofs_info.act_gain, envs_idx, dofs_idx, transpose=True, copy=True)
-        bias = qd_to_torch(self.dofs_info.act_bias, envs_idx, dofs_idx, transpose=True, copy=True)
-        if self.n_envs == 0 and self._options.batch_dofs_info:
-            gain, bias = gain[0], bias[0]
-        if not (torch.abs(gain + bias[..., 1]) < gs.EPS * torch.clamp(torch.abs(gain), min=1.0)).all():
-            gs.raise_exception(
-                "Some DOFs use a non-PD-reducible actuator (act_gain != -act_bias[1]). "
-                "Use get_dofs_act_gain() and get_dofs_act_bias() instead."
-            )
-        if not (torch.abs(bias[..., 0]) < gs.EPS).all():
-            gs.raise_exception(
-                "Some DOFs use a non-PD-reducible actuator (act_bias[0] != 0). "
-                "Use get_dofs_act_gain() and get_dofs_act_bias() instead."
-            )
-        return gain
+        pass
 
     def get_dofs_kv(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        gain = qd_to_torch(self.dofs_info.act_gain, envs_idx, dofs_idx, transpose=True, copy=True)
-        bias = qd_to_torch(self.dofs_info.act_bias, envs_idx, dofs_idx, transpose=True, copy=True)
-        if self.n_envs == 0 and self._options.batch_dofs_info:
-            gain, bias = gain[0], bias[0]
-        if not (torch.abs(gain + bias[..., 1]) < gs.EPS * torch.clamp(torch.abs(gain), min=1.0)).all():
-            gs.raise_exception(
-                "Some DOFs use a non-PD-reducible actuator (act_gain != -act_bias[1]). "
-                "Use get_dofs_act_gain() and get_dofs_act_bias() instead."
-            )
-        if not (torch.abs(bias[..., 0]) < gs.EPS).all():
-            gs.raise_exception(
-                "Some DOFs use a non-PD-reducible actuator (act_bias[0] != 0). "
-                "Use get_dofs_act_gain() and get_dofs_act_bias() instead."
-            )
-        return -bias[..., 2]
+        pass
 
     def get_dofs_act_gain(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.act_gain, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_dofs_act_bias(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.act_bias, envs_idx, dofs_idx, transpose=True, copy=True)
-        if self.n_envs == 0 and self._options.batch_dofs_info:
-            tensor = tensor[0]
-        return tensor[..., 0], tensor[..., 1], tensor[..., 2]
+        pass
 
     def get_dofs_force_range(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.force_range, envs_idx, dofs_idx, transpose=True, copy=True)
-        if self.n_envs == 0 and self._options.batch_dofs_info:
-            tensor = tensor[0]
-        return tensor[..., 0], tensor[..., 1]
+        pass
 
     def get_dofs_stiffness(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.stiffness, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_dofs_invweight(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.invweight, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_dofs_armature(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.armature, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_dofs_damping(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.damping, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_dofs_frictionloss(self, dofs_idx=None, envs_idx=None):
-        if not self._options.batch_dofs_info and envs_idx is not None:
-            gs.raise_exception("`envs_idx` cannot be specified for non-batched dofs info.")
-        tensor = qd_to_torch(self.dofs_info.frictionloss, envs_idx, dofs_idx, transpose=True, copy=True)
-        return tensor[0] if self.n_envs == 0 and self._options.batch_dofs_info else tensor
+        pass
 
     def get_mass_mat(self, dofs_idx=None, envs_idx=None, decompose=False):
-        tensor = qd_to_torch(self.mass_mat_L if decompose else self.mass_mat, envs_idx, transpose=True, copy=True)
-        if dofs_idx is not None:
-            tensor = tensor[indices_to_mask(None, dofs_idx, dofs_idx)]
-        if self.n_envs == 0:
-            tensor = tensor[0]
-
-        if decompose:
-            mass_mat_D_inv = qd_to_torch(
-                self._rigid_global_info.mass_mat_D_inv, envs_idx, dofs_idx, transpose=True, copy=True
-            )
-            if self.n_envs == 0:
-                mass_mat_D_inv = mass_mat_D_inv[0]
-            return tensor, mass_mat_D_inv
-
-        return tensor
+        pass
 
     def get_geoms_friction(self, geoms_idx=None):
-        return qd_to_torch(self.geoms_info.friction, geoms_idx, copy=True)
+        pass
 
     def get_AABB(self, entities_idx=None, envs_idx=None):
         from genesis.engine.couplers import LegacyCoupler
@@ -2605,25 +2110,22 @@ class RigidSolver(KinematicSolver):
         return aabb[0] if self.n_envs == 0 else aabb
 
     def set_geom_friction(self, friction, geoms_idx):
-        kernel_set_geom_friction(geoms_idx, friction, self.geoms_info)
+        pass
 
     def set_geoms_friction(self, friction, geoms_idx=None):
-        friction, geoms_idx, _ = self._sanitize_io_variables(
-            friction, geoms_idx, self.n_geoms, "geoms_idx", envs_idx=None, batched=False, skip_allocation=True
-        )
-        kernel_set_geoms_friction(friction, geoms_idx, self.geoms_info, self._static_rigid_sim_config)
+        pass
 
     def add_weld_constraint(self, link1_idx, link2_idx, envs_idx=None):
-        return self.constraint_solver.add_weld_constraint(link1_idx, link2_idx, envs_idx)
+        pass
 
     def delete_weld_constraint(self, link1_idx, link2_idx, envs_idx=None):
-        return self.constraint_solver.delete_weld_constraint(link1_idx, link2_idx, envs_idx)
+        pass
 
     def get_weld_constraints(self, as_tensor: bool = True, to_torch: bool = True):
-        return self.constraint_solver.get_weld_constraints(as_tensor, to_torch)
+        pass
 
     def get_equality_constraints(self, as_tensor: bool = True, to_torch: bool = True):
-        return self.constraint_solver.get_equality_constraints(as_tensor, to_torch)
+        pass
 
     def clear_external_force(self):
         if gs.use_zerocopy:
@@ -2638,9 +2140,7 @@ class RigidSolver(KinematicSolver):
 
     @gs.assert_built
     def set_gravity(self, gravity, envs_idx=None):
-        super().set_gravity(gravity, envs_idx)
-        if hasattr(self, "_rigid_global_info"):
-            self._rigid_global_info.gravity.copy_from(self._gravity)
+        pass
 
     def update_drone_propeller_vgeoms(self, propellers_vgeom_idxs, propellers_revs, propellers_spin):
         kernel_update_drone_propeller_vgeoms(
@@ -2653,16 +2153,7 @@ class RigidSolver(KinematicSolver):
         )
 
     def set_drone_rpm(self, propellers_link_idx, propellers_rpm, propellers_spin, KF, KM, invert):
-        kernel_set_drone_rpm(
-            propellers_link_idx,
-            propellers_rpm,
-            propellers_spin,
-            KF,
-            KM,
-            invert,
-            self.links_state,
-            self._static_rigid_sim_config,
-        )
+        pass
 
     def update_verts_for_geoms(self, geoms_idx):
         _, geoms_idx, _ = self._sanitize_io_variables(
@@ -2684,61 +2175,43 @@ class RigidSolver(KinematicSolver):
 
     @property
     def n_geoms(self):
-        if self.is_built:
-            return self._n_geoms
-        return len(self.geoms)
+        pass
 
     @property
     def n_cells(self):
-        if self.is_built:
-            return self._n_cells
-        return sum(entity.n_cells for entity in self._entities)
+        pass
 
     @property
     def n_verts(self):
-        if self.is_built:
-            return self._n_verts
-        return sum(entity.n_verts for entity in self._entities)
+        pass
 
     @property
     def n_free_verts(self):
-        if self.is_built:
-            return self._n_free_verts
-        return sum(link.n_verts if not link.is_fixed or link.entity._batch_fixed_verts else 0 for link in self.links)
+        pass
 
     @property
     def n_fixed_verts(self):
-        if self.is_built:
-            return self._n_fixed_verts
-        return sum(link.n_verts if link.is_fixed and not link.entity._batch_fixed_verts else 0 for link in self.links)
+        pass
 
     @property
     def n_faces(self):
-        if self.is_built:
-            return self._n_faces
-        return sum(entity.n_faces for entity in self._entities)
+        pass
 
     @property
     def n_edges(self):
-        if self.is_built:
-            return self._n_edges
-        return sum(entity.n_edges for entity in self._entities)
+        pass
 
     @property
     def max_collision_pairs(self):
-        return self._max_collision_pairs
+        pass
 
     @property
     def n_equalities(self):
-        if self.is_built:
-            return self._n_equalities
-        return sum(entity.n_equalities for entity in self._entities)
+        pass
 
     @property
     def equalities(self):
-        if self.is_built:
-            return self._equalities
-        return gs.List(equality for entity in self._entities for equality in entity.equalities)
+        pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)

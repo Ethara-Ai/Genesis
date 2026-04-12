@@ -295,4 +295,4 @@ class ProximitySensor(
 
     @property
     def nearest_points(self) -> torch.Tensor:
-        return self._shared_metadata.nearest_positions[:, self._nearest_points_slice, :]
+        pass

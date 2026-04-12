@@ -41,15 +41,15 @@ class RaycastPattern:
 
     @property
     def return_shape(self) -> tuple[int, ...]:
-        return self._return_shape
+        pass
 
     @property
     def ray_dirs(self) -> torch.Tensor:
-        return self._ray_dirs
+        pass
 
     @property
     def ray_starts(self) -> torch.Tensor:
-        return self._ray_starts
+        pass
 
 
 # ============================== Generic Patterns ==============================

@@ -58,31 +58,7 @@ class DroneEntity(RigidEntity):
             If the method is called more than once per simulation step, or if the input shape
             does not match the number of propellers, or contains negative values.
         """
-        if self._prev_prop_t == self.sim.cur_step_global:
-            gs.raise_exception("`set_propellers_rpm` can only be called once per step.")
-        self._prev_prop_t = self.sim.cur_step_global
-
-        assert propellers_rpm is not None
-        propellers_rpm, *_ = self._solver._sanitize_io_variables(
-            propellers_rpm, self._propellers_link_idx, self._n_propellers, "propellers_link_idx"
-        )
-        if self._scene.n_envs == 0:
-            propellers_rpm = propellers_rpm[None]
-
-        # FIXME: This check is too expensive
-        # if (propellers_rpm < 0.0).any():
-        #     gs.raise_exception("`propellers_rpm` cannot be negative.")
-
-        self._propellers_revs = (self._propellers_revs + propellers_rpm.T) % (60 / self.solver.dt)
-
-        self.solver.set_drone_rpm(
-            self._propellers_link_idx,
-            propellers_rpm,
-            self._propellers_spin,
-            self.KF,
-            self.KM,
-            self._model == "RACE",
-        )
+        pass
 
     def update_propeller_vgeoms(self):
         """
@@ -103,29 +79,29 @@ class DroneEntity(RigidEntity):
     @property
     def KF(self):
         """The drone's thrust coefficient."""
-        return self._KF
+        pass
 
     @property
     def KM(self):
         """The drone's moment coefficient."""
-        return self._KM
+        pass
 
     @property
     def n_propellers(self):
         """The number of propellers on the drone."""
-        return self._n_propellers
+        pass
 
     @property
     def COM_link_idx(self):
         """The index of the center-of-mass (COM) link of the drone."""
-        return self._COM_link_idx
+        pass
 
     @property
     def propellers_idx(self):
         """The indices of the drone's propeller links."""
-        return self._propellers_link_idx
+        pass
 
     @property
     def propellers_spin(self):
         """The spin direction for each propeller."""
-        return self._propellers_spin
+        pass

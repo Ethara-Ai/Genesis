@@ -88,16 +88,15 @@ class RecorderManager:
 
     @property
     def is_recording(self) -> bool:
-        return self._is_recording
+        pass
 
     @property
     def is_built(self) -> bool:
-        return self._is_built
+        pass
 
 
 def register_recording(options_cls: type["RecorderOptions"]):
     def _impl(recorder_cls: type["Recorder"]):
-        RecorderManager.RECORDER_TYPES_MAP[options_cls] = recorder_cls
-        return recorder_cls
+        pass
 
     return _impl

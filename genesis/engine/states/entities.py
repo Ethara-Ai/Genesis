@@ -22,12 +22,7 @@ class ToolEntityState:
         self.ang = gs.zeros((self.entity.sim._B, 3), **args)
 
     def serializable(self):
-        self.entity = None
-
-        self.pos = self.pos.detach()
-        self.quat = self.quat.detach()
-        self.vel = self.vel.detach()
-        self.ang = self.ang.detach()
+        pass
 
     # def __repr__(self):
     #     return f'{self.__repr_name__()}\n' \
@@ -63,46 +58,39 @@ class MPMEntityState(RBC):
         self._active = gs.zeros(base_shape, **args)
 
     def serializable(self):
-        self._entity = None
-
-        self._pos = self._pos.detach()
-        self._vel = self._vel.detach()
-        self._C = self._C.detach()
-        self._F = self._F.detach()
-        self._Jp = self._Jp.detach()
-        self._active = self._active.detach()
+        pass
 
     @property
     def entity(self):
-        return self._entity
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def C(self):
-        return self._C
+        pass
 
     @property
     def F(self):
-        return self._F
+        pass
 
     @property
     def Jp(self):
-        return self._Jp
+        pass
 
     @property
     def active(self):
-        return self._active
+        pass
 
 
 class SPHEntityState(RBC):
@@ -125,19 +113,19 @@ class SPHEntityState(RBC):
 
     @property
     def entity(self):
-        return self._entity
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
 
 class FEMEntityState:
@@ -163,31 +151,27 @@ class FEMEntityState:
         self._active = gs.zeros((self.entity.sim._B, self.entity.n_elements), **args)
 
     def serializable(self):
-        self._entity = None
-
-        self._pos = self._pos.detach()
-        self._vel = self._vel.detach()
-        self._active = self._active.detach()
+        pass
 
     @property
     def entity(self):
-        return self._entity
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def vel(self):
-        return self._vel
+        pass
 
     @property
     def active(self):
-        return self._active
+        pass
 
 
 class RigidEntityState(RBC):
@@ -206,23 +190,20 @@ class RigidEntityState(RBC):
         self._quat = gs.zeros((num_batch, 4), dtype=float, requires_grad=requires_grad, scene=scene)
 
     def serializable(self):
-        self._entity = None
-
-        self._pos = self._pos.detach()
-        self._quat = self._quat.detach()
+        pass
 
     @property
     def entity(self):
-        return self._entity
+        pass
 
     @property
     def s_global(self):
-        return self._s_global
+        pass
 
     @property
     def pos(self):
-        return self._pos
+        pass
 
     @property
     def quat(self):
-        return self._quat
+        pass

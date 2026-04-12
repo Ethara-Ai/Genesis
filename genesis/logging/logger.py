@@ -36,8 +36,7 @@ class GenesisFormatter(logging.Formatter):
         self.last_color = ""
 
     def colored_fmt(self, color):
-        self.last_color = color
-        return f"{color}[Genesis] [{self.TIME}] [{self.LEVEL}] {self.MESSAGE}{formats.RESET}"
+        pass
 
     def extra_fmt(self, msg):
         msg = msg.replace("~~~~<", colors.MINT + formats.BOLD + formats.ITALIC)
@@ -53,11 +52,7 @@ class GenesisFormatter(logging.Formatter):
         return msg
 
     def format(self, record):
-        log_fmt = self.colored_fmt(self.mapping.get(record.levelno))
-        formatter = logging.Formatter(log_fmt, datefmt=self.DATE_FORMAT)
-        msg = self.extra_fmt(formatter.format(record))
-        self.last_output = msg
-        return msg
+        pass
 
 
 class Logger:
@@ -81,17 +76,17 @@ class Logger:
         self.timer_lock = threading.Lock()
 
     def addFilter(self, filter):
-        self._logger.addFilter(filter)
+        pass
 
     def removeFilter(self, filter):
-        self._logger.removeFilter(filter)
+        pass
 
     def removeHandler(self, handler):
         self._logger.removeHandler(handler)
 
     @property
     def INFO_length(self):
-        return self._formatter.INFO_length
+        pass
 
     @contextmanager
     def log_wrapper(self):
@@ -131,12 +126,10 @@ class Logger:
             self._logger.warning(message)
 
     def error(self, message):
-        with self.log_wrapper():
-            self._logger.error(message)
+        pass
 
     def critical(self, message):
-        with self.log_wrapper():
-            self._logger.critical(message)
+        pass
 
     def raw(self, message):
         self._stream.write(self._formatter.extra_fmt(message))
@@ -152,12 +145,12 @@ class Logger:
 
     @property
     def handler(self):
-        return self._handler
+        pass
 
     @property
     def last_output(self):
-        return self._formatter.last_output
+        pass
 
     @property
     def level(self):
-        return self._logger.level
+        pass

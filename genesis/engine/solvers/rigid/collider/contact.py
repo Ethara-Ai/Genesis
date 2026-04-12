@@ -58,54 +58,7 @@ def func_collider_clear_env(
     static_rigid_sim_config: qd.template(),
     collider_state: array_class.ColliderState,
 ):
-    if qd.static(static_rigid_sim_config.use_hibernation):
-        collider_state.n_contacts_hibernated[i_b] = 0
-
-        for i_c in range(collider_state.n_contacts[i_b]):
-            i_la = collider_state.contact_data.link_a[i_c, i_b]
-            i_lb = collider_state.contact_data.link_b[i_c, i_b]
-
-            I_la = [i_la, i_b] if qd.static(static_rigid_sim_config.batch_links_info) else i_la
-            I_lb = [i_lb, i_b] if qd.static(static_rigid_sim_config.batch_links_info) else i_lb
-
-            if (links_state.hibernated[i_la, i_b] and links_info.is_fixed[I_lb]) or (
-                links_state.hibernated[i_lb, i_b] and links_info.is_fixed[I_la]
-            ):
-                i_c_hibernated = collider_state.n_contacts_hibernated[i_b]
-                if i_c != i_c_hibernated:
-                    # fmt: off
-                    collider_state.contact_data.geom_a[i_c_hibernated, i_b] = collider_state.contact_data.geom_a[i_c, i_b]
-                    collider_state.contact_data.geom_b[i_c_hibernated, i_b] = collider_state.contact_data.geom_b[i_c, i_b]
-                    collider_state.contact_data.penetration[i_c_hibernated, i_b] = collider_state.contact_data.penetration[i_c, i_b]
-                    collider_state.contact_data.normal[i_c_hibernated, i_b] = collider_state.contact_data.normal[i_c, i_b]
-                    collider_state.contact_data.pos[i_c_hibernated, i_b] = collider_state.contact_data.pos[i_c, i_b]
-                    collider_state.contact_data.friction[i_c_hibernated, i_b] = collider_state.contact_data.friction[i_c, i_b]
-                    collider_state.contact_data.sol_params[i_c_hibernated, i_b] = collider_state.contact_data.sol_params[i_c, i_b]
-                    collider_state.contact_data.force[i_c_hibernated, i_b] = collider_state.contact_data.force[i_c, i_b]
-                    collider_state.contact_data.link_a[i_c_hibernated, i_b] = collider_state.contact_data.link_a[i_c, i_b]
-                    collider_state.contact_data.link_b[i_c_hibernated, i_b] = collider_state.contact_data.link_b[i_c, i_b]
-                    # fmt: on
-
-                collider_state.n_contacts_hibernated[i_b] = i_c_hibernated + 1
-
-    for i_c in range(collider_state.n_contacts[i_b]):
-        should_clear = True
-        if qd.static(static_rigid_sim_config.use_hibernation):
-            should_clear = i_c >= collider_state.n_contacts_hibernated[i_b]
-        if should_clear:
-            collider_state.contact_data.link_a[i_c, i_b] = -1
-            collider_state.contact_data.link_b[i_c, i_b] = -1
-            collider_state.contact_data.geom_a[i_c, i_b] = -1
-            collider_state.contact_data.geom_b[i_c, i_b] = -1
-            collider_state.contact_data.penetration[i_c, i_b] = 0.0
-            collider_state.contact_data.pos[i_c, i_b] = qd.Vector.zero(gs.qd_float, 3)
-            collider_state.contact_data.normal[i_c, i_b] = qd.Vector.zero(gs.qd_float, 3)
-            collider_state.contact_data.force[i_c, i_b] = qd.Vector.zero(gs.qd_float, 3)
-
-    if qd.static(static_rigid_sim_config.use_hibernation):
-        collider_state.n_contacts[i_b] = collider_state.n_contacts_hibernated[i_b]
-    else:
-        collider_state.n_contacts[i_b] = 0
+    pass
 
 
 # only used with hibernation ??
@@ -117,10 +70,7 @@ def kernel_collider_clear(
     static_rigid_sim_config: qd.template(),
     collider_state: array_class.ColliderState,
 ):
-    qd.loop_config(serialize=static_rigid_sim_config.para_level < gs.PARA_LEVEL.ALL)
-    for i_b_ in range(envs_idx.shape[0]):
-        i_b = envs_idx[i_b_]
-        func_collider_clear_env(i_b, links_state, links_info, static_rigid_sim_config, collider_state)
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -131,9 +81,7 @@ def kernel_masked_collider_clear(
     static_rigid_sim_config: qd.template(),
     collider_state: array_class.ColliderState,
 ):
-    for i_b in range(envs_mask.shape[0]):
-        if envs_mask[i_b]:
-            func_collider_clear_env(i_b, links_state, links_info, static_rigid_sim_config, collider_state)
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -549,10 +497,4 @@ def func_set_upstream_grad(
     dL_dpenetration: qd.types.ndarray(),
     collider_state: array_class.ColliderState,
 ):
-    _B = dL_dposition.shape[0]
-    _C = dL_dposition.shape[1]
-    for i_b, i_c in qd.ndrange(_B, _C):
-        for j in qd.static(range(3)):
-            collider_state.contact_data.pos.grad[i_c, i_b][j] = dL_dposition[i_b, i_c, j]
-            collider_state.contact_data.normal.grad[i_c, i_b][j] = dL_dnormal[i_b, i_c, j]
-        collider_state.contact_data.penetration.grad[i_c, i_b] = dL_dpenetration[i_b, i_c]
+    pass

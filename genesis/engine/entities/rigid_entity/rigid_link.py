@@ -332,239 +332,231 @@ class KinematicLink(RBC):
         """
         The unique ID of the link.
         """
-        return self._uid
+        pass
 
     @property
     def name(self) -> str:
         """
         The name of the link.
         """
-        return self._name
+        pass
 
     @property
     def entity(self) -> "KinematicEntity":
         """
         The entity that the link belongs to.
         """
-        return self._entity
+        pass
 
     @property
     def solver(self) -> "RigidSolver":
         """
         The solver that the link belongs to.
         """
-        return self._solver
+        pass
 
     @property
     def joints(self) -> list["RigidJoint"]:
         """
         The sequence of joints that connects the link to its parent link.
         """
-        return self.entity.joints_by_links[self.idx_local]
+        pass
 
     @property
     def n_joints(self):
         """
         Number of the joints that connects the link to its parent link.
         """
-        return self._n_joints
+        pass
 
     @property
     def joint_start(self):
         """
         The start index of the link's joints in the RigidSolver.
         """
-        return self._joint_start
+        pass
 
     @property
     def joint_end(self):
         """
         The end index of the link's joints in the RigidSolver.
         """
-        return self._joint_start + self.n_joints
+        pass
 
     @property
     def n_dofs(self):
         """The number of degrees of freedom (DOFs) of the entity."""
-        return sum(joint.n_dofs for joint in self.joints)
+        pass
 
     @property
     def dof_start(self):
         """The index of the link's first degree of freedom (DOF) in the scene."""
-        if not self.joints:
-            return -1
-        return self.joints[0].dof_start
+        pass
 
     @property
     def dof_end(self):
         """The index of the link's last degree of freedom (DOF) in the scene *plus one*."""
-        if not self.joints:
-            return -1
-        return self.joints[-1].dof_end
+        pass
 
     @property
     def n_qs(self):
         """Returns the number of `q` variables of the link."""
-        return sum(joint.n_qs for joint in self.joints)
+        pass
 
     @property
     def q_start(self):
         """Returns the starting index of the `q` variables of the link in the rigid solver."""
-        if not self.joints:
-            return -1
-        return self.joints[0].q_start
+        pass
 
     @property
     def q_end(self):
         """Returns the last index of the `q` variables of the link in the rigid solver *plus one*."""
-        if not self.joints:
-            return -1
-        return self.joints[-1].q_end
+        pass
 
     @property
     def idx(self):
         """
         The global index of the link in the RigidSolver.
         """
-        return self._idx
+        pass
 
     @property
     def parent_idx(self):
         """
         The global index of the link's parent link in the RigidSolver. If the link is the root link, return -1.
         """
-        return self._parent_idx
+        pass
 
     @property
     def root_idx(self):
         """
         The global index of the link's root link in the RigidSolver.
         """
-        return self._root_idx
+        pass
 
     @property
     def idx_local(self):
         """
         The local index of the link in the entity.
         """
-        return self._idx - self._entity.link_start
+        pass
 
     @property
     def is_fixed(self):
         """
         Whether the link is fixed wrt the world.
         """
-        return self._is_fixed
+        pass
 
     @property
     def invweight(self):
         """Inverse weight of the link. Always zero for KinematicLink (infinite mass)."""
-        return np.zeros(2, dtype=gs.np_float)
+        pass
 
     @property
     def pos(self) -> "np.typing.ArrayLike":
         """
         The initial position of the link. For real-time position, use `link.get_pos()`.
         """
-        return self._pos
+        pass
 
     @property
     def quat(self) -> "np.typing.ArrayLike":
         """
         The initial quaternion of the link. For real-time quaternion, use `link.get_quat()`.
         """
-        return self._quat
+        pass
 
     @property
     def inertial_pos(self):
         """Initial position of the link's inertial frame. Zero for KinematicLink."""
-        return np.zeros(3, dtype=gs.np_float)
+        pass
 
     @property
     def inertial_quat(self):
         """Initial quaternion of the link's inertial frame. Identity for KinematicLink."""
-        return np.array([1.0, 0.0, 0.0, 0.0], dtype=gs.np_float)
+        pass
 
     @property
     def inertial_mass(self):
         """Mass of the link. Always 0.0 for KinematicLink."""
-        return 0.0
+        pass
 
     @property
     def inertial_i(self):
         """Inertia matrix of the link. Zero for KinematicLink."""
-        return np.zeros((3, 3), dtype=gs.np_float)
+        pass
 
     @property
     def vgeoms(self) -> list[RigidVisGeom]:
         """
         The list of the link's visualization geometries (`RigidVisGeom`).
         """
-        return self._vgeoms
+        pass
 
     @property
     def geom_start(self) -> int:
         """Start index of collision geoms. Always 0 for KinematicLink."""
-        return 0
+        pass
 
     @property
     def geom_end(self) -> int:
         """End index of collision geoms. Always 0 for KinematicLink."""
-        return 0
+        pass
 
     @property
     def n_vgeoms(self) -> int:
         """
         Number of the link's visualization geometries (`vgeom`).
         """
-        return len(self._vgeoms)
+        pass
 
     @property
     def vgeom_start(self) -> int:
         """
         The start index of the link's vgeom in the RigidSolver.
         """
-        return self._vgeom_start
+        pass
 
     @property
     def vgeom_end(self) -> int:
         """
         The end index of the link's vgeom in the RigidSolver.
         """
-        return self._vgeom_start + self.n_vgeoms
+        pass
 
     @property
     def n_verts(self) -> int:
         """Number of collision vertices. Always 0 for KinematicLink."""
-        return 0
+        pass
 
     @property
     def n_vverts(self) -> int:
         """
         Number of vertices of all the link's vgeoms.
         """
-        return sum([vgeom.n_vverts for vgeom in self._vgeoms])
+        pass
 
     @property
     def n_vfaces(self) -> int:
         """
         Number of faces of all the link's vgeoms.
         """
-        return sum([vgeom.n_vfaces for vgeom in self._vgeoms])
+        pass
 
     @property
     def is_built(self) -> bool:
         """
         Whether the entity the link belongs to is built.
         """
-        return self.entity.is_built
+        pass
 
     # ------------------------------------------------------------------------------------
     # -------------------------------------- repr ----------------------------------------
     # ------------------------------------------------------------------------------------
 
     def _repr_brief(self):
-        return f"{(self.__repr_name__())}: {self._uid}, name: '{self._name}', idx: {self._idx}"
+        pass
 
 
 class RigidLink(KinematicLink):
@@ -949,24 +941,7 @@ class RigidLink(KinematicLink):
         mass : float | array_like, shape (n_envs,)
             The mass to set.
         """
-        if self.is_fixed:
-            gs.logger.warning("Updating the mass of a link that is fixed wrt world has no effect, skipping.")
-            return
-
-        mass = tensor_to_array(mass)
-        if np.any(mass < gs.EPS):
-            gs.raise_exception(f"Attempt to set mass of link '{self.name}' to {mass}. Mass must be strictly positive.")
-        if mass.ndim > 0 and not self._solver._options.batch_links_info:
-            gs.raise_exception(
-                f"Impossible to set per-env mass of link '{self.name}'. Please specify "
-                "'RigidOptions.batch_links_info=True'."
-            )
-
-        ratio = mass / self._inertial_mass
-        self._solver.set_links_inertia(ratio, [self.idx])
-        self._inertial_mass = mass
-        self._inertial_i = self._inertial_i * ratio[..., None, None]
-        self._invweight = self._invweight / ratio[..., None]
+        pass
 
     @gs.assert_built
     def get_mass(self):
@@ -979,8 +954,7 @@ class RigidLink(KinematicLink):
         """
         Set the friction of all the link's geoms.
         """
-        for geom in self._geoms:
-            geom.set_friction(friction)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -991,100 +965,98 @@ class RigidLink(KinematicLink):
         """
         Whether to visualize the contact of the link.
         """
-        return self._visualize_contact
+        pass
 
     @property
     def invweight(self):
         """
         The invweight of the link.
         """
-        if self._invweight is None:
-            self._invweight = tensor_to_array(self._solver.get_links_invweight(self._idx))[..., 0, :]
-        return self._invweight
+        pass
 
     @property
     def inertial_pos(self) -> "np.typing.ArrayLike | None":
         """
         The initial position of the link's inertial frame.
         """
-        return self._inertial_pos
+        pass
 
     @property
     def inertial_quat(self) -> "np.typing.ArrayLike | None":
         """
         The initial quaternion of the link's inertial frame.
         """
-        return self._inertial_quat
+        pass
 
     @property
     def inertial_mass(self) -> float | None:
         """
         The initial mass of the link.
         """
-        return self._inertial_mass
+        pass
 
     @property
     def inertial_i(self) -> "np.typing.ArrayLike | None":
         """
         The inerial matrix of the link.
         """
-        return self._inertial_i
+        pass
 
     @property
     def geoms(self) -> list[RigidGeom]:
         """
         The list of the link's collision geometries (`RigidGeom`).
         """
-        return self._geoms
+        pass
 
     @property
     def n_geoms(self) -> int:
         """
         Number of the link's collision geometries.
         """
-        return len(self._geoms)
+        pass
 
     @property
     def geom_start(self) -> int:
         """
         The start index of the link's collision geometries in the RigidSolver.
         """
-        return self._geom_start
+        pass
 
     @property
     def geom_end(self) -> int:
         """
         The end index of the link's collision geometries in the RigidSolver.
         """
-        return self._geom_start + self.n_geoms
+        pass
 
     @property
     def n_cells(self):
         """
         Number of sdf cells of all the link's geoms.
         """
-        return sum([geom.n_cells for geom in self._geoms])
+        pass
 
     @property
     def n_verts(self) -> int:
         """
         Number of vertices of all the link's geoms.
         """
-        return sum([geom.n_verts for geom in self._geoms])
+        pass
 
     @property
     def n_faces(self) -> int:
         """
         Number of faces of all the link's geoms.
         """
-        return sum([geom.n_faces for geom in self._geoms])
+        pass
 
     @property
     def n_edges(self) -> int:
         """
         Number of edges of all the link's geoms.
         """
-        return sum([geom.n_edges for geom in self._geoms])
+        pass
 
     @property
     def is_free(self):

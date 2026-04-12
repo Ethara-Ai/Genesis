@@ -106,22 +106,10 @@ class Morph(Options):
     @model_validator(mode="before")
     @classmethod
     def _resolve_orientation(cls, data: dict) -> dict:
-        is_free = data.pop("is_free", None)
-        if is_free is not None:
-            gs.logger.warning("'is_free' is deprecated and will be removed in the future.")
-        euler = data.get("euler")
-        quat = data.get("quat")
-        if euler is not None and quat is not None:
-            gs.raise_exception("'euler' and 'quat' cannot both be set.")
-        if euler is not None:
-            data["quat"] = tuple(gu.xyz_to_quat(np.array(euler), rpy=True, degrees=True))
-        elif quat is None:
-            data["quat"] = (1.0, 0.0, 0.0, 0.0)
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if not self.visualization and not self.collision:
-            gs.raise_exception("`visualization` and `collision` cannot both be False.")
+        pass
 
 
 ############################ Nowhere ############################
@@ -259,26 +247,7 @@ class Box(Primitive, TetGenMixin):
     @model_validator(mode="before")
     @classmethod
     def _resolve_geometry(cls, data: dict) -> dict:
-        lower, upper, size = data.get("lower"), data.get("upper"), data.get("size")
-
-        if lower is not None and upper is not None:
-            lower, upper = np.array(lower), np.array(upper)
-            if not (upper >= lower).all():
-                gs.raise_exception("Invalid lower and upper corner.")
-            data["pos"] = tuple(((lower + upper) / 2).tolist())
-            data["size"] = tuple((upper - lower).tolist())
-
-        elif lower is None and upper is None:
-            if size is None:
-                gs.raise_exception("Either [`pos` and `size`] or [`lower` and `upper`] should be specified.")
-            pos, size = np.array(data.get("pos", (0.0, 0.0, 0.0))), np.array(size)
-            data["lower"] = tuple((pos - 0.5 * size).tolist())
-            data["upper"] = tuple((pos + 0.5 * size).tolist())
-
-        else:
-            gs.raise_exception("`lower` and `upper` must be jointly specified.")
-
-        return data
+        pass
 
 
 class Cylinder(Primitive, TetGenMixin):
@@ -567,24 +536,7 @@ class FileMorph(Morph):
     @classmethod
     def _resolve_file_and_defaults(cls, data: dict) -> dict:
         # Clamp thresholds to avoid decomposition of convex and primitive shapes
-        obj_thresh = data.get("decompose_object_error_threshold", 0.15)
-        robot_thresh = data.get("decompose_robot_error_threshold", float("inf"))
-        data["decompose_object_error_threshold"] = max(obj_thresh, gs.EPS)
-        data["decompose_robot_error_threshold"] = max(robot_thresh, gs.EPS)
-
-        if data.get("coacd_options") is None:
-            data["coacd_options"] = CoacdOptions()
-
-        file = data.get("file", "")
-        if isinstance(file, str) and file:
-            abs_file = os.path.abspath(file)
-            if not os.path.exists(abs_file):
-                abs_file = os.path.join(gs.utils.get_assets_dir(), file)
-            if not os.path.exists(abs_file):
-                gs.raise_exception(f"File not found in either current directory or assets directory: '{file}'.")
-            data["file"] = abs_file
-
-        return data
+        pass
 
     def __init__(
         self,
@@ -754,33 +706,7 @@ class Mesh(FileMorph, TetGenMixin):
 
     @model_validator(mode="after")
     def _resolve_zup(self) -> Self:
-        file = self.file
-        is_gltf = isinstance(file, str) and str(file).lower().endswith(GLTF_FORMATS)
-
-        if is_gltf:
-            if self.file_meshes_are_zup:
-                gs.logger.warning(
-                    "Specifying 'file_meshes_are_zup' for GLTF/GLB files is not supported. A rotation will be applied "
-                    "explicitly on the morph instead. Please consider fixing your asset to use Y-UP convention."
-                )
-                y_up_quat = (1.0, -1.0, 0.0, 0.0)
-                if self.quat is None:
-                    self.quat = y_up_quat
-                else:
-                    self.quat = tuple(
-                        gu.transform_quat_by_quat(
-                            np.array(y_up_quat, dtype=gs.np_float), np.array(self.quat, dtype=gs.np_float)
-                        )
-                    )
-                if self.scale is not None:
-                    scale_arr = np.atleast_1d(np.array(self.scale))
-                    if scale_arr.size == 3:
-                        self.scale = (scale_arr[0], scale_arr[2], scale_arr[1])
-            self.file_meshes_are_zup = False
-        elif self.file_meshes_are_zup is None:
-            self.file_meshes_are_zup = True
-
-        return self
+        pass
 
 
 class MeshSet(Mesh):
@@ -902,15 +828,10 @@ class MJCF(FileMorph):
     def _enforce_isotropic_scale(cls, data: dict) -> dict:
         # Anisotropic scaling is ill-defined for poly-articulated robots because link positions depend on configuration,
         # making the effect of per-axis scaling configuration-dependent. Limiting to scalar factor avoids this.
-        scale = np.atleast_1d(np.array(data.get("scale", 1.0)))
-        if scale.std() > gs.EPS:
-            gs.raise_exception("Anisotropic scaling is not supported by MJCF morph.")
-        data["scale"] = float(scale.mean())
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if not self.is_format(MJCF_FORMAT):
-            gs.raise_exception(f"Expected `{MJCF_FORMAT}` extension for MJCF file: {self.file}")
+        pass
 
 
 class URDF(FileMorph):
@@ -1030,17 +951,10 @@ class URDF(FileMorph):
     @classmethod
     def _enforce_isotropic_scale(cls, data: dict) -> dict:
         # Anisotropic scaling is ill-defined for poly-articulated robots. See MJCF for details.
-        scale = np.atleast_1d(np.array(data.get("scale", 1.0)))
-        if scale.std() > gs.EPS:
-            gs.raise_exception("Anisotropic scaling is not supported by URDF morph.")
-        data["scale"] = float(scale.mean())
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.is_format(XACRO_FORMAT):
-            self.file = uu.load_xacro(self.file, self.xacro_args)
-        elif not self.is_format(URDF_FORMAT):
-            gs.raise_exception(f"Expected `{URDF_FORMAT}` or `{XACRO_FORMAT}` extension for URDF file: {self.file}")
+        pass
 
     def is_format(self, format):
         if isinstance(self.file, urdfpy.URDF):
@@ -1309,81 +1223,15 @@ class Terrain(Morph):
         super().__init__(**data)
 
     def model_post_init(self, context: Any) -> None:
-        if self.height_field is not None:
-            try:
-                if np.array(self.height_field).ndim != 2:
-                    gs.raise_exception("`height_field` should be a 2D array.")
-            except Exception:
-                gs.raise_exception("`height_field` should be array-like to be converted to np.ndarray.")
-            return
-
-        if not isinstance(self.subterrain_types, str):
-            if np.array(self.subterrain_types).shape != (self.n_subterrains[0], self.n_subterrains[1]):
-                gs.raise_exception(
-                    "`subterrain_types` should be either a string or a 2D list of strings with the same shape as `n_subterrains`."
-                )
-
-        for row in self.subterrain_types:
-            for subterrain_type in row:
-                if subterrain_type not in self._SUPPORTED_SUBTERRAIN_TYPES:
-                    gs.raise_exception(
-                        f"Unsupported subterrain type: {subterrain_type}, should be one of {list(self._SUPPORTED_SUBTERRAIN_TYPES)}"
-                    )
-
-        if not mu.is_approx_multiple(self.subterrain_size[0], self.horizontal_scale) or not mu.is_approx_multiple(
-            self.subterrain_size[1], self.horizontal_scale
-        ):
-            gs.raise_exception("`subterrain_size` should be divisible by `horizontal_scale`.")
+        pass
 
     @property
     def default_params(self):
-        return {
-            "flat_terrain": {},
-            "fractal_terrain": {
-                "levels": 8,
-                "scale": 5.0,
-            },
-            "random_uniform_terrain": {
-                "min_height": -0.1,
-                "max_height": 0.1,
-                "step": 0.1,
-                "downsampled_scale": 0.5,
-            },
-            "sloped_terrain": {
-                "slope": -0.5,
-            },
-            "pyramid_sloped_terrain": {
-                "slope": -0.1,
-            },
-            "discrete_obstacles_terrain": {
-                "max_height": 0.05,
-                "min_size": 1.0,
-                "max_size": 5.0,
-                "num_rects": 20,
-            },
-            "wave_terrain": {
-                "num_waves": 2.0,
-                "amplitude": 0.1,
-            },
-            "stairs_terrain": {
-                "step_width": 0.75,
-                "step_height": -0.1,
-            },
-            "pyramid_stairs_terrain": {
-                "step_width": 0.75,
-                "step_height": -0.1,
-            },
-            "stepping_stones_terrain": {
-                "stone_size": 1.0,
-                "stone_distance": 0.25,
-                "max_height": 0.2,
-                "platform_size": 0.0,
-            },
-        }
+        pass
 
     @property
     def subterrain_params(self):
-        return self.subterrain_parameters
+        pass
 
 
 class USD(FileMorph):

@@ -381,7 +381,7 @@ class FEMSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_elements_max > 0
+        pass
 
     def add_entity(self, idx, material, morph, surface, name: str | None = None) -> "FEMEntity":
         # add material's update methods if not matching any existing material
@@ -963,8 +963,7 @@ class FEMSolver(Solver):
             entity.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for entity in self._entities[::-1]:
-            entity.process_input_grad()
+        pass
 
     def substep_pre_coupling(self, f):
         if self.is_active:
@@ -986,12 +985,7 @@ class FEMSolver(Solver):
                     self.apply_soft_constraints(f)
 
     def substep_pre_coupling_grad(self, f):
-        if self.is_active:
-            if self._use_implicit_solver:
-                gs.raise_exception("Gradient computation is not supported for implicit solver.")
-            self.apply_uniform_force.grad(f)
-            self.compute_vel.grad(f)
-            self.init_pos_and_vel.grad(f)
+        pass
 
     def substep_post_coupling(self, f):
         if self.is_active:
@@ -1000,8 +994,7 @@ class FEMSolver(Solver):
                 self.apply_hard_constraints(f)
 
     def substep_post_coupling_grad(self, f):
-        if self.is_active:
-            self.compute_pos.grad(f)
+        pass
 
     @qd.kernel
     def copy_frame(self, source: qd.i32, target: qd.i32):
@@ -1017,42 +1010,22 @@ class FEMSolver(Solver):
     @qd.kernel
     def copy_grad(self, source: qd.i32, target: qd.i32):
         # Copy gradients for vertices
-        for i_v, i_b in qd.ndrange(self.n_vertices_max, self._B):
-            self.elements_v.grad[target, i_v, i_b].pos = self.elements_v.grad[source, i_v, i_b].pos
-            self.elements_v.grad[target, i_v, i_b].vel = self.elements_v.grad[source, i_v, i_b].vel
-
-        # Copy 'active' for elements
-        for i_e, i_b in qd.ndrange(self.n_elements_max, self._B):
-            self.elements_el_ng[target, i_e, i_b].active = self.elements_el_ng[source, i_e, i_b].active
+        pass
 
     @qd.kernel
     def reset_grad_till_frame(self, f: qd.i32):
         # Zero out v.grad in frame 0..(f-1) for all vertices, all batch indices
-        for frame_i, vert_i, i_b in qd.ndrange(f, self.n_vertices_max, self._B):
-            self.elements_v.grad[frame_i, vert_i, i_b].pos = 0
-            self.elements_v.grad[frame_i, vert_i, i_b].vel = 0
-
-        # Zero out elements_el.grad in frame 0..(f-1) for all elements, all batch indices
-        for frame_i, elem_i, i_b in qd.ndrange(f, self.n_elements_max, self._B):
-            self.elements_el.grad[frame_i, elem_i, i_b].actu = 0
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- gradient ---------------------------------------
     # ------------------------------------------------------------------------------------
 
     def collect_output_grads(self):
-        for entity in self._entities:
-            entity.collect_output_grads()
+        pass
 
     def add_grad_from_state(self, state):
-        if self.is_active:
-            if state.pos.grad is not None:
-                state.pos.assert_contiguous()
-                self._kernel_add_grad_from_pos(self._sim.cur_substep_local, state.pos.grad)
-
-            if state.vel.grad is not None:
-                state.vel.assert_contiguous()
-                self._kernel_add_grad_from_vel(self._sim.cur_substep_local, state.vel.grad)
+        pass
 
     def save_ckpt(self, ckpt_name):
         if self.is_active:
@@ -1069,21 +1042,7 @@ class FEMSolver(Solver):
             self.copy_frame(self.sim.substeps_local, 0)
 
     def load_ckpt(self, ckpt_name):
-        self.copy_frame(0, self._sim.substeps_local)
-        self.copy_grad(0, self._sim.substeps_local)
-
-        if self._sim.requires_grad:
-            self.reset_grad_till_frame(self._sim.substeps_local)
-
-            self._kernel_set_state(
-                0,
-                self._ckpt[ckpt_name]["pos"],
-                self._ckpt[ckpt_name]["vel"],
-                self._ckpt[ckpt_name]["active"],
-            )
-
-            for entity in self._entities:
-                entity.load_ckpt(ckpt_name=ckpt_name)
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------------- io -----------------------------------------
@@ -1116,10 +1075,7 @@ class FEMSolver(Solver):
         Returns:
             torch.Tensor : shape (B, n_vertices, 3) where B is batch size
         """
-        if not self.is_active:
-            return None
-
-        return qd_to_torch(self.elements_v_energy.force, copy=True)
+        pass
 
     @qd.kernel
     def _kernel_add_elements(
@@ -1275,10 +1231,7 @@ class FEMSolver(Solver):
         n_vertices: qd.i32,
         pos_grad: qd.types.ndarray(),
     ):
-        for i_v, i_b in qd.ndrange(n_vertices, self._B):
-            i_global = i_v + element_v_start
-            for k in qd.static(range(3)):
-                self.elements_v.grad[f, i_global, i_b].pos[k] = pos_grad[i_b, i_v, k]
+        pass
 
     @qd.kernel
     def _kernel_set_elements_vel(
@@ -1301,10 +1254,7 @@ class FEMSolver(Solver):
         n_vertices: qd.i32,
         vel_grad: qd.types.ndarray(),  # shape [B, n_vertices, 3]
     ):
-        for i_v, i_b in qd.ndrange(n_vertices, self._B):
-            i_global = i_v + element_v_start
-            for k in qd.static(range(3)):
-                self.elements_v.grad[f, i_global, i_b].vel[k] = vel_grad[i_b, i_v, k]
+        pass
 
     @qd.kernel
     def _kernel_set_elements_actu(
@@ -1328,9 +1278,7 @@ class FEMSolver(Solver):
         n_elements: qd.i32,
         actu_grad: qd.types.ndarray(),  # shape [B, n_elements]
     ):
-        for i_e, i_b in qd.ndrange(n_elements, self._B):
-            i_global = i_e + element_el_start
-            self.elements_el.grad[f, i_global, i_b].actu = actu_grad[i_b, i_e]
+        pass
 
     @qd.kernel
     def _kernel_set_active(
@@ -1374,10 +1322,7 @@ class FEMSolver(Solver):
         n_elements: qd.i32,
         el2v: qd.types.ndarray(),
     ):
-        for i_e in range(n_elements):
-            i_global = i_e + element_el_start
-            for j in qd.static(range(4)):
-                el2v[i_global, j] = self.elements_i[i_global].el2v[j]
+        pass
 
     @qd.kernel
     def _kernel_get_state(
@@ -1425,15 +1370,11 @@ class FEMSolver(Solver):
 
     @qd.kernel
     def _kernel_add_grad_from_pos(self, f: qd.i32, pos_grad: qd.types.ndarray()):
-        for i_v, i_b in qd.ndrange(self.n_vertices, self._B):
-            for j in qd.static(range(3)):
-                self.elements_v.grad[f, i_v, i_b].pos[j] += pos_grad[i_b, i_v, j]
+        pass
 
     @qd.kernel
     def _kernel_add_grad_from_vel(self, f: qd.i32, vel_grad: qd.types.ndarray()):
-        for i_v, i_b in qd.ndrange(self.n_vertices, self._B):
-            for j in qd.static(range(3)):
-                self.elements_v.grad[f, i_v, i_b].vel[j] += vel_grad[i_b, i_v, j]
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -1441,43 +1382,43 @@ class FEMSolver(Solver):
 
     @property
     def floor_height(self):
-        return self._floor_height
+        pass
 
     @property
     def damping(self):
-        return self._damping
+        pass
 
     @property
     def n_vertices(self):
-        return sum([entity.n_vertices for entity in self._entities])
+        pass
 
     @property
     def n_elements(self):
-        return sum([entity.n_elements for entity in self._entities])
+        pass
 
     @property
     def n_surfaces(self):
-        return sum([entity.n_surfaces for entity in self.entities])
+        pass
 
     @property
     def n_vertices_max(self):
-        return self._n_vertices_max
+        pass
 
     @property
     def n_elements_max(self):
-        return self._n_elements_max
+        pass
 
     @property
     def vol_scale(self):
-        return self._vol_scale
+        pass
 
     @property
     def n_surface_vertices(self):
-        return self.surface_vertices.shape[0]
+        pass
 
     @property
     def n_surface_elements(self):
-        return self.surface_elements.shape[0]
+        pass
 
     # ------------------------------------------------------------------------------------
     # -------------------------------- vertex constraints --------------------------------
@@ -1535,34 +1476,14 @@ class FEMSolver(Solver):
         link_init_quat: qd.types.ndarray(),  # shape [B, 4]
         envs_idx: qd.types.ndarray(),  # shape [B]
     ):
-        for i_v_, i_b_ in qd.ndrange(verts_idx.shape[1], envs_idx.shape[0]):
-            i_b = envs_idx[i_b_]
-            i_v = verts_idx[i_b, i_v_]
-            self.vertex_constraints[i_v, i_b].is_constrained = True
-            self.vertex_constraints[i_v, i_b].is_soft_constraint = qd.cast(is_soft_constraint, gs.qd_bool)
-            self.vertex_constraints[i_v, i_b].stiffness = stiffness
-            self.vertex_constraints[i_v, i_b].link_idx = link_idx
-
-            cur_pos = self.elements_v[f, i_v, i_b].pos
-            for j in qd.static(range(3)):
-                self.vertex_constraints[i_v, i_b].target_pos[j] = target_poss[i_b_, i_v_, j]
-                self.vertex_constraints[i_v, i_b].link_offset_pos[j] = cur_pos[j] - link_init_pos[i_b_, j]
-            for j in qd.static(range(4)):
-                self.vertex_constraints[i_v, i_b].link_init_quat[j] = link_init_quat[i_b_, j]
+        pass
 
     @qd.kernel
     def _kernel_update_constraint_targets(
         self, verts_idx: qd.types.ndarray(), new_target_poss: qd.types.ndarray(), envs_idx: qd.types.ndarray()
     ):
-        for i_v_, i_b_ in qd.ndrange(verts_idx.shape[1], envs_idx.shape[0]):
-            i_b = envs_idx[i_b_]
-            i_v = verts_idx[i_b, i_v_]
-            for j in qd.static(range(3)):
-                self.vertex_constraints[i_v, i_b].target_pos[j] = new_target_poss[i_b_, i_v_, j]
+        pass
 
     @qd.kernel
     def _kernel_remove_specific_constraints(self, verts_idx: qd.types.ndarray(), envs_idx: qd.types.ndarray()):
-        for i_v_, i_b_ in qd.ndrange(verts_idx.shape[1], envs_idx.shape[0]):
-            i_b = envs_idx[i_b_]
-            i_v = verts_idx[i_b, i_v_]
-            self.vertex_constraints[i_v, i_b].is_constrained = False
+        pass

@@ -24,9 +24,7 @@ def func_find_intersect_midpoint(
     geoms_info: array_class.GeomsInfo,
 ):
     # return the center of the intersecting AABB of AABBs of two geoms
-    intersect_lower = qd.max(geoms_state.aabb_min[i_ga, i_b], geoms_state.aabb_min[i_gb, i_b])
-    intersect_upper = qd.min(geoms_state.aabb_max[i_ga, i_b], geoms_state.aabb_max[i_gb, i_b])
-    return 0.5 * (intersect_lower + intersect_upper)
+    pass
 
 
 @qd.func

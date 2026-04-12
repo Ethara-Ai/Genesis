@@ -97,40 +97,7 @@ class Rigid(Kinematic["RigidEntity"]):
     def _resolve_defaults(cls, data: dict) -> dict:
         # ipc_only entities have their dynamics fully controlled by IPC (gravity + collision).
         # Genesis gravity must be disabled to avoid double-counting.
-        if data.get("coup_type") == "ipc_only":
-            grav_comp = data.get("gravity_compensation")
-            if grav_comp is not None and grav_comp != 0.0:
-                gs.raise_exception(
-                    "`gravity_compensation` must be 0 with coup_type='ipc_only'. "
-                    "IPC controls gravity for ipc_only entities."
-                )
-            data["gravity_compensation"] = 0.0
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.coup_type is not None and not self.needs_coup:
-            gs.raise_exception(
-                "`coup_type` is only supported with needs_coup=True. "
-                f"Got needs_coup={self.needs_coup}, coup_type={self.coup_type!r}."
-            )
-
-        if self.coup_links is not None and (
-            not self.needs_coup or self.coup_type not in (None, "two_way_soft_constraint")
-        ):
-            gs.raise_exception(
-                "`coup_links` is only supported with needs_coup=True and "
-                f"'two_way_soft_constraint' type in IPC. "
-                f"Got needs_coup={self.needs_coup}, coup_type={self.coup_type!r}."
-            )
-
-        if self.coup_collision_links is not None and not self.enable_coup_collision:
-            gs.raise_exception(
-                "`coup_collision_links` is only effective when `enable_coup_collision=True`. "
-                "Set `enable_coup_collision=False` to disable collision for all links."
-            )
-
-        if self.sdf_min_res > self.sdf_max_res:
-            gs.raise_exception("`sdf_min_res` must be smaller than or equal to `sdf_max_res`.")
-
-        if self.coup_restitution != 0:
-            gs.logger.warning("Non-zero `coup_restitution` could lead to instability. Use with caution.")
+        pass

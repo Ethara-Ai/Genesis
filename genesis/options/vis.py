@@ -161,13 +161,4 @@ class VisOptions(Options):
     @model_validator(mode="before")
     @classmethod
     def _handle_deprecated_n_rendered_envs(cls, data: dict) -> dict:
-        n_rendered_envs = data.pop("n_rendered_envs", None)
-        if n_rendered_envs is not None:
-            gs.logger.warning(
-                "Viewer option 'n_rendered_envs' is deprecated and will be removed in a future release. "
-                "Please use 'rendered_envs_idx' instead."
-            )
-            if data.get("rendered_envs_idx") is not None:
-                raise ValueError("Cannot specify both 'n_rendered_envs' and 'rendered_envs_idx'.")
-            data["rendered_envs_idx"] = tuple(range(n_rendered_envs))
-        return data
+        pass

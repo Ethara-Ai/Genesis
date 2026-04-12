@@ -137,7 +137,7 @@ class GJK:
 
     @property
     def is_active(self):
-        return self._is_active
+        pass
 
 
 @qd.func

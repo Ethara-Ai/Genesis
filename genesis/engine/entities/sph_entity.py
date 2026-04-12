@@ -149,15 +149,10 @@ class SPHEntity(ParticleEntity):
         self.solver._kernel_set_particles_pos(particles_idx, envs_idx, poss)
 
     def get_particles_pos(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        poss = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_pos(self._particle_start, self.n_particles, envs_idx, poss)
-        if self._scene.n_envs == 0:
-            poss = poss[0]
-        return poss
+        pass
 
     def get_position(self, envs_idx=None):
-        return self.get_particles_pos(envs_idx)
+        pass
 
     @gs.assert_built
     def set_particles_vel(self, vels, particles_idx_local=None, envs_idx=None):
@@ -168,12 +163,7 @@ class SPHEntity(ParticleEntity):
         self.solver._kernel_set_particles_vel(particles_idx, envs_idx, vels)
 
     def get_particles_vel(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        vels = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_vel(self._particle_start, self.n_particles, envs_idx, vels)
-        if self._scene.n_envs == 0:
-            vels = vels[0]
-        return vels
+        pass
 
     @gs.assert_built
     def set_particles_active(self, actives, particles_idx_local=None, envs_idx=None):
@@ -184,12 +174,7 @@ class SPHEntity(ParticleEntity):
         self.solver._kernel_set_particles_active(particles_idx, envs_idx, actives)
 
     def get_particles_active(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        actives = self._sanitize_particles_tensor(None, gs.tc_bool, None, envs_idx)
-        self.solver._kernel_get_particles_active(self._particle_start, self.n_particles, envs_idx, actives)
-        if self._scene.n_envs == 0:
-            actives = actives[0]
-        return actives
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------

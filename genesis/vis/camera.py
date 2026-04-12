@@ -269,26 +269,7 @@ class Camera(RBC):
             If True, the camera will maintain its orientation relative to the world. If False, the camera will look at
             the base link of the entity.
         """
-        if self._attached_link is not None:
-            gs.raise_exception("Impossible to following an entity with a camera that is already attached.")
-
-        if self._is_built:
-            if self._is_batched and self._env_idx is None:
-                entity_pos = entity.get_pos(self._visualizer._context.rendered_envs_idx)
-            else:
-                entity_pos = entity.get_pos(self._env_idx).reshape((-1,))
-            pos_rel = self._pos - entity_pos
-        else:
-            pos_rel = self._initial_pos - torch.tensor(entity.base_link.pos, dtype=gs.tc_float, device=gs.device)
-
-        if (pos_rel.abs() < gs.EPS).all():
-            gs.raise_exception("Camera must not be co-located with base link of entity to which it is attached.")
-
-        self._followed_entity = entity
-        self._follow_pos_rel = pos_rel
-        self._follow_fixed_axis = fixed_axis
-        self._follow_smoothing = smoothing
-        self._follow_fix_orientation = fix_orientation
+        pass
 
     def unfollow_entity(self):
         """
@@ -296,11 +277,7 @@ class Camera(RBC):
 
         Calling this method has no effect if the camera is not currently following any entity.
         """
-        self._followed_entity = None
-        self._follow_pos_rel = None
-        self._follow_fixed_axis = None
-        self._follow_smoothing = None
-        self._follow_fix_orientation = None
+        pass
 
     @gs.assert_built
     def update_following(self):
@@ -538,45 +515,7 @@ class Camera(RBC):
         mask_arr : np.ndarray
             The valid depth mask. boolean array of same shape as depth_arr
         """
-        # Compute the (denormalized) depth map
-        if self._batch_renderer is not None:
-            _, depth_arr, _, _ = self._batch_render(rgb=False, depth=True, segmentation=False, normal=False)
-            # FIXME: Avoid converting to numpy
-            depth_arr = tensor_to_array(depth_arr)
-        else:
-            self._rasterizer.update_scene(force_render=False)
-            _, depth_arr, _, _ = self._rasterizer.render_camera(
-                self, rgb=False, depth=True, segmentation=False, normal=False
-            )
-
-        # Convert OpenGL projection matrix to camera intrinsics
-        width, height = self.res
-        fx = fy = self.f
-        cx = self.cx
-        cy = self.cy
-
-        # Mask out invalid depth
-        mask = (self.near < depth_arr) & (depth_arr < self.far * (1.0 - 1e-3))
-
-        # Compute normalized pixel coordinates
-        v, u = np.meshgrid(np.arange(height, dtype=np.int32), np.arange(width, dtype=np.int32), indexing="ij")
-        u = u.reshape((-1,))
-        v = v.reshape((-1,))
-
-        # Convert to world coordinates
-        depth_grid = depth_arr[..., v, u]
-        world_x = depth_grid * (u + 0.5 - cx) / fx
-        world_y = depth_grid * (v + 0.5 - cy) / fy
-        world_z = depth_grid
-
-        point_cloud = np.stack((world_x, world_y, world_z, np.ones_like(world_z)), axis=-1)
-        if world_frame:
-            T_OPENGL_TO_OPENCV = np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]], dtype=np.float32)
-            cam_pose = self.transform @ T_OPENGL_TO_OPENCV
-            point_cloud = point_cloud @ cam_pose.swapaxes(-1, -2)
-
-        point_cloud = point_cloud[..., :3].reshape((*depth_arr.shape, 3))
-        return point_cloud, mask
+        pass
 
     def set_pose(self, transform=None, pos=None, lookat=None, up=None, envs_idx=None):
         """
@@ -684,7 +623,7 @@ class Camera(RBC):
         Start recording on the camera. After recording is started, all the rgb images rendered by `camera.render()`
         will be stored, and saved to a video file when `camera.stop_recording()` is called.
         """
-        self._in_recording = True
+        pass
 
     @gs.assert_built
     def pause_recording(self):
@@ -692,9 +631,7 @@ class Camera(RBC):
         Pause recording on the camera. After recording is paused, the rgb images rendered by `camera.render()` will
         not be stored. Recording can be resumed by calling `camera.start_recording()` again.
         """
-        if not self._in_recording:
-            gs.raise_exception("Recording not started.")
-        self._in_recording = False
+        pass
 
     @gs.assert_built
     def stop_recording(self, save_to_filename=None, fps=60):
@@ -714,28 +651,7 @@ class Camera(RBC):
         fps : int, optional
             The frames per second of the video file.
         """
-
-        if not self._in_recording:
-            gs.raise_exception("Recording not started.")
-
-        if save_to_filename is None:
-            caller_file = inspect.stack()[-1].filename
-            save_to_filename = (
-                os.path.splitext(os.path.basename(caller_file))[0]
-                + f"_cam_{self.idx}_{time.strftime('%Y%m%d_%H%M%S')}.mp4"
-            )
-
-        if self._is_batched:
-            for env_idx in self._visualizer._context.rendered_envs_idx:
-                env_imgs = [imgs[env_idx] for imgs in self._recorded_imgs]
-                env_name, env_ext = os.path.splitext(save_to_filename)
-                gs.tools.animate(env_imgs, f"{env_name}_{env_idx}{env_ext}", fps)
-        else:
-            gs.tools.animate(self._recorded_imgs, save_to_filename, fps)
-
-        self._recorded_t_prev = -1
-        self._recorded_imgs.clear()
-        self._in_recording = False
+        pass
 
     def get_pos(self, envs_idx=None):
         """The current position of the camera."""
@@ -748,18 +664,11 @@ class Camera(RBC):
 
     def get_lookat(self, envs_idx=None):
         """The current lookat point of the camera."""
-        assert self._env_idx is None or envs_idx is None
-        envs_idx = () if envs_idx is None else envs_idx
-        lookat = self._lookat[envs_idx]
-        if self._batch_renderer is None and not self._visualizer._context.env_separate_rigid:
-            lookat = lookat + self._envs_offset[envs_idx]
-        return lookat
+        pass
 
     def get_up(self, envs_idx=None):
         """The current up vector of the camera."""
-        assert self._env_idx is None or envs_idx is None
-        envs_idx = () if envs_idx is None else envs_idx
-        return self._up[envs_idx]
+        pass
 
     def get_quat(self, envs_idx=None):
         """The current quaternion of the camera."""
@@ -780,22 +689,22 @@ class Camera(RBC):
         return transform
 
     def _repr_brief(self):
-        return f"{self.__repr_name__()}: idx: {self._idx}, pos: {self.pos}, lookat: {self.lookat}"
+        pass
 
     @property
     def is_built(self):
         """Whether the camera is built."""
-        return self._is_built
+        pass
 
     @property
     def idx(self):
         """The global integer index of the camera."""
-        return self._idx
+        pass
 
     @property
     def uid(self):
         """The unique ID of the camera"""
-        return self._uid
+        pass
 
     @property
     def model(self):
@@ -805,75 +714,66 @@ class Camera(RBC):
     @property
     def res(self):
         """The resolution of the camera."""
-        return self._res
+        pass
 
     @property
     def fov(self):
         """The field of view of the camera."""
-        return self._fov
+        pass
 
     @property
     def aperture(self):
         """The aperture of the camera."""
-        return self._aperture
+        pass
 
     @property
     def focal_len(self):
         """The focal length for thinlens camera. Returns -1 for pinhole camera."""
-        tan_half_fov = np.tan(np.deg2rad(self._fov / 2))
-        if self.model == "thinlens":
-            if self._res[0] > self._res[1]:
-                projected_pixel_size = min(0.036 / self._res[0], 0.024 / self._res[1])
-            else:
-                projected_pixel_size = min(0.036 / self._res[1], 0.024 / self._res[0])
-            image_dist = self._res[1] * projected_pixel_size / (2 * tan_half_fov)
-            return 1.0 / (1.0 / image_dist + 1.0 / self._focus_dist)
-        elif self.model in ("pinhole", "fisheye"):
-            return self._res[0] / (2.0 * tan_half_fov)
+        pass
 
     @property
     def focus_dist(self):
         """The focus distance of the camera."""
-        return self._focus_dist
+        pass
 
     @property
     def GUI(self):
         """Whether the camera will display the rendered images in a separate window."""
-        return self._GUI
+        pass
 
     @GUI.setter
     def GUI(self, value):
-        self._GUI = value
+        pass
 
     @property
     def spp(self):
         """Samples per pixel of the camera."""
-        return self._spp
+        pass
 
     @property
     def denoise(self):
         """Whether the camera will denoise the rendered image in raytracer."""
-        return self._denoise
+        pass
 
     @property
     def near(self):
         """The near plane of the camera."""
-        return self._near
+        pass
 
     @property
     def far(self):
         """The far plane of the camera."""
-        return self._far
+        pass
 
     @property
     def aspect_ratio(self):
         """The aspect ratio of the camera."""
-        return self._aspect_ratio
+        pass
 
     @property
     def env_idx(self):
         """Index of the environment bound to the camera, if any."""
-        return self._env_idx
+        pass
 
     @property
     def debug(self):
@@ -883,68 +783,46 @@ class Camera(RBC):
     @property
     def pos(self):
         """The current position of the camera for the tracked environment."""
-        envs_idx = self._env_idx if self._is_batched else None
-        return tensor_to_array(self.get_pos(envs_idx), dtype=np.float32)
+        pass
 
     @property
     def lookat(self):
         """The current lookat point of the camera for the tracked environment."""
-        envs_idx = self._env_idx if self._is_batched else None
-        return tensor_to_array(self.get_lookat(envs_idx), dtype=np.float32)
+        pass
 
     @property
     def up(self):
         """The current up vector of the camera for the tracked environment."""
-        envs_idx = self._env_idx if self._is_batched else None
-        return tensor_to_array(self.get_up(envs_idx), dtype=np.float32)
+        pass
 
     @property
     def transform(self):
         """The current transform matrix of the camera for the tracked environment."""
-        envs_idx = self._env_idx if self._is_batched else None
-        return tensor_to_array(self.get_transform(envs_idx), dtype=np.float32)
+        pass
 
     @cached_property
     def extrinsics(self):
         """The current extrinsics matrix of the camera."""
-        res = self.transform.copy()
-        res[..., :3, 1:3] *= -1
-        res.flags.writeable = False
-        return np.linalg.inv(res)
+        pass
 
     @cached_property
     def intrinsics(self):
         """The current intrinsics matrix of the camera."""
-        res = np.array([[self.f, 0, self.cx], [0, self.f, self.cy], [0, 0, 1]])
-        res.flags.writeable = False
-        return res
+        pass
 
     @cached_property
     def projection_matrix(self):
         """Return the projection matrix for this camera."""
-        a = self._aspect_ratio
-        t = np.tan(np.deg2rad(0.5 * self._fov))
-        n = self.near
-        f = self.far
-        res = np.array(
-            [
-                [1.0 / (a * t), 0.0, 0.0, 0.0],
-                [0.0, 1.0 / t, 0.0, 0.0],
-                [0.0, 0.0, (f + n) / (n - f), (2 * f * n) / (n - f)],
-                [0.0, 0.0, -1.0, 0.0],
-            ]
-        )
-        res.flags.writeable = False
-        return res
+        pass
 
     @cached_property
     def f(self):
-        return 0.5 * self._res[1] / np.tan(np.deg2rad(0.5 * self._fov))
+        pass
 
     @cached_property
     def cx(self):
-        return 0.5 * self._res[0]
+        pass
 
     @cached_property
     def cy(self):
-        return 0.5 * self._res[1]
+        pass

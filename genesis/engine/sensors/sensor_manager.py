@@ -32,66 +32,12 @@ class SensorManager:
         self._cloned_cache: dict[tuple[bool, type[torch.dtype]], torch.Tensor] = {}
 
     def create_sensor(self, sensor_options: "SensorOptions") -> "Sensor":
-        sensor_options.validate_scene(self._sim.scene)
-        sensor_cls = SensorManager._resolve_sensor_cls(type(sensor_options))
-        self._sensors_by_type.setdefault(sensor_cls, [])
-        if sensor_cls not in self._sensors_metadata:
-            self._sensors_metadata[sensor_cls] = sensor_cls._metadata_cls()
-        sensor = sensor_cls(sensor_options, len(self._sensors_by_type[sensor_cls]), self)
-        self._sensors_by_type[sensor_cls].append(sensor)
-        return sensor
+        pass
 
     @staticmethod
     def _resolve_sensor_cls(options_cls: type) -> type["Sensor"]:
         """Resolve the sensor class for the given options class, triggering lazy discovery if needed."""
-        sensor_cls = SensorManager.SENSOR_TYPES_MAP.get(options_cls)
-        if sensor_cls is not None:
-            return sensor_cls
-
-        # Not registered yet — check that the options class specifies its sensor type, then try to discover it.
-        # The sensor class name is extracted from the generic metadata on the options class bases.
-        is_parameterized = False
-        for base in options_cls.__bases__:
-            meta = base.__pydantic_generic_metadata__
-            if meta["origin"] is not None and issubclass(meta["origin"], SensorOptions):
-                is_parameterized = bool(meta["args"]) and isinstance(meta["args"][0], str)
-                break
-        # Fallback: typing introspection on __orig_bases__ (for pydantic versions that flatten bases)
-        if not is_parameterized:
-            for base in options_cls.__orig_bases__:
-                origin = get_origin(base)
-                if origin is not None and issubclass(origin, SensorOptions):
-                    args = get_args(base)
-                    is_parameterized = bool(args) and isinstance(args[0], (str, ForwardRef))
-                    break
-
-        if not is_parameterized:
-            gs.raise_exception(
-                f"{options_cls.__name__} must parameterize its SensorOptions base with a sensor class, "
-                f"e.g. `class {options_cls.__name__}(SensorOptions['MySensor']): ...`"
-            )
-
-        # Try to discover the sensor module from sibling modules of the options package.
-        options_module = options_cls.__module__
-        if "." in options_module:
-            pkg_name = options_module.rsplit(".", 1)[0]
-            pkg = sys.modules.get(pkg_name)
-            if pkg is not None:
-                pkg_path = pkg.__dict__.get("__path__")
-                if pkg_path is not None:
-                    for _, modname, _ in pkgutil.iter_modules(pkg_path, pkg.__name__ + "."):
-                        if modname not in sys.modules:
-                            try:
-                                importlib.import_module(modname)
-                            except Exception:
-                                continue
-                        if options_cls in SensorManager.SENSOR_TYPES_MAP:
-                            return SensorManager.SENSOR_TYPES_MAP[options_cls]
-
-        gs.raise_exception(
-            f"No sensor class registered for {options_cls.__name__}. Ensure the sensor module is in the same "
-            "package as the options module, or import the sensor class manually before calling add_sensor()."
-        )
+        pass
 
     def build(self):
         max_buffer_len = 0
@@ -200,4 +146,4 @@ class SensorManager:
 
     @property
     def sensors(self):
-        return gs.List([sensor for sensor_list in self._sensors_by_type.values() for sensor in sensor_list])
+        pass

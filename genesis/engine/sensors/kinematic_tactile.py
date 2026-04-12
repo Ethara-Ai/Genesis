@@ -894,15 +894,15 @@ class KinematicTactileSensorMixin(Generic[KinematicTactileSensorMetadataMixinT])
 
     @property
     def probe_local_pos(self) -> torch.Tensor:
-        return self._probe_local_pos
+        pass
 
     @property
     def probe_local_normal(self) -> torch.Tensor:
-        return self._probe_local_normal
+        pass
 
     @property
     def n_probes(self) -> int:
-        return self._n_probes
+        pass
 
 
 class KinematicContactProbeData(NamedTuple):

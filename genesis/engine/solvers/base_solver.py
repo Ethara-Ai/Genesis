@@ -33,7 +33,7 @@ class Solver(RBC):
         self._ffs = list()
 
     def _add_force_field(self, force_field):
-        self._ffs.append(force_field)
+        pass
 
     def build(self):
         self._B = self._sim._B
@@ -44,86 +44,17 @@ class Solver(RBC):
 
     @gs.assert_built
     def set_gravity(self, gravity, envs_idx=None):
-        if self._gravity is None:
-            gs.logger.debug("Gravity is not defined, skipping `set_gravity`.")
-            return
-
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        gravity = torch.as_tensor(gravity, dtype=gs.tc_float, device=gs.device).expand((len(envs_idx), 3)).contiguous()
-        assert gravity.shape == (len(envs_idx), 3), "Input gravity array should match (n_envs, 3)"
-        if isinstance(self._gravity, qd.Field):
-            _kernel_set_gravity_field(gravity, envs_idx, self._gravity)
-        else:
-            _kernel_set_gravity_ndarray(gravity, envs_idx, self._gravity)
+        pass
 
     def get_gravity(self, envs_idx=None):
         tensor = qd_to_torch(self._gravity, envs_idx, transpose=True, copy=True)
         return tensor[0] if self.n_envs == 0 else tensor
 
     def dump_ckpt_to_numpy(self) -> dict[str, np.ndarray]:
-        arrays: dict[str, np.ndarray] = {}
-
-        for attr_name, value in self.__dict__.items():
-            if not isinstance(value, (qd.Field, qd.Ndarray)):
-                continue
-
-            key_base = ".".join((self.__class__.__name__, attr_name))
-            data = value.to_numpy()
-
-            # StructField -> data is a dict: flatten each member
-            if isinstance(data, dict):
-                for sub_name, sub_arr in data.items():
-                    arrays[f"{key_base}.{sub_name}"] = sub_arr
-            else:
-                arrays[key_base] = data
-
-        if self.data_manager is not None:
-            for attr_name, struct in self.data_manager.__dict__.items():
-                for sub_name in dir(struct):
-                    sub_arr = getattr(struct, sub_name)
-                    if isinstance(sub_arr, (qd.Field, qd.Ndarray)):
-                        store_name = f"{self.__class__.__name__}.data_manager.{attr_name}.{sub_name}"
-                        arrays[store_name] = sub_arr.to_numpy()
-
-        return arrays
+        pass
 
     def load_ckpt_from_numpy(self, arr_dict: dict[str, np.ndarray]) -> None:
-        for attr_name, value in self.__dict__.items():
-            if not isinstance(value, (qd.Field, qd.Ndarray)):
-                continue
-
-            key_base = ".".join((self.__class__.__name__, attr_name))
-            member_prefix = key_base + "."
-
-            # ---- StructField: gather its members -----------------------------
-            member_items = {}
-            for saved_key, saved_arr in arr_dict.items():
-                if saved_key.startswith(member_prefix):
-                    sub_name = saved_key[len(member_prefix) :]
-                    member_items[sub_name] = saved_arr
-
-            if member_items:  # we found at least one sub-member
-                value.from_numpy(member_items)
-                continue
-
-            # ---- Ordinary field ---------------------------------------------
-            if key_base not in arr_dict:
-                continue  # nothing saved for this attribute
-
-            arr = arr_dict[key_base]
-            value.from_numpy(arr)
-
-        # if it has data_manager, add it to the arrays
-        if self.data_manager is not None:
-            for attr_name, struct in self.data_manager.__dict__.items():
-                for sub_name in dir(struct):
-                    sub_arr = getattr(struct, sub_name)
-                    if isinstance(sub_arr, (qd.Field, qd.Ndarray)):
-                        store_name = f"{self.__class__.__name__}.data_manager.{attr_name}.{sub_name}"
-                        if store_name in arr_dict:
-                            sub_arr.from_numpy(arr_dict[store_name])
-                        else:
-                            gs.logger.warning(f"Failed to load {store_name}. Not found in stored arrays.")
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -131,54 +62,49 @@ class Solver(RBC):
 
     @property
     def uid(self):
-        return self._uid
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def sim(self):
-        return self._sim
+        pass
 
     @property
     def dt(self):
-        return self._dt
+        pass
 
     @property
     def is_built(self):
-        return self._scene._is_built
+        pass
 
     @property
     def substep_dt(self):
-        return self._substep_dt
+        pass
 
     @property
     def gravity(self):
-        return self._gravity.to_numpy() if self._gravity is not None else None
+        pass
 
     @property
     def entities(self) -> list[Entity]:
-        return self._entities
+        pass
 
     @property
     def n_entities(self):
-        return len(self._entities)
+        pass
 
     def _repr_brief(self):
-        repr_str = f"{self.__repr_name__()}: {self._uid}, n_entities: {self.n_entities}"
-        return repr_str
+        pass
 
 
 @qd.kernel
 def _kernel_set_gravity_field(tensor: qd.types.ndarray(), envs_idx: qd.types.ndarray(), gravity: qd.template()):
-    for i_b_ in range(envs_idx.shape[0]):
-        for j in qd.static(range(3)):
-            gravity[envs_idx[i_b_]][j] = tensor[i_b_, j]
+    pass
 
 
 @qd.kernel
 def _kernel_set_gravity_ndarray(tensor: qd.types.ndarray(), envs_idx: qd.types.ndarray(), gravity: qd.types.ndarray()):
-    for i_b_ in range(envs_idx.shape[0]):
-        for j in qd.static(range(3)):
-            gravity[envs_idx[i_b_]][j] = tensor[i_b_, j]
+    pass

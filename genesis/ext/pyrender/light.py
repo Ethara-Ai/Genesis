@@ -47,43 +47,38 @@ class Light(metaclass=ABCMeta):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def color(self):
         """(3,) float : The light's color."""
-        return self._color
+        pass
 
     @color.setter
     def color(self, value):
-        self._color = format_color_vector(value, 3)
+        pass
 
     @property
     def intensity(self):
         """float : The light's intensity in candela or lux."""
-        return self._intensity
+        pass
 
     @intensity.setter
     def intensity(self, value):
-        self._intensity = float(value)
+        pass
 
     @property
     def shadow_texture(self):
         """:class:`.Texture` : A texture used to hold shadow maps for this light."""
-        return self._shadow_texture
+        pass
 
     @shadow_texture.setter
     def shadow_texture(self, value):
-        if self._shadow_texture is not None:
-            if self._shadow_texture._in_context():
-                self._shadow_texture.delete()
-        self._shadow_texture = value
+        pass
 
     @abc.abstractmethod
     def _generate_shadow_texture(self, size=None):
@@ -194,16 +189,11 @@ class PointLight(Light):
     @property
     def range(self):
         """float : The cutoff distance for the light."""
-        return self._range
+        pass
 
     @range.setter
     def range(self, value):
-        if value is not None:
-            value = float(value)
-            if value <= 0:
-                raise ValueError("Range must be > 0")
-            self._range = value
-        self._range = value
+        pass
 
     def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.
@@ -307,38 +297,29 @@ class SpotLight(Light):
     @property
     def innerConeAngle(self):
         """float : The inner cone angle in radians."""
-        return self._innerConeAngle
+        pass
 
     @innerConeAngle.setter
     def innerConeAngle(self, value):
-        if value < 0.0 or value > self.outerConeAngle:
-            raise ValueError("Invalid value for inner cone angle")
-        self._innerConeAngle = float(value)
+        pass
 
     @property
     def outerConeAngle(self):
         """float : The outer cone angle in radians."""
-        return self._outerConeAngle
+        pass
 
     @outerConeAngle.setter
     def outerConeAngle(self, value):
-        if value < 0.0 or value > np.pi / 2.0 + 1e-9:
-            raise ValueError("Invalid value for outer cone angle")
-        self._outerConeAngle = float(value)
+        pass
 
     @property
     def range(self):
         """float : The cutoff distance for the light."""
-        return self._range
+        pass
 
     @range.setter
     def range(self, value):
-        if value is not None:
-            value = float(value)
-            if value <= 0:
-                raise ValueError("Range must be > 0")
-            self._range = value
-        self._range = value
+        pass
 
     def _generate_shadow_texture(self, size=None):
         """Generate a shadow texture for this light.

@@ -19,13 +19,7 @@ _SAMPLER_PATTERN = re.compile(r"^pbs(-\d+)?$|^random$|^regular$")
 
 
 def _validate_sampler(v: str) -> str:
-    if not isinstance(v, str) or not _SAMPLER_PATTERN.match(v):
-        raise PydanticCustomError(
-            "invalid_sampler",
-            "Input should be 'pbs', 'pbs-<seed>', 'random', or 'regular'",
-            {"value": v},
-        )
-    return v
+    pass
 
 
 SamplerType = Annotated[str, BeforeValidator(_validate_sampler)]
@@ -76,16 +70,7 @@ class Base(Material["MPMEntity"]):
 
     def model_post_init(self, context: Any) -> None:
         # Resolve Lame parameters
-        if self.mu is None:
-            self.mu = self.E / (2.0 * (1.0 + self.nu))
-        if self.lam is None:
-            self.lam = self.E * self.nu / ((1.0 + self.nu) * (1.0 - 2.0 * self.nu))
-
-        # Set dispatch defaults
-        if self.update_F_S_Jp is None:
-            self.update_F_S_Jp = self._update_F_S_Jp_noop
-        if self.update_stress is None:
-            self.update_stress = self._update_stress_default
+        pass
 
     @qd.func
     def _update_F_S_Jp_noop(self, J, F_tmp, U, S, V, Jp):
@@ -93,7 +78,4 @@ class Base(Material["MPMEntity"]):
 
     @qd.func
     def _update_stress_default(self, U, S, V, F_tmp, F_new, J, Jp, actu, m_dir):
-        stress = 2 * self.mu * (F_new - U @ V.transpose()) @ F_new.transpose() + qd.Matrix.identity(
-            gs.qd_float, 3
-        ) * self.lam * J * (J - 1)
-        return stress
+        pass

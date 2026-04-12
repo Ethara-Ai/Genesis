@@ -99,10 +99,7 @@ class VideoFile(BaseFileWriterOptions):
     codec_options: dict[str, str] = Field(default_factory=dict)
 
     def model_post_init(self, context: Any) -> None:
-        if not IS_PYAV_AVAILABLE:
-            gs.raise_exception("PyAV is not installed. Please install it with `pip install av`.")
-        if self.codec and self.codec not in av.codecs_available:
-            gs.raise_exception(f"[{type(self).__name__}] Codec '{self.codec}' not supported.")
+        pass
 
 
 class CSVFile(BaseFileWriterOptions):

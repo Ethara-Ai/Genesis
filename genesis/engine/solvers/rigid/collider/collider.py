@@ -914,18 +914,7 @@ class Collider:
         return contact_data.copy()
 
     def backward(self, dL_dposition, dL_dnormal, dL_dpenetration):
-        func_set_upstream_grad(dL_dposition, dL_dnormal, dL_dpenetration, self._collider_state)
-
-        # Compute gradient
-        func_narrow_phase_diff_convex_vs_convex.grad(
-            self._solver.geoms_state,
-            self._solver.geoms_info,
-            self._solver._static_rigid_sim_config,
-            self._collider_state,
-            self._collider_info,
-            self._gjk._gjk_info,
-            self._collider_state.diff_contact_input,
-        )
+        pass
 
 
 from genesis.utils.deprecated_module_wrapper import create_virtual_deprecated_module

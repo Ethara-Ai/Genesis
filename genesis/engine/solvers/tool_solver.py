@@ -41,7 +41,7 @@ class ToolSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_entities > 0
+        pass
 
     def setup_boundary(self):
         self.boundary = FloorBoundary(height=self.floor_height)
@@ -83,24 +83,21 @@ class ToolSolver(Solver):
             entity.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for entity in self._entities[::-1]:
-            entity.process_input_grad()
+        pass
 
     def substep_pre_coupling(self, f):
         for entity in self._entities:
             entity.substep_pre_coupling(f)
 
     def substep_pre_coupling_grad(self, f):
-        for entity in self._entities[::-1]:
-            entity.substep_pre_coupling_grad(f)
+        pass
 
     def substep_post_coupling(self, f):
         for entity in self._entities:
             entity.substep_post_coupling(f)
 
     def substep_post_coupling_grad(self, f):
-        for entity in self._entities[::-1]:
-            entity.substep_post_coupling_grad(f)
+        pass
 
     def add_grad_from_state(self, state):
         # Nothing needed here, since tool_solver state is composed of tool_entity.get_state(), which has already been cached inside each tool_entity.
@@ -110,20 +107,15 @@ class ToolSolver(Solver):
         """
         Collect gradients from downstream queried states.
         """
-        if self.is_active:
-            for entity in self._entities:
-                entity.collect_output_grads()
+        pass
 
     def save_ckpt(self, ckpt_name):
         for entity in self._entities:
             entity.save_ckpt(ckpt_name)
 
     def load_ckpt(self, ckpt_name):
-        for entity in self._entities:
-            entity.load_ckpt(ckpt_name=ckpt_name)
+        pass
 
     @qd.func
     def pbd_collide(self, f, pos_world, thickness, dt):
-        for entity in qd.static(self._entities):
-            pos_world = entity.pbd_collide(f, pos_world, thickness, dt)
-        return pos_world
+        pass

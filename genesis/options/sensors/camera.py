@@ -83,9 +83,7 @@ class RasterizerCameraOptions(BaseCameraOptions["RasterizerCameraSensor"]):
     update_ground_truth_only: StrictBool = True
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-        if self.far <= self.near:
-            gs.raise_exception(f"far must be greater than near, got near={self.near}, far={self.far}")
+        pass
 
 
 class RaytracerCameraOptions(BaseCameraOptions["RaytracerCameraSensor"]):
@@ -148,6 +146,4 @@ class BatchRendererCameraOptions(BaseCameraOptions["BatchRendererCameraSensor"])
     update_ground_truth_only: StrictBool = True
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-        if self.far <= self.near:
-            gs.raise_exception(f"far must be greater than near, got near={self.near}, far={self.far}")
+        pass

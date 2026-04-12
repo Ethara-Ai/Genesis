@@ -80,11 +80,10 @@ class SFSolver(Solver):
 
     @property
     def is_active(self):
-        return bool(self.jets)
+        pass
 
     def set_jets(self, jets):
-        assert isinstance(jets, (list, tuple))
-        self.jets = tuple(jets)
+        pass
 
     def reset_swap(self):
         self.p_swap.cur.fill(0)

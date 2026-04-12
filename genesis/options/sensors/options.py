@@ -75,13 +75,7 @@ class SensorOptions(Options, Generic[SensorT]):
 
         Use pydantic's model_post_init() for validation that does not require scene context.
         """
-        assert scene.sim is not None
-        delay_hz = self.delay / scene.sim.dt
-        if not np.isclose(delay_hz, round(delay_hz), atol=gs.EPS):
-            gs.logger.warning(
-                f"{type(self).__name__}: Read delay should be a multiple of the simulation time step. Got {self.delay}"
-                f" and {scene.sim.dt}. Actual read delay will be {1 / round(delay_hz)}."
-            )
+        pass
 
 
 class RigidSensorOptionsMixin(SensorOptions[SensorT]):
@@ -106,17 +100,7 @@ class RigidSensorOptionsMixin(SensorOptions[SensorT]):
     euler_offset: Vec3FType = (0.0, 0.0, 0.0)
 
     def validate_scene(self, scene: "Scene"):
-        from genesis.engine.entities import RigidEntity
-
-        super().validate_scene(scene)
-        if self.entity_idx is not None and self.entity_idx >= 0:
-            if self.entity_idx >= len(scene.entities):
-                gs.raise_exception(f"Invalid RigidEntity index {self.entity_idx}.")
-            entity = scene.entities[self.entity_idx]
-            if not isinstance(entity, RigidEntity):
-                gs.raise_exception(f"Entity at index {self.entity_idx} is not a RigidEntity.")
-            if self.link_idx_local >= entity.n_links:
-                gs.raise_exception(f"Invalid RigidLink index {self.link_idx_local} for entity {self.entity_idx}.")
+        pass
 
 
 class NoisySensorOptionsMixin(SensorOptions[SensorT]):
@@ -150,10 +134,7 @@ class NoisySensorOptionsMixin(SensorOptions[SensorT]):
     interpolate: StrictBool = False
 
     def model_post_init(self, context: Any) -> None:
-        if self.jitter > 0 and not self.interpolate:
-            gs.raise_exception(f"{type(self).__name__}: `interpolate` should be True when `jitter` is greater than 0.")
-        if self.jitter > self.delay:
-            gs.raise_exception(f"{type(self).__name__}: Jitter must be less than or equal to read delay.")
+        pass
 
 
 class Contact(RigidSensorOptionsMixin["ContactSensor"]):
@@ -197,9 +178,7 @@ class ContactForce(RigidSensorOptionsMixin["ContactForceSensor"], NoisySensorOpt
     debug_scale: PositiveFloat = 0.01
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-        if np.any(np.array(self.max_force) <= np.array(self.min_force)):
-            gs.raise_exception(f"min_force should be less than max_force, got: {self.min_force} and {self.max_force}")
+        pass
 
 
 class TemperatureProperties(NamedTuple):
@@ -364,13 +343,7 @@ class IMU(RigidSensorOptionsMixin["IMUSensor"], NoisySensorOptionsMixin["IMUSens
     debug_mag_scale: PositiveFloat = 0.5
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-
-        # FIXME: Resolution should be made private or converted to properties in mixin to prevent setting them directly
-        self.resolution = self.acc_resolution + self.gyro_resolution + self.mag_resolution
-        self.bias = self.acc_bias + self.gyro_bias + self.mag_bias
-        self.random_walk = self.acc_random_walk + self.gyro_random_walk + self.mag_random_walk
-        self.noise = self.acc_noise + self.gyro_noise + self.mag_noise
+        pass
 
 
 class Proximity(RigidSensorOptionsMixin["ProximitySensor"], NoisySensorOptionsMixin["ProximitySensor"]):
@@ -406,11 +379,7 @@ class Proximity(RigidSensorOptionsMixin["ProximitySensor"], NoisySensorOptionsMi
     debug_color: UnitIntervalVec4Type = (0.2, 0.6, 1.0, 0.6)
 
     def validate_scene(self, scene: "Scene"):
-        super().validate_scene(scene)
-        n_links = scene.sim.rigid_solver.n_links
-        for i, link_idx in enumerate(self.track_link_idx):
-            if not (0 <= link_idx < n_links):
-                gs.raise_exception(f"Proximity sensor track_link_idx[{i}]={link_idx} is out of range [0, {n_links}).")
+        pass
 
 
 class Raycaster(RigidSensorOptionsMixin["RaycasterSensor"]):
@@ -450,15 +419,10 @@ class Raycaster(RigidSensorOptionsMixin["RaycasterSensor"]):
     @model_validator(mode="before")
     @classmethod
     def default_no_hit_value(cls, data: dict) -> dict:
-        if "no_hit_value" not in data:
-            data["no_hit_value"] = data.get("max_range", cls.model_fields["max_range"].default)
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.max_range <= self.min_range:
-            gs.raise_exception(
-                f"[{type(self).__name__}] max_range {self.max_range} should be greater than min_range {self.min_range}."
-            )
+        pass
 
 
 class DepthCamera(Raycaster):

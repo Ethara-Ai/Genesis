@@ -219,7 +219,7 @@ class LBVH(RBC):
         i_a: index of the found AABB
         i_q: index of the query AABB
         """
-        return False
+        pass
 
     @qd.kernel
     def compute_aabb_centers_and_scales(self):
@@ -538,13 +538,7 @@ class FEMSurfaceTetLBVH(LBVH):
         i_q:
             index of the query AABB
         """
-        result = i_a >= i_q
-        i_av = self.fem_solver.elements_i[self.fem_solver.surface_elements[i_a]].el2v
-        i_qv = self.fem_solver.elements_i[self.fem_solver.surface_elements[i_q]].el2v
-        for i, j in qd.static(qd.ndrange(4, 4)):
-            if i_av[i] == i_qv[j]:
-                result = True
-        return result
+        pass
 
 
 @qd.data_oriented
@@ -567,6 +561,4 @@ class RigidTetLBVH(LBVH):
         i_a: index of the found AABB
         i_q: index of the query AABB
         """
-        i_ag = self.coupler.rigid_volume_elems_geom_idx[i_a]
-        i_qg = self.coupler.rigid_volume_elems_geom_idx[i_q]
-        return self.coupler.rigid_collision_pair_idx[i_ag, i_qg] == -1
+        pass

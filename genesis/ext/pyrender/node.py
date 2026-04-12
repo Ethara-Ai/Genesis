@@ -91,105 +91,83 @@ class Node(object):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def camera(self):
         """:class:`Camera` : The camera in this node."""
-        return self._camera
+        pass
 
     @camera.setter
     def camera(self, value):
-        if value is not None and not isinstance(value, Camera):
-            raise TypeError("Value must be a camera")
-        self._camera = value
+        pass
 
     @property
     def children(self):
         """list of :class:`Node` : The children of this node."""
-        return self._children
+        pass
 
     @children.setter
     def children(self, value):
-        self._children = value
+        pass
 
     @property
     def skin(self):
         """int : The skin index for this node."""
-        return self._skin
+        pass
 
     @skin.setter
     def skin(self, value):
-        self._skin = value
+        pass
 
     @property
     def mesh(self):
         """:class:`Mesh` : The mesh in this node."""
-        return self._mesh
+        pass
 
     @mesh.setter
     def mesh(self, value):
-        if value is not None and not isinstance(value, Mesh):
-            raise TypeError("Value must be a mesh")
-        self._mesh = value
+        pass
 
     @property
     def light(self):
         """:class:`Light` : The light in this node."""
-        return self._light
+        pass
 
     @light.setter
     def light(self, value):
-        if value is not None and not isinstance(value, Light):
-            raise TypeError("Value must be a light")
-        self._light = value
+        pass
 
     @property
     def rotation(self):
         """(4,) float : The xyzw quaternion for this node."""
-        return self._rotation
+        pass
 
     @rotation.setter
     def rotation(self, value):
-        value = np.array(value, copy=True)
-        if value.shape != (4,):
-            raise ValueError("Quaternion must be a (4,) vector")
-        if np.abs(np.linalg.norm(value) - 1.0) > 1e-3:
-            raise ValueError("Quaternion must have norm == 1.0")
-        self._rotation = value
-        self._matrix = None
+        pass
 
     @property
     def translation(self):
         """(3,) float : The translation for this node."""
-        return self._translation
+        pass
 
     @translation.setter
     def translation(self, value):
-        value = np.array(value, copy=True)
-        if value.shape != (3,):
-            raise ValueError("Translation must be a (3,) vector")
-        self._translation = value
-        self._matrix = None
+        pass
 
     @property
     def scale(self):
         """(3,) float : The scale for this node."""
-        return self._scale
+        pass
 
     @scale.setter
     def scale(self, value):
-        value = np.array(value, copy=True)
-        if value.shape != (3,):
-            raise ValueError("Scale must be a (3,) vector")
-        self._scale = value
-        self._matrix = None
+        pass
 
     @property
     def matrix(self):

@@ -188,8 +188,7 @@ class Simulator(RBC):
         return entity
 
     def _add_force_field(self, force_field):
-        for solver in self._solvers:
-            solver._add_force_field(force_field)
+        pass
 
     def build(self):
         self.n_envs = self.scene.n_envs
@@ -249,21 +248,16 @@ class Simulator(RBC):
     """
 
     def f_global_to_f_local(self, f_global):
-        f_local = f_global % self._substeps_local
-        return f_local
+        pass
 
     def f_local_to_s_local(self, f_local):
-        f_local = f_local // self._substeps
-        return f_local
+        pass
 
     def f_global_to_s_local(self, f_global):
-        f_local = self.f_global_to_f_local(f_global)
-        s_local = self.f_local_to_s_local(f_local)
-        return s_local
+        pass
 
     def f_global_to_s_global(self, f_global):
-        s_global = f_global // self._substeps
-        return s_global
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ stepping --------------------------------------
@@ -296,14 +290,7 @@ class Simulator(RBC):
         self._sensor_manager.step()
 
     def _step_grad(self):
-        for _ in range(self._substeps - 1, -1, -1):
-            if self.cur_substep_local == 0:
-                self.load_ckpt()
-            self._cur_substep_global -= 1
-
-            self.sub_step_grad(self.cur_substep_local)
-
-        self.process_input_grad()
+        pass
 
     def process_input(self, in_backward=False):
         """
@@ -314,8 +301,7 @@ class Simulator(RBC):
             solver.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for solver in reversed(self._active_solvers):
-            solver.process_input_grad()
+        pass
 
     def substep(self, f):
         self._coupler.preprocess(f)
@@ -324,9 +310,7 @@ class Simulator(RBC):
         self.substep_post_coupling(f)
 
     def sub_step_grad(self, f):
-        self.substep_post_coupling_grad(f)
-        self._coupler.couple_grad(f)
-        self.substep_pre_coupling_grad(f)
+        pass
 
     # -------------- pre coupling --------------
     def substep_pre_coupling(self, f):
@@ -334,8 +318,7 @@ class Simulator(RBC):
             solver.substep_pre_coupling(f)
 
     def substep_pre_coupling_grad(self, f):
-        for solver in reversed(self._active_solvers):
-            solver.substep_pre_coupling_grad(f)
+        pass
 
     # -------------- post coupling --------------
     def substep_post_coupling(self, f):
@@ -343,31 +326,20 @@ class Simulator(RBC):
             solver.substep_post_coupling(f)
 
     def substep_post_coupling_grad(self, f):
-        for solver in reversed(self._active_solvers):
-            solver.substep_post_coupling_grad(f)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ gradient --------------------------------------
     # ------------------------------------------------------------------------------------
 
     def add_grad_from_state(self, state):
-        for solver, solver_state in zip(self._solvers, state):
-            solver.add_grad_from_state(solver_state)
+        pass
 
     def collect_output_grads(self):
         """
         Collect gradients from downstream queried states.
         """
-
-        # simulator-level states
-        if self.cur_step_global in self._queried_states:
-            # one step could have multiple states
-            for state in self._queried_states[self.cur_step_global]:
-                self.add_grad_from_state(state)
-
-        # each solver will have their own entities, each of which stores a set of _queried_states
-        for solver in self._active_solvers:
-            solver.collect_output_grads()
+        pass
 
     def save_ckpt(self):
         """
@@ -387,21 +359,7 @@ class Simulator(RBC):
             )
 
     def load_ckpt(self):
-        ckpt_start_substep = self._cur_substep_global - self._substeps_local
-        ckpt_end_step = self._cur_substep_global - 1
-        ckpt_name = f"{ckpt_start_substep}"
-
-        for solver in self._active_solvers:
-            solver.load_ckpt(ckpt_name)
-
-        # now that we loaded the first frame, we do a forward pass to fill up the rest
-        self._cur_substep_global = ckpt_start_substep
-        for _ in range(self._steps_local):
-            self.step(in_backward=True)
-
-        gs.logger.debug(
-            f"Backward: Loaded checkpoint for global substep {ckpt_start_substep} to {ckpt_end_step}. Now starts from substep {ckpt_start_substep}."
-        )
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------------- io -----------------------------------------
@@ -421,9 +379,7 @@ class Simulator(RBC):
         return state
 
     def set_gravity(self, gravity, envs_idx=None):
-        for solver in self._solvers:
-            if solver.is_active:
-                solver.set_gravity(gravity, envs_idx)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- properties -------------------------------------
@@ -432,79 +388,79 @@ class Simulator(RBC):
     @property
     def dt(self) -> float:
         """The time duration for each simulation step."""
-        return self._dt
+        pass
 
     @property
     def substeps(self):
         """The number of substeps per simulation step."""
-        return self._substeps
+        pass
 
     @property
     def scene(self):
         """The scene object that the simulator is associated with."""
-        return self._scene
+        pass
 
     @property
     def gravity(self):
         """The gravity vector."""
-        return self._gravity
+        pass
 
     @property
     def requires_grad(self):
         """Whether the simulator requires gradients."""
-        return self._requires_grad
+        pass
 
     @property
     def n_entities(self) -> int:
         """The number of entities in the simulator."""
-        return len(self._entities)
+        pass
 
     @property
     def entities(self):
         """The list of entities in the simulator."""
-        return self._entities
+        pass
 
     @property
     def substeps_local(self):
         """The number of substeps stored in local memory."""
-        return self._substeps_local
+        pass
 
     @property
     def cur_substep_global(self):
         """The current substep of the simulation."""
-        return self._cur_substep_global
+        pass
 
     @property
     def cur_substep_local(self):
         """The current substep of the simulation in local memory."""
-        return self.f_global_to_f_local(self._cur_substep_global)
+        pass
 
     @property
     def cur_step_local(self):
         """The current step of the simulation in local memory."""
-        return self.f_global_to_s_local(self._cur_substep_global)
+        pass
 
     @property
     def cur_step_global(self):
         """The current step of the simulation."""
-        return self.f_global_to_s_global(self._cur_substep_global)
+        pass
 
     @property
     def cur_t(self):
         """The current time of the simulation."""
-        return self._cur_substep_global * self._substep_dt
+        pass
 
     @property
     def coupler(self):
         """The coupler object that manages the inter-solver coupling."""
-        return self._coupler
+        pass
 
     @property
     def solvers(self):
         """The list of solvers in the simulator."""
-        return self._solvers
+        pass
 
     @property
     def active_solvers(self):
         """The list of active solvers in the simulator."""
-        return self._active_solvers
+        pass

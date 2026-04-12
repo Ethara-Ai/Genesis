@@ -697,7 +697,7 @@ class LegacyCoupler(RBC):
         # Floor contact
 
         # collision detection
-        self.fem_solver.floor_hydroelastic_detection(f)
+        pass
 
     @qd.kernel
     def sph_rigid(
@@ -780,22 +780,7 @@ class LegacyCoupler(RBC):
 
         Current position of the particle, relatively to the link, is stored and preserved.
         """
-        pdb = self.pbd_solver
-
-        for i_p_, i_b_ in qd.ndrange(particles_idx.shape[1], envs_idx.shape[0]):
-            i_p = particles_idx[i_b_, i_p_]
-            i_b = envs_idx[i_b_]
-            link_pos = links_state.pos[link_idx, i_b]
-            link_quat = links_state.quat[link_idx, i_b]
-
-            # compute local offset from link to the particle
-            world_pos = pdb.particles[i_p, i_b].pos
-            local_pos = qd_inv_transform_by_trans_quat(world_pos, link_pos, link_quat)
-
-            # set particle to be animated (not free) and store animation info
-            pdb.particles[i_p, i_b].free = False
-            self.particle_attach_info[i_p, i_b].link_idx = link_idx
-            self.particle_attach_info[i_p, i_b].local_pos = local_pos
+        pass
 
     @qd.kernel
     def kernel_pbd_rigid_clear_animate_particles_by_link(
@@ -804,13 +789,7 @@ class LegacyCoupler(RBC):
         envs_idx: qd.types.ndarray(),
     ) -> None:
         """Detach listed particles from links, and simulate them freely."""
-        pdb = self.pbd_solver
-        for i_p_, i_b_ in qd.ndrange(particles_idx.shape[1], envs_idx.shape[0]):
-            i_p = particles_idx[i_b_, i_p_]
-            i_b = envs_idx[i_b_]
-            pdb.particles[i_p, i_b].free = True
-            self.particle_attach_info[i_p, i_b].link_idx = -1
-            self.particle_attach_info[i_p, i_b].local_pos = qd.math.vec3([0.0, 0.0, 0.0])
+        pass
 
     @qd.kernel
     def kernel_pbd_rigid_solve_animate_particles_by_link(self, clamped_inv_dt: qd.f32, links_state: LinksState):
@@ -996,29 +975,9 @@ class LegacyCoupler(RBC):
             self.fem_rigid_link_constraints()
 
     def couple_grad(self, f):
-        if self.fem_solver.is_active:
-            self.fem_surface_force.grad(
-                f,
-                self.rigid_solver.geoms_state,
-                self.rigid_solver.geoms_info,
-                self.rigid_solver.links_state,
-                self.rigid_solver._rigid_global_info,
-                self.rigid_solver.collider._sdf._sdf_info,
-                self.rigid_solver.collider._collider_static_config,
-            )
-        if self.mpm_solver.is_active:
-            self.mpm_grid_op.grad(
-                f,
-                self.sim.cur_t,
-                geoms_state=self.rigid_solver.geoms_state,
-                geoms_info=self.rigid_solver.geoms_info,
-                links_state=self.rigid_solver.links_state,
-                rigid_global_info=self.rigid_solver._rigid_global_info,
-                sdf_info=self.rigid_solver.collider._sdf._sdf_info,
-                collider_static_config=self.rigid_solver.collider._collider_static_config,
-            )
+        pass
 
     @property
     def active_solvers(self):
         """All the active solvers managed by the scene's simulator."""
-        return self.sim.active_solvers
+        pass

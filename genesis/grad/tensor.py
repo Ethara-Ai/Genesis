@@ -71,22 +71,13 @@ class Tensor(torch.Tensor):
         return obj
 
     def backward(self, *args, **kwargs):
-        super().backward(*args, **kwargs)
-
-        # if it's a tensor derived from a genesis Scene, we let the gradient keep flowing
-        if self.scene is not None:
-            self.scene._backward()
+        pass
 
     def zero_grad(self):
         """
         A handy method that resembles nn.Module.zero_grad().
         """
-        if self.grad is not None:
-            if self.grad.grad_fn is not None:
-                self.grad.detach_()
-            else:
-                self.grad.requires_grad_(False)
-            self.grad.zero_()
+        pass
 
     def sceneless(self):
         """
@@ -97,10 +88,7 @@ class Tensor(torch.Tensor):
         return obj
 
     def _backward_from_qd(self, qd_kernel, *args):
-        temp_grad = gs.zeros_like(self, requires_grad=False)
-        temp_grad.assert_contiguous()
-        qd_kernel(*args, temp_grad)
-        self.backward(gradient=temp_grad, retain_graph=True)
+        pass
 
     def assert_contiguous(self):
         if not self.is_contiguous():

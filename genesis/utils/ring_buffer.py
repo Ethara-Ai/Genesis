@@ -93,7 +93,7 @@ class TensorRingBuffer:
         tensor : torch.Tensor
             The tensor to copy into the ring buffer.
         """
-        self.buffer[self._idx] = tensor
+        pass
 
     def rotate(self):
         """

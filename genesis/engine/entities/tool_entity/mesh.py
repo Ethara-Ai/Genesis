@@ -178,35 +178,8 @@ class Mesh:
 
     @qd.func
     def is_collide(self, f, pos_world):
-        flag = 0
-        if qd.static(self.collision):
-            signed_dist = self.sdf(f, pos_world)
-            if signed_dist <= 0:
-                flag = 1
-
-        return flag
+        pass
 
     @qd.func
     def pbd_collide(self, f, pos_world, thickness, dt):
-        return_pos_world = pos_world
-        if qd.static(self.collision):
-            pos_mesh = gu.qd_inv_transform_by_trans_quat(pos_world, self.entity.pos[f], self.entity.quat[f])
-            pos_voxels = gu.qd_transform_by_T(pos_mesh, self.T_mesh_to_sdf[None])
-
-            sdf_voxels = self.sdf_(pos_voxels)
-            normal_vec_voxels = self.normal_(pos_voxels)
-            normal_vec_voxels_ = gu.qd_normalize(normal_vec_voxels, gs.EPS)
-
-            vec_voxels = -sdf_voxels * normal_vec_voxels_
-            R_voxels_to_mesh = self.T_mesh_to_sdf[None][:3, :3].inverse()
-            vec_mesh = R_voxels_to_mesh @ vec_voxels
-            vec_world = gu.qd_transform_by_quat(vec_mesh, self.entity.quat[f])
-            vec_world_norm = vec_world.norm(gs.EPS)
-
-            if sdf_voxels < 0:
-                return_pos_world += vec_world / vec_world_norm * (vec_world_norm + thickness)
-
-            if sdf_voxels > 0 and sdf_voxels < 1 and vec_world_norm < thickness:
-                return_pos_world += vec_world / vec_world_norm * (vec_world_norm - thickness)
-
-        return return_pos_world
+        pass

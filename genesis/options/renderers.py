@@ -122,19 +122,10 @@ class RayTracer(RendererOptions):
     @model_validator(mode="before")
     @classmethod
     def _resolve_env_euler(cls, data: dict) -> dict:
-        env_euler = data.get("env_euler")
-        env_quat = data.get("env_quat")
-        if env_euler is not None and env_quat is not None:
-            gs.raise_exception("'env_euler' and 'env_quat' cannot both be set.")
-        if env_quat is None:
-            if env_euler is None:
-                env_euler = (0.0, 0.0, 0.0)
-            data["env_quat"] = tuple(gs.utils.geom.xyz_to_quat(np.array(env_euler), rpy=True, degrees=True))
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.env_surface is not None:
-            self.env_surface.update_texture()
+        pass
 
 
 class BatchRenderer(RendererOptions):

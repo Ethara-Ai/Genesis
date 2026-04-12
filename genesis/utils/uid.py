@@ -8,7 +8,7 @@ class UID(RBC):
         self.uid = uuid.uuid4().hex
 
     def _repr_brief(self):
-        return self.__repr__()
+        pass
 
     def __repr__(self) -> str:
         return f"{self.__repr_name__()}('{self.full()}')"

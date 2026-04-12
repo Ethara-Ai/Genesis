@@ -100,14 +100,7 @@ class EGLDevice:
 
     @property
     def name(self):
-        if self._display is None:
-            return "default"
-
-        name = _eglQueryDeviceStringEXT(self._display, EGL_DRM_DEVICE_FILE_EXT)
-        if name is None:
-            return None
-
-        return name.decode("ascii")
+        pass
 
     def __repr__(self):
         return "<EGLDevice(name={})>".format(self.name)

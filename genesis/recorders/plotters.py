@@ -83,13 +83,7 @@ class BasePlotter(Recorder):
                 # it may have already dequeued data but not yet appended the rendered frame to the buffer.
                 # When not threaded, frames are produced synchronously before this call, so an empty
                 # buffer means something went wrong — the None check handles that case too.
-                while not plotter._frames_buffer:
-                    if plotter._processor_thread is None or not plotter._processor_thread.is_alive():
-                        gs.raise_exception(
-                            f"[{type(plotter).__name__}] No frame available and plotter thread is not running."
-                        )
-                    time.sleep(0.01)
-                return plotter._frames_buffer.pop(0)
+                pass
 
             self.video_writer = self._manager.add_recorder(
                 data_func=partial(_get_video_frame_buffer, self),
@@ -230,15 +224,15 @@ class LinePlotHelper:
 
     @property
     def history_length(self):
-        return self._history_length
+        pass
 
     @property
     def is_dict_data(self):
-        return self._is_dict_data
+        pass
 
     @property
     def subplot_structure(self):
-        return self._subplot_structure
+        pass
 
 
 class BasePyQtPlotter(BasePlotter):
@@ -287,7 +281,7 @@ class BasePyQtPlotter(BasePlotter):
 
     @property
     def run_in_thread(self) -> bool:
-        return False
+        pass
 
     def get_image_array(self):
         """
@@ -449,16 +443,7 @@ class BaseMPLPlotter(BasePlotter):
 
     @cached_property
     def run_in_thread(self) -> bool:
-        from matplotlib.backends.backend_agg import FigureCanvasAgg
-
-        if sys.platform == "darwin":
-            return False
-        if self._is_built:
-            assert self.fig is not None
-            # All Agg-based backends derives from the surfaceless Agg backend, so 'isinstance' cannot be used to
-            # discriminate the latter from others.
-            return type(self.fig.canvas) is FigureCanvasAgg
-        return not self._options.show_window
+        pass
 
 
 @register_recording(MPLLinePlotterOptions)
@@ -721,13 +706,7 @@ class MPLVectorFieldPlotter(BaseMPLPlotter):
         self.fig.canvas.mpl_connect("resize_event", self.on_resize)
 
     def on_resize(self, event):
-        self._lock.acquire()
-        try:
-            if self.fig is not None and self.ax is not None:
-                self.fig.canvas.draw()
-                self._background = self.fig.canvas.copy_from_bbox(self.ax.bbox)
-        finally:
-            self._lock.release()
+        pass
 
     def process(self, data, cur_time):
         """Process new vector data and update the quiver plot."""

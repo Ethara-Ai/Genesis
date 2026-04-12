@@ -378,18 +378,7 @@ class Keybindings:
         new_key_mods: tuple[KeyMod] | None,
         new_key_action: KeyAction | None = None,
     ) -> None:
-        if name not in self._keybinds:
-            raise ValueError(f"No keybind found with name '{name}'.")
-        kb = self._keybinds[name]
-        self._keybinds[name] = Keybind(
-            name=kb.name,
-            key=new_key or kb.key,
-            key_action=new_key_action or kb.key_action,
-            key_mods=new_key_mods,
-            callback=kb.callback,
-            args=kb.args,
-            kwargs=kb.kwargs,
-        )
+        pass
 
     def get(self, key: int, modifiers: int, key_action: KeyAction) -> Keybind | None:
         key_hash = get_key_hash(key, modifiers, key_action)
@@ -406,7 +395,7 @@ class Keybindings:
         return None
 
     def get_by_name(self, name: str) -> Keybind | None:
-        return self._keybinds.get(name)
+        pass
 
     def __len__(self) -> int:
         return len(self._keybinds)
@@ -414,4 +403,4 @@ class Keybindings:
     @property
     def keybinds(self) -> tuple[Keybind, ...]:
         """Return a tuple of all registered Keybinds."""
-        return tuple(self._keybinds.values())
+        pass

@@ -97,168 +97,136 @@ class Scene(object):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def nodes(self):
         """set of :class:`Node` : Set of nodes in the scene."""
-        return self._nodes
+        pass
 
     @property
     def bg_color(self):
         """(3,) float : The scene background color."""
-        return self._bg_color
+        pass
 
     @bg_color.setter
     def bg_color(self, value):
-        if value is None:
-            value = np.ones(4)
-        else:
-            value = format_color_vector(value, 4)
-        self._bg_color = value
+        pass
 
     @property
     def ambient_light(self):
         """(3,) float : The ambient light in the scene."""
-        return self._ambient_light
+        pass
 
     @ambient_light.setter
     def ambient_light(self, value):
-        if value is None:
-            value = np.zeros(3)
-        else:
-            value = format_color_vector(value, 3)
-        self._ambient_light = value
+        pass
 
     def reset_meshes_updated(self):
         self._meshes_updated = False
 
     @property
     def meshes_updated(self):
-        return self._meshes_updated
+        pass
 
     @property
     def meshes(self):
         """set of :class:`Mesh` : The meshes in the scene."""
-        return set([n.mesh for n in self.mesh_nodes])
+        pass
 
     @property
     def mesh_nodes(self):
         """set of :class:`Node` : The nodes containing meshes."""
-        return self._mesh_nodes
+        pass
 
     @property
     def lights(self):
         """set of :class:`Light` : The lights in the scene."""
-        return self.point_lights | self.spot_lights | self.directional_lights
+        pass
 
     @property
     def light_nodes(self):
         """set of :class:`Node` : The nodes containing lights."""
-        return self.point_light_nodes | self.spot_light_nodes | self.directional_light_nodes
+        pass
 
     @property
     def point_lights(self):
         """set of :class:`PointLight` : The point lights in the scene."""
-        return set([n.light for n in self.point_light_nodes])
+        pass
 
     @property
     def point_light_nodes(self):
         """set of :class:`Node` : The nodes containing point lights."""
-        return self._point_light_nodes
+        pass
 
     @property
     def spot_lights(self):
         """set of :class:`SpotLight` : The spot lights in the scene."""
-        return set([n.light for n in self.spot_light_nodes])
+        pass
 
     @property
     def spot_light_nodes(self):
         """set of :class:`Node` : The nodes containing spot lights."""
-        return self._spot_light_nodes
+        pass
 
     @property
     def directional_lights(self):
         """set of :class:`DirectionalLight` : The directional lights in
         the scene.
         """
-        return set([n.light for n in self.directional_light_nodes])
+        pass
 
     @property
     def directional_light_nodes(self):
         """set of :class:`Node` : The nodes containing directional lights."""
-        return self._directional_light_nodes
+        pass
 
     @property
     def cameras(self):
         """set of :class:`Camera` : The cameras in the scene."""
-        return set([n.camera for n in self.camera_nodes])
+        pass
 
     @property
     def camera_nodes(self):
         """set of :class:`Node` : The nodes containing cameras in the scene."""
-        return self._camera_nodes
+        pass
 
     @property
     def main_camera_node(self):
         """set of :class:`Node` : The node containing the main camera in the
         scene.
         """
-        return self._main_camera_node
+        pass
 
     @main_camera_node.setter
     def main_camera_node(self, value):
-        if value not in self.nodes:
-            raise ValueError("New main camera node must already be in scene")
-        self._main_camera_node = value
+        pass
 
     @property
     def bounds(self):
         """(2,3) float : The axis-aligned bounds of the scene."""
-        if self._bounds is None:
-            corners = []
-            for mesh_node in self.mesh_nodes:
-                mesh = mesh_node.mesh
-                if mesh.is_marker:
-                    continue
-                if any(primitive.is_floor for primitive in mesh.primitives):
-                    # Only take into account the centroid for floor plane
-                    corners_local = mesh.centroid[np.newaxis]
-                else:
-                    # corners_local = trimesh.bounds.corners(mesh.bounds)
-                    corners_local = mesh.bounds.reshape(-1)[CORNER_INDICES]
-                pose = self.get_pose(mesh_node)
-                corners_world = corners_local @ pose[:3, :3].T + pose[:3, 3]
-                corners.append(corners_world)
-            if corners:
-                corners = np.concatenate(corners, axis=0)
-                self._bounds = np.stack((np.min(corners, axis=0), np.max(corners, axis=0)), axis=0)
-            else:
-                self._bounds = np.zeros((2, 3))
-        return self._bounds
+        pass
 
     @property
     def centroid(self):
         """(3,) float : The centroid of the scene's axis-aligned bounding box
         (AABB).
         """
-        return np.mean(self.bounds, axis=0)
+        pass
 
     @property
     def extents(self):
         """(3,) float : The lengths of the axes of the scene's AABB."""
-        return self.bounds[1] - self.bounds[0]
+        pass
 
     @property
     def scale(self):
         """(3,) float : The length of the diagonal of the scene's AABB."""
-        return max(np.linalg.norm(self.extents), 1e-7)
+        pass
 
     def add(self, obj, name=None, pose=None, parent_node=None, parent_name=None):
         """Add an object (mesh, light, or camera) to the scene.
@@ -588,18 +556,7 @@ class Scene(object):
         scene_pr : :class:`Scene`
             A scene containing the same geometry as the trimesh scene.
         """
-        # convert trimesh geometries to pyrender geometries
-        geometries = {name: Mesh.from_trimesh(geom) for name, geom in trimesh_scene.geometry.items()}
-
-        # create the pyrender scene object
-        scene_pr = Scene(bg_color=bg_color, ambient_light=ambient_light)
-
-        # add every node with geometry to the pyrender scene
-        for node in trimesh_scene.graph.nodes_geometry:
-            pose, geom_name = trimesh_scene.graph[node]
-            scene_pr.add(geometries[geom_name], pose=pose)
-
-        return scene_pr
+        pass
 
     def sorted_mesh_nodes(self):
         cam_pos = self.get_pose(self.main_camera_node)

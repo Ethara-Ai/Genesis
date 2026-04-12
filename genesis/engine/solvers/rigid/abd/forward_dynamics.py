@@ -241,20 +241,7 @@ def kernel_forward_dynamics(
     static_rigid_sim_config: qd.template(),
     contact_island_state: array_class.ContactIslandState,
 ):
-    func_forward_dynamics(
-        links_state=links_state,
-        links_info=links_info,
-        dofs_state=dofs_state,
-        dofs_info=dofs_info,
-        joints_info=joints_info,
-        entities_state=entities_state,
-        entities_info=entities_info,
-        geoms_state=geoms_state,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        contact_island_state=contact_island_state,
-        is_backward=False,
-    )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)
@@ -266,16 +253,7 @@ def kernel_update_acc(
     rigid_global_info: array_class.RigidGlobalInfo,
     static_rigid_sim_config: qd.template(),
 ):
-    func_update_acc(
-        update_cacc=True,
-        dofs_state=dofs_state,
-        links_info=links_info,
-        links_state=links_state,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=False,
-    )
+    pass
 
 
 @qd.func
@@ -283,9 +261,7 @@ def func_vel_at_point(pos_world, link_idx, i_b, links_state: array_class.LinksSt
     """
     Velocity of a certain point on a rigid link.
     """
-    vel_rot = links_state.cd_ang[link_idx, i_b].cross(pos_world - links_state.root_COM[link_idx, i_b])
-    vel_lin = links_state.cd_vel[link_idx, i_b]
-    return vel_rot + vel_lin
+    pass
 
 
 @qd.func
@@ -1402,26 +1378,7 @@ def func_update_force(
 
 @qd.func
 def func_actuation(self):
-    if qd.static(self._use_hibernation):
-        pass
-    else:
-        qd.loop_config(serialize=self._para_level < gs.PARA_LEVEL.ALL)
-        for i_l, i_b in qd.ndrange(self.n_links, self._B):
-            I_l = [i_l, i_b] if qd.static(self._options.batch_links_info) else i_l
-            for i_j in range(self.links_info.joint_start[I_l], self.links_info.joint_end[I_l]):
-                I_j = [i_j, i_b] if qd.static(self._options.batch_joints_info) else i_j
-                joint_type = self.joints_info.type[I_j]
-                q_start = self.joints_info.q_start[I_j]
-
-                if joint_type == gs.JOINT_TYPE.REVOLUTE or joint_type == gs.JOINT_TYPE.PRISMATIC:
-                    gear = -1  # TODO
-                    i_d = self.links_info.dof_start[I_l]
-                    self.dofs_state.act_length[i_d, i_b] = gear * self.qpos[q_start, i_b]
-                    self.dofs_state.qf_actuator[i_d, i_b] = self.dofs_state.act_length[i_d, i_b]
-                else:
-                    for i_d in range(self.links_info.dof_start[I_l], self.links_info.dof_end[I_l]):
-                        self.dofs_state.act_length[i_d, i_b] = 0.0
-                        self.dofs_state.qf_actuator[i_d, i_b] = self.dofs_state.act_length[i_d, i_b]
+    pass
 
 
 @qd.func
@@ -1494,13 +1451,7 @@ def kernel_compute_qacc(
     static_rigid_sim_config: qd.template(),
     is_backward: qd.template(),
 ):
-    func_compute_qacc(
-        dofs_state=dofs_state,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
+    pass
 
 
 @qd.func
@@ -1722,66 +1673,7 @@ def kernel_forward_dynamics_without_qacc(
     contact_island_state: array_class.ContactIslandState,
     is_backward: qd.template(),
 ):
-    func_compute_mass_matrix(
-        implicit_damping=qd.static(static_rigid_sim_config.integrator == gs.integrator.approximate_implicitfast),
-        links_state=links_state,
-        links_info=links_info,
-        dofs_state=dofs_state,
-        dofs_info=dofs_info,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
-    func_factor_mass(
-        implicit_damping=False,
-        entities_info=entities_info,
-        dofs_state=dofs_state,
-        dofs_info=dofs_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
-    func_torque_and_passive_force(
-        entities_state=entities_state,
-        entities_info=entities_info,
-        dofs_state=dofs_state,
-        dofs_info=dofs_info,
-        links_state=links_state,
-        links_info=links_info,
-        joints_info=joints_info,
-        geoms_state=geoms_state,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        contact_island_state=contact_island_state,
-        is_backward=is_backward,
-    )
-    func_update_acc(
-        update_cacc=False,
-        dofs_state=dofs_state,
-        links_info=links_info,
-        links_state=links_state,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
-    func_update_force(
-        links_state=links_state,
-        links_info=links_info,
-        entities_info=entities_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
-    func_bias_force(
-        dofs_state=dofs_state,
-        links_state=links_state,
-        links_info=links_info,
-        rigid_global_info=rigid_global_info,
-        static_rigid_sim_config=static_rigid_sim_config,
-        is_backward=is_backward,
-    )
+    pass
 
 
 @qd.func

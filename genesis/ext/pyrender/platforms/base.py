@@ -20,20 +20,20 @@ class Platform(metaclass=ABCMeta):
     @property
     def viewport_width(self):
         """int : The width of the main viewport, in pixels."""
-        return self._viewport_width
+        pass
 
     @viewport_width.setter
     def viewport_width(self, value):
-        self._viewport_width = value
+        pass
 
     @property
     def viewport_height(self):
         """int : The height of the main viewport, in pixels."""
-        return self._viewport_height
+        pass
 
     @viewport_height.setter
     def viewport_height(self, value):
-        self._viewport_height = value
+        pass
 
     @abc.abstractmethod
     def init_context(self):

@@ -119,36 +119,17 @@ class redirect_libc_stderr:
 
 
 def assert_initialized(cls):
-    original_init = cls.__init__
-
-    @functools.wraps(original_init)
-    def new_init(self, *args, **kwargs):
-        if not gs._initialized:
-            gs.raise_exception("Genesis hasn't been initialized. Did you call `gs.init()`?")
-        original_init(self, *args, **kwargs)
-
-    cls.__init__ = new_init
-    return cls
+    pass
 
 
 def assert_unbuilt(method):
     @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if self.is_built:
-            gs.raise_exception("Scene is already built.")
-        return method(self, *args, **kwargs)
-
-    return wrapper
+    pass
 
 
 def assert_built(method):
     @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if not self.is_built:
-            gs.raise_exception(f"{type(self).__name__} is not built yet.")
-        return method(self, *args, **kwargs)
-
-    return wrapper
+    pass
 
 
 def set_random_seed(seed):
@@ -207,9 +188,7 @@ def get_src_dir():
 
 
 def get_gen_log_dir():
-    current_time = datetime.datetime.now()
-    unique_id = current_time.strftime("%Y%m%d_%H%M%S_%f")
-    return os.path.join(os.path.dirname(gs.__file__), "gen", "logs", unique_id)
+    pass
 
 
 def get_assets_dir():
@@ -229,7 +208,7 @@ def get_cache_dir():
 
 
 def get_gsd_cache_dir():
-    return os.path.join(get_cache_dir(), "gsd")
+    pass
 
 
 def get_gnd_cache_dir():
@@ -237,7 +216,7 @@ def get_gnd_cache_dir():
 
 
 def get_cvx_cache_dir():
-    return os.path.join(get_cache_dir(), "cvx")
+    pass
 
 
 def get_ptc_cache_dir():
@@ -249,7 +228,7 @@ def get_tet_cache_dir():
 
 
 def get_gel_cache_dir():
-    return os.path.join(get_cache_dir(), "gel")
+    pass
 
 
 def get_remesh_cache_dir():
@@ -257,7 +236,7 @@ def get_remesh_cache_dir():
 
 
 def get_exr_cache_dir():
-    return os.path.join(get_cache_dir(), "exr")
+    pass
 
 
 def get_usd_cache_dir():
@@ -281,8 +260,7 @@ def harmonic_mean(a, b):
 
 
 def assert_gs_tensor(x):
-    if not isinstance(x, gs.Tensor):
-        gs.raise_exception("Only accepts genesis.Tensor.")
+    pass
 
 
 def to_gs_tensor(x, dtype: torch.dtype | None = None):
@@ -306,7 +284,7 @@ def tensor_to_array(x: torch.Tensor, dtype: type[np.generic] | None = None) -> n
 
 
 def is_approx_multiple(a, b, tol=1e-7):
-    return abs(a % b) < tol or abs(b - (a % b)) < tol
+    pass
 
 
 def concat_with_tensor(
@@ -348,9 +326,7 @@ def make_tensor_field(shape: tuple[int, ...] = (), dtype_factory: Callable[[], t
     assert not shape or math.prod(shape) == 0
 
     def _default_factory():
-        nonlocal shape, dtype_factory
-        dtype = dtype_factory() if dtype_factory is not None else gs.tc_float
-        return torch.empty(shape, dtype=dtype, device=gs.device)
+        pass
 
     return field(default_factory=_default_factory)
 

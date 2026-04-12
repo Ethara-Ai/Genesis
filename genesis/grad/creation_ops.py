@@ -39,25 +39,7 @@ _torch_ops = (
 
 def torch_op_wrapper(torch_op):
     @wraps(torch_op)
-    def _wrapper(*args, dtype=None, requires_grad=False, scene=None, **kwargs):
-        if "device" in kwargs:
-            gs.raise_exception("Device selection not supported. All genesis tensors are on GPU.")
-
-        if not gs._initialized:
-            gs.raise_exception("Genesis not initialized yet.")
-
-        if torch_op is torch.from_numpy:
-            torch_tensor = torch_op(*args)
-        else:
-            torch_tensor = torch_op(*args, **kwargs)
-
-        return from_torch(torch_tensor, dtype, requires_grad, detach=True, scene=scene)
-
-    _wrapper.__doc__ = (
-        f"This method is the genesis wrapper of `torch.{torch_op.__name__}`.\n\n------------------\n{_wrapper.__doc__}"
-    )
-
-    return _wrapper
+    pass
 
 
 def from_torch(torch_tensor, dtype=None, requires_grad=False, detach=True, scene=None):

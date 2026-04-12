@@ -41,11 +41,7 @@ class Emitter(RBC):
         entity : Entity
             The entity to associate with the emitter. This entity should contain the solver, simulation context, and particle sampler.
         """
-        self._entity = entity
-        self._sim = entity.sim
-        self._solver = entity.solver
-        self._next_particle = 0
-        gs.logger.info(f"~<{self._repr_briefer()}>~ created using ~<{entity._repr_briefer()}.")
+        pass
 
     def reset(self):
         """
@@ -91,99 +87,7 @@ class Emitter(RBC):
         Exception
             If the shape is unsupported or the emission would place particles outside the simulation boundary.
         """
-        assert self._entity is not None
-
-        if droplet_shape in ["circle", "sphere", "square"]:
-            assert isinstance(droplet_size, (int, float))
-        elif droplet_shape == "rectangle":
-            assert isinstance(droplet_size, (tuple, list)) and len(droplet_size) == 2
-        else:
-            gs.raise_exception(f"Unsupported nozzle shape: {droplet_shape}.")
-
-        direction = np.asarray(direction, dtype=gs.np_float)
-        if np.linalg.norm(direction) < gs.EPS:
-            gs.raise_exception("Zero-length direction.")
-        else:
-            direction = gu.normalize(direction)
-
-        p_size = self._entity.particle_size if p_size is None else p_size
-
-        if droplet_length is None:
-            # Use the speed to determine the length of the droplet in the emitting direction
-            droplet_length = speed * self._solver.substep_dt * self._sim.substeps + self._acc_droplet_len
-            if droplet_length < p_size:  # too short, so we should not emit
-                self._acc_droplet_len = droplet_length
-                droplet_length = 0.0
-            else:
-                self._acc_droplet_len = 0.0
-
-        if droplet_length > 0.0:
-            if droplet_shape == "circle":
-                positions = pu.cylinder_to_particles(
-                    p_size=p_size,
-                    radius=droplet_size / 2,
-                    height=droplet_length,
-                    sampler=self._entity.sampler,
-                )
-            elif droplet_shape == "sphere":  # sphere droplet ignores droplet_length
-                positions = pu.sphere_to_particles(
-                    p_size=p_size,
-                    radius=droplet_size / 2,
-                    sampler=self._entity.sampler,
-                )
-            elif droplet_shape == "square":
-                positions = pu.box_to_particles(
-                    p_size=p_size,
-                    size=np.array([droplet_size, droplet_size, droplet_length]),
-                    sampler=self._entity.sampler,
-                )
-            elif droplet_shape == "rectangle":
-                positions = pu.box_to_particles(
-                    p_size=p_size,
-                    size=np.array([droplet_size[0], droplet_size[1], droplet_length]),
-                    sampler=self._entity.sampler,
-                )
-            else:
-                gs.raise_exception(f"Unsupported droplet shape '{droplet_shape}'")
-
-            positions = gu.transform_by_trans_R(
-                positions.astype(gs.np_float, copy=False),
-                np.asarray(pos, dtype=gs.np_float),
-                gu.z_up_to_R(direction) @ gu.axis_angle_to_R(np.array([0.0, 0.0, 1.0], dtype=gs.np_float), theta),
-            )
-
-            if not self._solver.boundary.is_inside(positions):
-                gs.raise_exception("Emitted particles are outside the boundary.")
-
-            n_particles = len(positions)
-
-            # Expand vels with batch dimension
-            vels = speed * direction
-
-            if n_particles > self._entity.n_particles:
-                gs.raise_exception(
-                    f"Number of particles to emit ({n_particles}) at the current step is larger than the maximum "
-                    f"number of particles ({self._entity.n_particles})."
-                )
-
-            particles_idx = torch.arange(
-                self._next_particle, self._next_particle + n_particles, dtype=gs.tc_int, device=gs.device
-            )
-
-            self._entity.set_particles_pos(positions, particles_idx)
-            self._entity.set_particles_vel(vels, particles_idx)
-            self._entity.set_particles_active(gs.ACTIVE, particles_idx)
-
-            self._next_particle += n_particles
-
-            # recycle particles
-            if self._next_particle + n_particles > self._entity.n_particles:
-                self._next_particle = 0
-
-            gs.logger.debug(f"Emitted {n_particles} particles. Next particle index: {self._next_particle}.")
-
-        else:
-            gs.logger.debug("Droplet length is too short for current step. Skipping to next step.")
+        pass
 
     def emit_omni(self, source_radius=0.1, pos=(0.5, 0.5, 1.0), speed=1.0, particle_size=None):
         """
@@ -204,72 +108,29 @@ class Emitter(RBC):
             Note that this particle size only affects computation for number of particles emitted, not the actual size
             of the particles in simulation and rendering.
         """
-        assert self._entity is not None
-
-        pos = np.asarray(pos, dtype=gs.np_float)
-
-        if particle_size is None:
-            particle_size = self._entity.particle_size
-
-        positions_ = pu.shell_to_particles(
-            p_size=particle_size,
-            outer_radius=source_radius,
-            inner_radius=source_radius * 0.4,
-            sampler=self._entity.sampler,
-        )
-        positions = pos + positions_
-
-        if not self._solver.boundary.is_inside(positions):
-            gs.raise_exception("Emitted particles are outside the boundary.")
-
-        dists = np.linalg.norm(positions_, axis=1)
-        positions[dists < gs.EPS] = gs.EPS
-        vels = (speed / (dists[:, None] + gs.EPS)) * positions_
-
-        n_particles = len(positions)
-        if n_particles > self._entity.n_particles:
-            gs.raise_exception(
-                f"Number of particles to emit ({n_particles}) at the current step is larger than the maximum number "
-                f"of particles ({self._entity.n_particles})."
-            )
-
-        particles_idx = torch.arange(
-            self._next_particle, self._next_particle + n_particles, dtype=gs.tc_int, device=gs.device
-        )
-
-        self._entity.set_particles_pos(positions, particles_idx)
-        self._entity.set_particles_vel(vels, particles_idx)
-        self._entity.set_particles_active(gs.ACTIVE, particles_idx)
-
-        self._next_particle += n_particles
-
-        # recycle particles
-        if self._next_particle + n_particles > self._entity.n_particles:
-            self._next_particle = 0
-
-        gs.logger.debug(f"Emitted {n_particles} particles. Next particle index: {self._next_particle}.")
+        pass
 
     @property
     def uid(self):
         """The unique identifier of the emitter."""
-        return self._uid
+        pass
 
     @property
     def entity(self):
         """The entity associated with the emitter."""
-        return self._entity
+        pass
 
     @property
     def max_particles(self):
         """The maximum number of particles this emitter can emit."""
-        return self._max_particles
+        pass
 
     @property
     def solver(self):
         """The solver used by the emitter's associated entity."""
-        return self._solver
+        pass
 
     @property
     def next_particle(self):
         """The index of the next particle to be emitted."""
-        return self._next_particle
+        pass

@@ -114,157 +114,125 @@ class Material(metaclass=ABCMeta):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def normalTexture(self):
         """(n,n,3) float or :class:`Texture` : The tangent-space normal map."""
-        return self._normalTexture
+        pass
 
     @normalTexture.setter
     def normalTexture(self, value):
         # TODO TMP
-        self._normalTexture = self._format_texture(value, "RGB")
-        self._tex_flags = None
+        pass
 
     @property
     def occlusionTexture(self):
         """(n,n,1) float or :class:`Texture` : The ambient occlusion map."""
-        return self._occlusionTexture
+        pass
 
     @occlusionTexture.setter
     def occlusionTexture(self, value):
-        self._occlusionTexture = self._format_texture(value, "R")
-        self._tex_flags = None
+        pass
 
     @property
     def emissiveTexture(self):
         """(n,n,3) float or :class:`Texture` : The emission map."""
-        return self._emissiveTexture
+        pass
 
     @emissiveTexture.setter
     def emissiveTexture(self, value):
-        self._emissiveTexture = self._format_texture(value, "RGB")
-        self._tex_flags = None
+        pass
 
     @property
     def emissiveFactor(self):
         """(3,) float : Base multiplier for emission colors."""
-        return self._emissiveFactor
+        pass
 
     @emissiveFactor.setter
     def emissiveFactor(self, value):
-        if value is None:
-            value = np.zeros(3)
-        self._emissiveFactor = format_color_vector(value, 3)
+        pass
 
     @property
     def alphaMode(self):
         """str : The mode for blending."""
-        return self._alphaMode
+        pass
 
     @alphaMode.setter
     def alphaMode(self, value):
-        if value not in set(["OPAQUE", "MASK", "BLEND"]):
-            raise ValueError("Invalid alpha mode {}".format(value))
-        self._alphaMode = value
+        pass
 
     @property
     def alphaCutoff(self):
         """float : The cutoff threshold in MASK mode."""
-        return self._alphaCutoff
+        pass
 
     @alphaCutoff.setter
     def alphaCutoff(self, value):
-        if value < 0 or value > 1:
-            raise ValueError("Alpha cutoff must be in range [0,1]")
-        self._alphaCutoff = float(value)
+        pass
 
     @property
     def doubleSided(self):
         """bool : Whether the material is double-sided."""
-        return self._doubleSided
+        pass
 
     @doubleSided.setter
     def doubleSided(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Double sided must be a boolean value")
-        self._doubleSided = value
+        pass
 
     @property
     def smooth(self):
         """bool : Whether to render the mesh smoothly by
         interpolating vertex normals.
         """
-        return self._smooth
+        pass
 
     @smooth.setter
     def smooth(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Double sided must be a boolean value")
-        self._smooth = value
+        pass
 
     @property
     def wireframe(self):
         """bool : Whether to render the mesh in wireframe mode."""
-        return self._wireframe
+        pass
 
     @wireframe.setter
     def wireframe(self, value):
-        if not isinstance(value, bool):
-            raise TypeError("Wireframe must be a boolean value")
-        self._wireframe = value
+        pass
 
     @property
     def is_transparent(self):
         """bool : If True, the object is partially transparent."""
-        return self._compute_transparency()
+        pass
 
     @property
     def tex_flags(self):
         """int : Texture availability flags."""
-        if self._tex_flags is None:
-            self._tex_flags = self._compute_tex_flags()
-        return self._tex_flags
+        pass
 
     @property
     def textures(self):
         """list of :class:`Texture` : The textures associated with this
         material.
         """
-        return self._compute_textures()
+        pass
 
     def _compute_transparency(self):
-        return False
+        pass
 
     def _compute_tex_flags(self):
-        tex_flags = TexFlags.NONE
-        if self.normalTexture is not None:
-            tex_flags |= TexFlags.NORMAL
-        if self.occlusionTexture is not None:
-            tex_flags |= TexFlags.OCCLUSION
-        if self.emissiveTexture is not None:
-            tex_flags |= TexFlags.EMISSIVE
-        return tex_flags
+        pass
 
     def _compute_textures(self):
-        all_textures = [self.normalTexture, self.occlusionTexture, self.emissiveTexture]
-        textures = set([t for t in all_textures if t is not None])
-        return textures
+        pass
 
     def _format_texture(self, texture, target_channels="RGB"):
         """Format a texture as a float32 np array."""
-        if isinstance(texture, Texture) or texture is None:
-            return texture
-        else:
-            source = format_texture_source(texture, target_channels)
-            return Texture(source=source, source_channels=target_channels)
+        pass
 
 
 class MetallicRoughnessMaterial(Material):
@@ -401,86 +369,56 @@ class MetallicRoughnessMaterial(Material):
     @property
     def baseColorFactor(self):
         """(4,) float or :class:`Texture` : The RGBA base color multiplier."""
-        return self._baseColorFactor
+        pass
 
     @baseColorFactor.setter
     def baseColorFactor(self, value):
-        if value is None:
-            value = np.ones(4)
-        self._baseColorFactor = format_color_vector(value, 4)
+        pass
 
     @property
     def baseColorTexture(self):
         """(n,n,4) float or :class:`Texture` : The diffuse texture."""
-        return self._baseColorTexture
+        pass
 
     @baseColorTexture.setter
     def baseColorTexture(self, value):
-        self._baseColorTexture = self._format_texture(value, "RGBA")
-        self._tex_flags = None
+        pass
 
     @property
     def metallicFactor(self):
         """float : The metalness of the material."""
-        return self._metallicFactor
+        pass
 
     @metallicFactor.setter
     def metallicFactor(self, value):
-        if value is None:
-            value = 1.0
-        if value < 0 or value > 1:
-            raise ValueError("Metallic factor must be in range [0,1]")
-        self._metallicFactor = float(value)
+        pass
 
     @property
     def roughnessFactor(self):
         """float : The roughness of the material."""
-        return self.RoughnessFactor
+        pass
 
     @roughnessFactor.setter
     def roughnessFactor(self, value):
-        if value is None:
-            value = 1.0
-        if value < 0 or value > 1:
-            raise ValueError("Roughness factor must be in range [0,1]")
-        self.RoughnessFactor = float(value)
+        pass
 
     @property
     def metallicRoughnessTexture(self):
         """(n,n,2) float or :class:`Texture` : The metallic-roughness texture."""
-        return self._metallicRoughnessTexture
+        pass
 
     @metallicRoughnessTexture.setter
     def metallicRoughnessTexture(self, value):
-        self._metallicRoughnessTexture = self._format_texture(value, "GB")
-        self._tex_flags = None
+        pass
 
     def _compute_tex_flags(self):
-        tex_flags = super(MetallicRoughnessMaterial, self)._compute_tex_flags()
-        if self.baseColorTexture is not None:
-            tex_flags |= TexFlags.BASE_COLOR
-        if self.metallicRoughnessTexture is not None:
-            tex_flags |= TexFlags.METALLIC_ROUGHNESS
-        return tex_flags
+        pass
 
     def _compute_transparency(self):
-        if self.alphaMode == "OPAQUE":
-            return False
-        cutoff = self.alphaCutoff
-        if self.alphaMode == "BLEND":
-            cutoff = 1.0
-        if self.baseColorFactor[3] < cutoff:
-            return True
-        if self.baseColorTexture is not None and self.baseColorTexture.is_transparent(cutoff):
-            return True
-        return False
+        pass
 
     def _compute_textures(self):
-        textures = super(MetallicRoughnessMaterial, self)._compute_textures()
-        all_textures = [self.baseColorTexture, self.metallicRoughnessTexture]
-        all_textures = {t for t in all_textures if t is not None}
-        textures |= all_textures
-        return textures
+        pass
 
 
 class SpecularGlossinessMaterial(Material):
@@ -612,75 +550,53 @@ class SpecularGlossinessMaterial(Material):
     @property
     def diffuseFactor(self):
         """(4,) float : The diffuse base color."""
-        return self._diffuseFactor
+        pass
 
     @diffuseFactor.setter
     def diffuseFactor(self, value):
-        self._diffuseFactor = format_color_vector(value, 4)
+        pass
 
     @property
     def diffuseTexture(self):
         """(n,n,4) float or :class:`Texture` : The diffuse map."""
-        return self._diffuseTexture
+        pass
 
     @diffuseTexture.setter
     def diffuseTexture(self, value):
-        self._diffuseTexture = self._format_texture(value, "RGBA")
-        self._tex_flags = None
+        pass
 
     @property
     def specularFactor(self):
         """(3,) float : The specular color of the material."""
-        return self._specularFactor
+        pass
 
     @specularFactor.setter
     def specularFactor(self, value):
-        self._specularFactor = format_color_vector(value, 3)
+        pass
 
     @property
     def glossinessFactor(self):
         """float : The glossiness of the material."""
-        return self.glossinessFactor
+        pass
 
     @glossinessFactor.setter
     def glossinessFactor(self, value):
-        if value < 0 or value > 1:
-            raise ValueError("glossiness factor must be in range [0,1]")
-        self._glossinessFactor = float(value)
+        pass
 
     @property
     def specularGlossinessTexture(self):
         """(n,n,4) or :class:`Texture` : The specular-glossiness texture."""
-        return self._specularGlossinessTexture
+        pass
 
     @specularGlossinessTexture.setter
     def specularGlossinessTexture(self, value):
-        self._specularGlossinessTexture = self._format_texture(value, "GB")
-        self._tex_flags = None
+        pass
 
     def _compute_tex_flags(self):
-        flags = super(SpecularGlossinessMaterial, self)._compute_tex_flags()
-        if self.diffuseTexture is not None:
-            flags |= TexFlags.DIFFUSE
-        if self.specularGlossinessTexture is not None:
-            flags |= TexFlags.SPECULAR_GLOSSINESS
-        return flags
+        pass
 
     def _compute_transparency(self):
-        if self.alphaMode == "OPAQUE":
-            return False
-        cutoff = self.alphaCutoff
-        if self.alphaMode == "BLEND":
-            cutoff = 1.0
-        if self.diffuseFactor[3] < cutoff:
-            return True
-        if self.diffuseTexture is not None and self.diffuseTexture.is_transparent(cutoff):
-            return True
-        return False
+        pass
 
     def _compute_textures(self):
-        textures = super(SpecularGlossinessMaterial, self)._compute_textures()
-        all_textures = [self.diffuseTexture, self.specularGlossinessTexture]
-        all_textures = {t for t in all_textures if t is not None}
-        textures |= all_textures
-        return textures
+        pass

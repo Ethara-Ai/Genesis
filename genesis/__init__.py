@@ -430,17 +430,11 @@ def destroy():
 
 
 def register_external_module(init_fun: Callable[[], None], destroy_fun: Callable[[], None]) -> None:
-    assert isinstance(init_fun, Callable) and isinstance(destroy_fun, Callable)
-    _module_registry.add((init_fun, destroy_fun))
-
-    # Call init right away if Genesis is already initialized
-    if gs._initialized:
-        init_fun()
+    pass
 
 
 def unregister_external_module(init_fun: Callable[[], None], destroy_fun: Callable[[], None]) -> None:
-    assert isinstance(init_fun, Callable) and isinstance(destroy_fun, Callable)
-    _module_registry.remove((init_fun, destroy_fun))
+    pass
 
 
 ########################## Exception and exit handling ##########################
@@ -451,15 +445,7 @@ class GenesisException(Exception):
 
 
 def _custom_excepthook(exctype, value, tb):
-    print("".join(traceback.format_exception(exctype, value, tb)))
-
-    # Log the exception right before exit if possible
-    global logger
-    try:
-        logger.error(f"{exctype.__name__}: {value}")
-    except (AttributeError, NameError):
-        # Logger may not be configured at this point
-        pass
+    pass
 
 
 # Set the custom excepthook to handle GenesisException

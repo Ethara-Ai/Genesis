@@ -108,9 +108,7 @@ def matrix_to_xyz_rpy(matrix):
     xyz_rpy : (6,) float
         The xyz_rpy vector.
     """
-    xyz = matrix[:3, 3]
-    rpy = matrix_to_rpy(matrix[:3, :3])
-    return np.hstack((xyz, rpy))
+    pass
 
 
 def xyz_rpy_to_matrix(xyz_rpy):

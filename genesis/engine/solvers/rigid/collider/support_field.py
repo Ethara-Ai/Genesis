@@ -92,7 +92,7 @@ class SupportField:
 
     @property
     def is_active(self):
-        return self._is_active
+        pass
 
 
 @qd.kernel
@@ -333,43 +333,7 @@ def _func_count_supports_mesh(
     """
     Count the number of valid support points for a mesh in the given direction.
     """
-    theta = qd.atan2(d_mesh[1], d_mesh[0])  # [-pi, pi]
-    phi = qd.acos(d_mesh[2])  # [0, pi]
-
-    support_res = support_field_info.support_res[None]
-    dot_max = gs.qd_float(-1e20)
-
-    ii = (theta + math.pi) / math.pi / 2 * support_res
-    jj = phi / math.pi * support_res
-
-    count = gs.qd_int(0)
-    for i4 in range(4):
-        i, j = gs.qd_int(0), gs.qd_int(0)
-        if i4 % 2:
-            i = gs.qd_int(qd.math.ceil(ii) % support_res)
-        else:
-            i = gs.qd_int(qd.math.floor(ii) % support_res)
-
-        if i4 // 2 > 0:
-            j = gs.qd_int(qd.math.clamp(qd.math.ceil(jj), 0, support_res - 1))
-            if j == support_res - 1:
-                j = support_res - 2
-        else:
-            j = gs.qd_int(qd.math.clamp(qd.math.floor(jj), 0, support_res - 1))
-            if j == 0:
-                j = 1
-
-        support_idx = gs.qd_int(support_field_info.support_cell_start[i_g] + i * support_res + j)
-        _vid = support_field_info.support_vid[support_idx]
-        pos = support_field_info.support_v[support_idx]
-        dot = pos.dot(d_mesh)
-
-        if dot > dot_max:
-            count = 1
-        elif dot == dot_max:
-            count += 1
-
-    return count
+    pass
 
 
 @qd.func

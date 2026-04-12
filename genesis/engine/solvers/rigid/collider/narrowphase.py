@@ -56,24 +56,7 @@ def func_contact_sphere_sdf(
     collider_static_config: qd.template(),
     sdf_info: array_class.SDFInfo,
 ):
-    is_col = False
-    penetration = gs.qd_float(0.0)
-    normal = qd.Vector.zero(gs.qd_float, 3)
-    contact_pos = qd.Vector.zero(gs.qd_float, 3)
-
-    sphere_center = geoms_state.pos[i_ga, i_b]
-    sphere_radius = geoms_info.data[i_ga][0]
-
-    center_to_b_dist = sdf.sdf_func_world(geoms_state, geoms_info, sdf_info, sphere_center, i_gb, i_b)
-    if center_to_b_dist < sphere_radius:
-        is_col = True
-        normal = sdf.sdf_func_normal_world(
-            geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, sphere_center, i_gb, i_b
-        )
-        penetration = sphere_radius - center_to_b_dist
-        contact_pos = sphere_center - (sphere_radius - 0.5 * penetration) * normal
-
-    return is_col, normal, penetration, contact_pos
+    pass
 
 
 @qd.func
@@ -226,121 +209,7 @@ def func_contact_convex_convex_sdf(
     rigid_global_info: array_class.RigidGlobalInfo,
     enable_edge_detection_fallback: qd.template(),
 ):
-    EPS = rigid_global_info.EPS[None]
-
-    gb_vert_start = geoms_info.vert_start[i_gb]
-    ga_pos = geoms_state.pos[i_ga, i_b]
-    ga_quat = geoms_state.quat[i_ga, i_b]
-    gb_pos = geoms_state.pos[i_gb, i_b]
-    gb_quat = geoms_state.quat[i_gb, i_b]
-
-    is_col = False
-    penetration = gs.qd_float(0.0)
-    normal = qd.Vector.zero(gs.qd_float, 3)
-    contact_pos = qd.Vector.zero(gs.qd_float, 3)
-
-    i_va = i_va_ws
-    if i_va == -1:
-        # start traversing on the vertex graph with a smart initial vertex
-        pos_vb = gu.qd_transform_by_trans_quat(verts_info.init_pos[gb_vert_start], gb_pos, gb_quat)
-        i_va = sdf.sdf_func_find_closest_vert(geoms_state, geoms_info, sdf_info, pos_vb, i_ga, i_b)
-    i_v_closest = i_va
-    pos_v_closest = gu.qd_transform_by_trans_quat(verts_info.init_pos[i_v_closest], ga_pos, ga_quat)
-    sd_v_closest = sdf.sdf_func_world(geoms_state, geoms_info, sdf_info, pos_v_closest, i_gb, i_b)
-
-    while True:
-        for i_neighbor_ in range(
-            collider_info.vert_neighbor_start[i_va],
-            collider_info.vert_neighbor_start[i_va] + collider_info.vert_n_neighbors[i_va],
-        ):
-            i_neighbor = collider_info.vert_neighbors[i_neighbor_]
-            pos_neighbor = gu.qd_transform_by_trans_quat(verts_info.init_pos[i_neighbor], ga_pos, ga_quat)
-            sd_neighbor = sdf.sdf_func_world(geoms_state, geoms_info, sdf_info, pos_neighbor, i_gb, i_b)
-            if sd_neighbor < sd_v_closest - 1e-5:  # 1e-5 (0.01mm) to avoid endless loop due to numerical instability
-                i_v_closest = i_neighbor
-                sd_v_closest = sd_neighbor
-                pos_v_closest = pos_neighbor
-
-        if i_v_closest == i_va:  # no better neighbor
-            break
-        else:
-            i_va = i_v_closest
-
-    # i_va is the deepest vertex
-    pos_a = pos_v_closest
-    if sd_v_closest < 0.0:
-        is_col = True
-        normal = sdf.sdf_func_normal_world(
-            geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, pos_a, i_gb, i_b
-        )
-        penetration = -sd_v_closest
-        contact_pos = pos_a + 0.5 * penetration * normal
-    elif enable_edge_detection_fallback:  # check edge surrounding it
-        for i_neighbor_ in range(
-            collider_info.vert_neighbor_start[i_va],
-            collider_info.vert_neighbor_start[i_va] + collider_info.vert_n_neighbors[i_va],
-        ):
-            i_neighbor = collider_info.vert_neighbors[i_neighbor_]
-
-            p_0 = pos_v_closest
-            p_1 = gu.qd_transform_by_trans_quat(verts_info.init_pos[i_neighbor], ga_pos, ga_quat)
-            vec_01 = gu.qd_normalize(p_1 - p_0, EPS)
-
-            sdf_grad_0_b = sdf.sdf_func_grad_world(
-                geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, p_0, i_gb, i_b
-            )
-            sdf_grad_1_b = sdf.sdf_func_grad_world(
-                geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, p_1, i_gb, i_b
-            )
-
-            # check if the edge on a is facing towards mesh b (I am not 100% sure about this, subject to removal)
-            sdf_grad_0_a = sdf.sdf_func_grad_world(
-                geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, p_0, i_ga, i_b
-            )
-            sdf_grad_1_a = sdf.sdf_func_grad_world(
-                geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, p_1, i_ga, i_b
-            )
-            normal_edge_0 = sdf_grad_0_a - sdf_grad_0_a.dot(vec_01) * vec_01
-            normal_edge_1 = sdf_grad_1_a - sdf_grad_1_a.dot(vec_01) * vec_01
-
-            if normal_edge_0.dot(sdf_grad_0_b) < 0 or normal_edge_1.dot(sdf_grad_1_b) < 0:
-                # check if closest point is between the two points
-                if sdf_grad_0_b.dot(vec_01) < 0 and sdf_grad_1_b.dot(vec_01) > 0:
-                    cur_length = (p_1 - p_0).norm()
-                    ga_sdf_cell_size = sdf_info.geoms_info.sdf_cell_size[i_ga]
-                    while cur_length > ga_sdf_cell_size:
-                        p_mid = 0.5 * (p_0 + p_1)
-                        side = sdf.sdf_func_grad_world(
-                            geoms_state,
-                            geoms_info,
-                            rigid_global_info,
-                            collider_static_config,
-                            sdf_info,
-                            p_mid,
-                            i_gb,
-                            i_b,
-                        ).dot(vec_01)
-                        if side < 0:
-                            p_0 = p_mid
-                        else:
-                            p_1 = p_mid
-
-                        cur_length = 0.5 * cur_length
-
-                    p = 0.5 * (p_0 + p_1)
-
-                    new_penetration = -sdf.sdf_func_world(geoms_state, geoms_info, sdf_info, p, i_gb, i_b)
-
-                    if new_penetration > 0.0:
-                        is_col = True
-                        normal = sdf.sdf_func_normal_world(
-                            geoms_state, geoms_info, rigid_global_info, collider_static_config, sdf_info, p, i_gb, i_b
-                        )
-                        contact_pos = p
-                        penetration = new_penetration
-                        break
-
-    return is_col, normal, penetration, contact_pos, i_va
+    pass
 
 
 @qd.func
@@ -2083,64 +1952,7 @@ def func_narrow_phase_diff_convex_vs_convex(
     diff_contact_input: array_class.DiffContactInput,
 ):
     # Compute reference contacts
-    qd.loop_config(serialize=static_rigid_sim_config.para_level < gs.PARA_LEVEL.PARTIAL)
-    for i_c, i_b in qd.ndrange(collider_state.contact_data.pos.shape[0], collider_state.active_buffer.shape[1]):
-        if i_c < collider_state.n_contacts[i_b]:
-            ref_id = collider_state.diff_contact_input.ref_id[i_b, i_c]
-            is_ref = i_c == ref_id
-            i_ga = collider_state.diff_contact_input.geom_a[i_b, i_c]
-            i_gb = collider_state.diff_contact_input.geom_b[i_b, i_c]
-
-            if is_ref:
-                ref_penetration = -1.0
-                contact_pos, contact_normal, penetration, weight = diff_gjk.func_differentiable_contact(
-                    geoms_state, diff_contact_input, gjk_info, i_ga, i_gb, i_b, i_c, ref_penetration
-                )
-                collider_state.diff_contact_input.ref_penetration[i_b, i_c] = penetration
-
-                func_set_contact(
-                    i_ga,
-                    i_gb,
-                    contact_normal,
-                    contact_pos,
-                    penetration * weight,
-                    i_b,
-                    i_c,
-                    collider_state.contact_data.pair_idx[i_c, i_b],
-                    geoms_state,
-                    geoms_info,
-                    collider_state,
-                    collider_info,
-                )
-
-    # Compute other contacts
-    for i_c, i_b in qd.ndrange(collider_state.contact_data.pos.shape[0], collider_state.active_buffer.shape[1]):
-        if i_c < collider_state.n_contacts[i_b]:
-            ref_id = collider_state.diff_contact_input.ref_id[i_b, i_c]
-            is_ref = i_c == ref_id
-            i_ga = collider_state.diff_contact_input.geom_a[i_b, i_c]
-            i_gb = collider_state.diff_contact_input.geom_b[i_b, i_c]
-
-            if not is_ref:
-                ref_penetration = collider_state.diff_contact_input.ref_penetration[i_b, ref_id]
-                contact_pos, contact_normal, penetration, weight = diff_gjk.func_differentiable_contact(
-                    geoms_state, diff_contact_input, gjk_info, i_ga, i_gb, i_b, i_c, ref_penetration
-                )
-
-                func_set_contact(
-                    i_ga,
-                    i_gb,
-                    contact_normal,
-                    contact_pos,
-                    penetration * weight,
-                    i_b,
-                    i_c,
-                    collider_state.contact_data.pair_idx[i_c, i_b],
-                    geoms_state,
-                    geoms_info,
-                    collider_state,
-                    collider_info,
-                )
+    pass
 
 
 @qd.kernel(fastcache=gs.use_fastcache)

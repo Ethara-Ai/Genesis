@@ -56,12 +56,7 @@ class PBDBaseEntity(ParticleEntity):
         self.solver._kernel_set_particles_pos(particles_idx, envs_idx, poss)
 
     def get_particles_pos(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        poss = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_pos(self._particle_start, self.n_particles, envs_idx, poss)
-        if self._scene.n_envs == 0:
-            poss = poss[0]
-        return poss
+        pass
 
     @gs.assert_built
     def set_particles_vel(self, vels, particles_idx_local=None, envs_idx=None):
@@ -72,12 +67,7 @@ class PBDBaseEntity(ParticleEntity):
         self.solver._kernel_set_particles_vel(particles_idx, envs_idx, vels)
 
     def get_particles_vel(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        vels = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_vel(self._particle_start, self.n_particles, envs_idx, vels)
-        if self._scene.n_envs == 0:
-            vels = vels[0]
-        return vels
+        pass
 
     @gs.assert_built
     def set_particles_active(self, actives, particles_idx_local=None, envs_idx=None):
@@ -88,21 +78,11 @@ class PBDBaseEntity(ParticleEntity):
         self.solver._kernel_set_particles_active(particles_idx, envs_idx, actives)
 
     def get_particles_active(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        actives = self._sanitize_particles_tensor(None, gs.tc_bool, None, envs_idx)
-        self.solver._kernel_get_particles_active(self._particle_start, self.n_particles, envs_idx, actives)
-        if self._scene.n_envs == 0:
-            actives = actives[0]
-        return actives
+        pass
 
     @gs.assert_built
     def fix_particles_to_link(self, link_idx, particles_idx_local=None, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        particles_idx_local = self._sanitize_particles_idx_local(particles_idx_local, envs_idx)
-        particles_idx = particles_idx_local + self._particle_start
-        self._sim._coupler.kernel_attach_pbd_to_rigid_link(
-            particles_idx, envs_idx, link_idx, self._scene.rigid_solver.links_state
-        )
+        pass
 
     @gs.assert_built
     def fix_particles(self, particles_idx_local=None, envs_idx=None, zero_velocity=True):
@@ -118,12 +98,7 @@ class PBDBaseEntity(ParticleEntity):
         zero_velocity : bool, optional
             Whether to zero the velocity of the particles. Defaults to True.
         """
-        if zero_velocity:
-            self.set_particles_vel(0.0, particles_idx_local, envs_idx)
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        particles_idx_local = self._sanitize_particles_idx_local(particles_idx_local, envs_idx)
-        particles_idx = particles_idx_local + self._particle_start
-        self.solver._kernel_fix_particles(particles_idx, envs_idx)
+        pass
 
     @gs.assert_built
     def release_particle(self, particles_idx_local=None, envs_idx=None):
@@ -137,11 +112,7 @@ class PBDBaseEntity(ParticleEntity):
         envs_idx : None | int | array_like, shape (M,), optional
             The indices of the environments to set. If None, all environments will be set. Defaults to None.
         """
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        particles_idx_local = self._sanitize_particles_idx_local(particles_idx_local, envs_idx)
-        particles_idx = particles_idx_local + self._particle_start
-        self.solver._kernel_release_particle(particles_idx, envs_idx)
-        self.solver._sim._coupler.kernel_pbd_rigid_clear_animate_particles_by_link(particles_idx, envs_idx)
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------
@@ -289,17 +260,17 @@ class PBDTetEntity(PBDBaseEntity):
     @property
     def mesh(self):
         """Mesh."""
-        return self._mesh
+        pass
 
     @property
     def edges(self):
         """Edge array of the mesh."""
-        return self._edges
+        pass
 
     @property
     def n_edges(self):
         """Number of edges in the mesh."""
-        return len(self._edges)
+        pass
 
 
 @qd.data_oriented
@@ -437,7 +408,7 @@ class PBD2DEntity(PBDTetEntity):
     @property
     def n_inner_edges(self):
         """The number of inner edges in the 2D mesh."""
-        return len(self._inner_edges)
+        pass
 
 
 @qd.data_oriented
@@ -565,17 +536,17 @@ class PBD3DEntity(PBDTetEntity):
     @property
     def n_elems(self):
         """The number of tetrahedral elements in the mesh."""
-        return len(self._elems)
+        pass
 
     @property
     def elem_start(self):
         """The starting index of the elements in the global solver."""
-        return self._elem_start
+        pass
 
     @property
     def elem_end(self):
         """The ending index of the elements in the global solver."""
-        return self._elem_start + self.n_elems
+        pass
 
 
 @qd.data_oriented
@@ -653,7 +624,7 @@ class PBDParticleEntity(PBDBaseEntity):
     @property
     def n_fluid_particles(self):
         """The number of fluid particles."""
-        return self.n_particles
+        pass
 
 
 @qd.data_oriented

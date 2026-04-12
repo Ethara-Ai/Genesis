@@ -246,7 +246,7 @@ class MPMSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_particles > 0
+        pass
 
     def add_entity(self, idx, material, morph, surface, name: str | None = None) -> "MPMEntity":
         self.add_material(material)
@@ -308,16 +308,7 @@ class MPMSolver(Solver):
 
     @qd.kernel
     def svd_grad(self, f: qd.i32):
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            if self.particles_ng[f, i_p, i_b].active:
-                self.particles.grad[f, i_p, i_b].F_tmp += backward_svd(
-                    self.particles.grad[f, i_p, i_b].U,
-                    self.particles.grad[f, i_p, i_b].S,
-                    self.particles.grad[f, i_p, i_b].V,
-                    self.particles[f, i_p, i_b].U,
-                    self.particles[f, i_p, i_b].S,
-                    self.particles[f, i_p, i_b].V,
-                )
+        pass
 
     @qd.kernel
     def p2g(
@@ -497,8 +488,7 @@ class MPMSolver(Solver):
             entity.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for entity in self._entities[::-1]:
-            entity.process_input_grad()
+        pass
 
     def substep_pre_coupling(self, f):
         self.reset_grid_and_grad(f)
@@ -515,17 +505,7 @@ class MPMSolver(Solver):
         )
 
     def substep_pre_coupling_grad(self, f):
-        self.p2g.grad(
-            f,
-            self.sim.coupler.rigid_solver.geoms_state,
-            self.sim.coupler.rigid_solver.geoms_info,
-            self.sim.coupler.rigid_solver.links_state,
-            self.sim.coupler.rigid_solver._rigid_global_info,
-            self.sim.coupler.rigid_solver.collider._sdf._sdf_info,
-            self.sim.coupler.rigid_solver.collider._collider_static_config,
-        )
-        self.svd_grad(f)
-        self.compute_F_tmp.grad(f)
+        pass
 
     def substep_post_coupling(self, f):
         self.g2p(
@@ -546,12 +526,7 @@ class MPMSolver(Solver):
             )
 
     def substep_post_coupling_grad(self, f):
-        self.g2p.grad(
-            f,
-            self.sim.coupler.rigid_solver.geoms_info,
-            self.sim.coupler.rigid_solver.links_state,
-            self.sim.coupler.rigid_solver._rigid_global_info,
-        )
+        pass
 
     @qd.kernel
     def copy_frame(self, source: qd.i32, target: qd.i32):
@@ -566,13 +541,7 @@ class MPMSolver(Solver):
 
     @qd.kernel
     def copy_grad(self, source: qd.i32, target: qd.i32):
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            self.particles.grad[target, i_p, i_b].pos = self.particles.grad[source, i_p, i_b].pos
-            self.particles.grad[target, i_p, i_b].vel = self.particles.grad[source, i_p, i_b].vel
-            self.particles.grad[target, i_p, i_b].F = self.particles.grad[source, i_p, i_b].F
-            self.particles.grad[target, i_p, i_b].C = self.particles.grad[source, i_p, i_b].C
-            self.particles.grad[target, i_p, i_b].Jp = self.particles.grad[source, i_p, i_b].Jp
-            self.particles_ng[target, i_p, i_b].active = self.particles_ng[source, i_p, i_b].active
+        pass
 
     @qd.kernel
     def reset_grid_and_grad(self, f: qd.i32):
@@ -589,16 +558,7 @@ class MPMSolver(Solver):
     @qd.kernel
     def reset_grad_till_frame(self, f: qd.i32):
         # Zero out particle grads in frames [0, f-1], for all particles, all batch indices
-        for i_f, i_p, i_b in qd.ndrange(f, self._n_particles, self._B):
-            self.particles.grad[i_f, i_p, i_b].pos = qd.Vector.zero(gs.qd_float, 3)
-            self.particles.grad[i_f, i_p, i_b].vel = qd.Vector.zero(gs.qd_float, 3)
-            self.particles.grad[i_f, i_p, i_b].C = qd.Matrix.zero(gs.qd_float, 3, 3)
-            self.particles.grad[i_f, i_p, i_b].F = qd.Matrix.zero(gs.qd_float, 3, 3)
-            self.particles.grad[i_f, i_p, i_b].F_tmp = qd.Matrix.zero(gs.qd_float, 3, 3)
-            self.particles.grad[i_f, i_p, i_b].Jp = gs.qd_float(0.0)
-            self.particles.grad[i_f, i_p, i_b].U = qd.Matrix.zero(gs.qd_float, 3, 3)
-            self.particles.grad[i_f, i_p, i_b].V = qd.Matrix.zero(gs.qd_float, 3, 3)
-            self.particles.grad[i_f, i_p, i_b].S = qd.Matrix.zero(gs.qd_float, 3, 3)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ gradient --------------------------------------
@@ -608,66 +568,35 @@ class MPMSolver(Solver):
         """
         Collect gradients from downstream queried states.
         """
-        for entity in self._entities:
-            entity.collect_output_grads()
+        pass
 
     def add_grad_from_state(self, state):
-        if self.is_active:
-            if state.pos.grad is not None:
-                state.pos.assert_contiguous()
-                self.add_grad_from_pos(self._sim.cur_substep_local, state.pos.grad)
-
-            if state.vel.grad is not None:
-                state.vel.assert_contiguous()
-                self.add_grad_from_vel(self._sim.cur_substep_local, state.vel.grad)
-
-            if state.C.grad is not None:
-                state.C.assert_contiguous()
-                self.add_grad_from_C(self._sim.cur_substep_local, state.C.grad)
-
-            if state.F.grad is not None:
-                state.F.assert_contiguous()
-                self.add_grad_from_F(self._sim.cur_substep_local, state.F.grad)
-
-            if state.Jp.grad is not None:
-                state.Jp.assert_contiguous()
-                self.add_grad_from_Jp(self._sim.cur_substep_local, state.Jp.grad)
+        pass
 
     @qd.kernel
     def add_grad_from_pos(self, f: qd.i32, pos_grad: qd.types.ndarray()):
         # pos_grad shape: [B, n_particles, 3]
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            for j in qd.static(range(3)):
-                self.particles.grad[f, i_p, i_b].pos[j] += pos_grad[i_b, i_p, j]
+        pass
 
     @qd.kernel
     def add_grad_from_vel(self, f: qd.i32, vel_grad: qd.types.ndarray()):
         # vel_grad shape: [B, n_particles, 3]
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            for j in qd.static(range(3)):
-                self.particles.grad[f, i_p, i_b].vel[j] += vel_grad[i_b, i_p, j]
+        pass
 
     @qd.kernel
     def add_grad_from_C(self, f: qd.i32, C_grad: qd.types.ndarray()):
         # C_grad shape: [B, n_particles, 3, 3]
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            for j in qd.static(range(3)):
-                for k in qd.static(range(3)):
-                    self.particles.grad[f, i_p, i_b].C[j, k] += C_grad[i_b, i_p, j, k]
+        pass
 
     @qd.kernel
     def add_grad_from_F(self, f: qd.i32, F_grad: qd.types.ndarray()):
         # F_grad shape: [B, n_particles, 3, 3]
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            for j in qd.static(range(3)):
-                for k in qd.static(range(3)):
-                    self.particles.grad[f, i_p, i_b].F[j, k] += F_grad[i_b, i_p, j, k]
+        pass
 
     @qd.kernel
     def add_grad_from_Jp(self, f: qd.i32, Jp_grad: qd.types.ndarray()):
         # Jp_grad shape: [B, n_particles]
-        for i_p, i_b in qd.ndrange(self._n_particles, self._B):
-            self.particles.grad[f, i_p, i_b].Jp += Jp_grad[i_b, i_p]
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------------- io -----------------------------------------
@@ -701,24 +630,7 @@ class MPMSolver(Solver):
         self.copy_frame(self._sim.substeps_local, 0)
 
     def load_ckpt(self, ckpt_name):
-        self.copy_frame(0, self._sim.substeps_local)
-        self.copy_grad(0, self._sim.substeps_local)
-
-        if self._sim.requires_grad:
-            self.reset_grad_till_frame(self._sim.substeps_local)
-
-            self._kernel_set_state(
-                0,
-                self._ckpt[ckpt_name]["pos"],
-                self._ckpt[ckpt_name]["vel"],
-                self._ckpt[ckpt_name]["C"],
-                self._ckpt[ckpt_name]["F"],
-                self._ckpt[ckpt_name]["Jp"],
-                self._ckpt[ckpt_name]["active"],
-            )
-
-            for entity in self._entities:
-                entity.load_ckpt(ckpt_name=ckpt_name)
+        pass
 
     def set_state(self, f, state, envs_idx=None):
         if self.is_active:
@@ -866,10 +778,7 @@ class MPMSolver(Solver):
         n_particles: qd.i32,
         poss_grad: qd.types.ndarray(),  # shape [B, n_particles, 3]
     ):
-        for i_p_, i_b in qd.ndrange(n_particles, self._B):
-            i_p = i_p_ + particle_start
-            for i in qd.static(range(3)):
-                poss_grad[i_b, i_p_, i] = self.particles.grad[f, i_p, i_b].pos[i]
+        pass
 
     @qd.kernel
     def _kernel_get_particles_pos(
@@ -880,11 +789,7 @@ class MPMSolver(Solver):
         envs_idx: qd.types.ndarray(),
         poss: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                poss[i_b_, i_p_, i] = self.particles[f, i_p, i_b].pos[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_vel(
@@ -908,10 +813,7 @@ class MPMSolver(Solver):
         n_particles: qd.i32,
         vels_grad: qd.types.ndarray(),  # shape [B, n_particles, 3]
     ):
-        for i_p_, i_b in qd.ndrange(n_particles, self._B):
-            i_p = i_p_ + particle_start
-            for i in qd.static(range(3)):
-                vels_grad[i_b, i_p_, i] = self.particles.grad[f, i_p, i_b].vel[i]
+        pass
 
     @qd.kernel
     def _kernel_get_particles_vel(
@@ -922,11 +824,7 @@ class MPMSolver(Solver):
         envs_idx: qd.types.ndarray(),
         vels: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                vels[i_b_, i_p_, i] = self.particles[f, i_p, i_b].vel[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_active(
@@ -950,10 +848,7 @@ class MPMSolver(Solver):
         envs_idx: qd.types.ndarray(),
         actives: qd.types.ndarray(),  # shape [B, n_particles]
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            actives[i_b_, i_p_] = self.particles_ng[f, i_p, i_b].active
+        pass
 
     @qd.kernel
     def _kernel_set_particles_actu(
@@ -979,10 +874,7 @@ class MPMSolver(Solver):
         envs_idx: qd.types.ndarray(),
         actus_grad: qd.types.ndarray(),  # shape [B, n_particles]
     ):
-        for i_p_, i_g, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            actus_grad[i_b_, i_p_] = self.particles.grad[f, i_p, i_b].actu
+        pass
 
     @qd.kernel
     def _kernel_get_particles_actu(
@@ -993,10 +885,7 @@ class MPMSolver(Solver):
         envs_idx: qd.types.ndarray(),
         actus: qd.types.ndarray(),  # shape [B, n_particles]
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            actus[i_b_, i_p_] = self.particles[f, i_p, i_b].actu
+        pass
 
     @qd.kernel
     def _kernel_set_particles_muscle_group(self, particles_idx: qd.types.ndarray(), muscle_group: qd.types.ndarray()):
@@ -1008,9 +897,7 @@ class MPMSolver(Solver):
     def _kernel_get_particles_muscle_group(
         self, particle_start: qd.i32, n_particles: qd.i32, muscle_group: qd.types.ndarray()
     ):
-        for i_p_ in range(n_particles):
-            i_p = i_p_ + particle_start
-            muscle_group[i_p_] = self.particles_info[i_p].muscle_group
+        pass
 
     @qd.kernel
     def _kernel_set_particles_muscle_direction(
@@ -1023,15 +910,11 @@ class MPMSolver(Solver):
 
     @qd.kernel
     def _kernel_set_particles_free(self, particles_idx: qd.types.ndarray(), free: qd.types.ndarray()):
-        for i_p_ in range(particles_idx.shape[0]):
-            i_p = particles_idx[i_p_]
-            self.particles_info[i_p].free = free[i_p_]
+        pass
 
     @qd.kernel
     def _kernel_get_particles_free(self, particle_start: qd.i32, n_particles: qd.i32, free: qd.types.ndarray()):
-        for i_p_ in range(n_particles):
-            i_p = i_p_ + particle_start
-            free[i_p_] = self.particles_info[i_p].free
+        pass
 
     @qd.kernel
     def _kernel_get_mass(
@@ -1060,28 +943,7 @@ class MPMSolver(Solver):
         link_pos: qd.types.ndarray(),  # shape [n_envs, 3]
         link_quat: qd.types.ndarray(),  # shape [n_envs, 4]
     ):
-        for i_p_local, i_b in qd.ndrange(particles_mask.shape[1], particles_mask.shape[0]):
-            if particles_mask[i_b, i_p_local]:
-                i_p = i_p_local + particle_start
-
-                # Get current particle position
-                pos = self.particles[f, i_p, i_b].pos
-
-                # Get link transform
-                l_pos = qd.Vector([link_pos[i_b, 0], link_pos[i_b, 1], link_pos[i_b, 2]], dt=gs.qd_float)
-                l_quat = qd.Vector(
-                    [link_quat[i_b, 0], link_quat[i_b, 1], link_quat[i_b, 2], link_quat[i_b, 3]], dt=gs.qd_float
-                )
-
-                # Compute offset in link's local frame
-                local_pos = gu.qd_inv_transform_by_trans_quat(pos, l_pos, l_quat)
-
-                # Store constraint info
-                self.particle_constraints[i_p, i_b].is_constrained = True
-                self.particle_constraints[i_p, i_b].target_pos = pos  # initial target is current position
-                self.particle_constraints[i_p, i_b].stiffness = stiffness
-                self.particle_constraints[i_p, i_b].link_idx = link_idx
-                self.particle_constraints[i_p, i_b].link_local_pos = local_pos
+        pass
 
     @qd.kernel
     def _kernel_remove_particle_constraints(
@@ -1089,11 +951,7 @@ class MPMSolver(Solver):
         particles_mask: qd.types.ndarray(),  # shape [n_envs, n_particles] boolean mask
         particle_start: qd.i32,
     ):
-        for i_p_local, i_b in qd.ndrange(particles_mask.shape[1], particles_mask.shape[0]):
-            if particles_mask[i_b, i_p_local]:
-                i_p = i_p_local + particle_start
-                self.particle_constraints[i_p, i_b].is_constrained = False
-                self.particle_constraints[i_p, i_b].link_idx = -1
+        pass
 
     @qd.kernel
     def apply_particle_constraints(
@@ -1133,41 +991,35 @@ class MPMSolver(Solver):
 
     @property
     def n_particles(self):
-        if self.is_built:
-            return self._n_particles
-        return sum(entity.n_particles for entity in self._entities)
+        pass
 
     @property
     def n_vverts(self):
-        if self.is_built:
-            return self._n_vverts
-        return sum(entity.n_vverts for entity in self._entities)
+        pass
 
     @property
     def n_vfaces(self):
-        if self.is_built:
-            return self._n_vfaces
-        return sum(entity.n_vfaces for entity in self._entities)
+        pass
 
     @property
     def grid_density(self):
-        return self._grid_density
+        pass
 
     @property
     def particle_size(self):
-        return self._particle_size
+        pass
 
     @property
     def particle_radius(self):
-        return self._particle_size / 2.0
+        pass
 
     @property
     def upper_bound(self):
-        return self._upper_bound
+        pass
 
     @property
     def lower_bound(self):
-        return self._lower_bound
+        pass
 
     @property
     def leaf_block_size(self):
@@ -1175,78 +1027,63 @@ class MPMSolver(Solver):
 
     @property
     def use_sparse_grid(self):
-        return DeprecationError("This property has been removed.")
+        pass
 
     @property
     def dx(self):
-        return self._dx
+        pass
 
     @property
     def inv_dx(self):
-        return self._inv_dx
+        pass
 
     @property
     def particle_volume_real(self):
-        return self._particle_volume_real
+        pass
 
     @property
     def particle_volume(self):
-        return self._particle_volume
+        pass
 
     @property
     def particle_volume_scale(self):
-        return self._particle_volume_scale
+        pass
 
     @property
     def is_built(self):
-        return self._scene._is_built
+        pass
 
     @property
     def lower_bound_cell(self):
-        return self._lower_bound_cell
+        pass
 
     @property
     def upper_bound_cell(self):
-        return self._upper_bound_cell
+        pass
 
     @property
     def grid_res(self):
-        return self._grid_res
+        pass
 
     @property
     def grid_offset(self):
-        return self._grid_offset
+        pass
 
     @property
     def enable_CPIC(self):
-        return self._enable_CPIC
+        pass
 
     @property
     def enable_particle_constraints(self):
-        return self._enable_particle_constraints
+        pass
 
 
 @qd.func
 def signmax(a, eps):
-    sign = qd.select(a >= 0, 1.0, -1.0)
-    return sign * qd.max(qd.abs(a), eps)
+    pass
 
 
 @qd.func
 def backward_svd(grad_U, grad_S, grad_V, U, S, V):
     # https://github.com/pytorch/pytorch/blob/ab0a04dc9c8b84d4a03412f1c21a6c4a2cefd36c/tools/autograd/templates/Functions.cpp
-    vt = V.transpose()
-    ut = U.transpose()
-    S_term = U @ grad_S @ vt
-
-    s = qd.Vector.zero(gs.qd_float, 3)
-    s = qd.Vector([S[0, 0], S[1, 1], S[2, 2]]) ** 2
-    F = qd.Matrix.zero(gs.qd_float, 3, 3)
-    for i, j in qd.static(qd.ndrange(3, 3)):
-        if i == j:
-            F[i, j] = 0.0
-        else:
-            F[i, j] = 1.0 / signmax(s[j] - s[i], 1e-6)
-    u_term = U @ ((F * (ut @ grad_U - grad_U.transpose() @ U)) @ S) @ vt
-    v_term = U @ (S @ ((F * (vt @ grad_V - grad_V.transpose() @ V)) @ vt))
-    return u_term + v_term + S_term
+    pass

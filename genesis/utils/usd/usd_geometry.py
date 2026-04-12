@@ -13,14 +13,11 @@ from .usd_utils import AXES_T, AXES_VECTOR, usd_attr_array_to_numpy, usd_primvar
 
 
 def geom_exception(geom_type, geom_id, stage_file, reason_msg):
-    gs.raise_exception(f"{reason_msg} for {geom_type} {geom_id} in usd file {stage_file}.")
+    pass
 
 
 def get_triangle_ids(tri_starts, tri_counts):
-    tri_bases = np.repeat(tri_starts, tri_counts)
-    tri_offsets = np.arange(tri_counts.sum(), dtype=np.int32)
-    tri_stages = np.repeat(np.cumsum(tri_counts, dtype=np.int32) - tri_counts, tri_counts)
-    return tri_bases + tri_offsets - tri_stages
+    pass
 
 
 def parse_prim_geoms(

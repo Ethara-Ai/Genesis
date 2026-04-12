@@ -254,46 +254,40 @@ class Visualizer(RBC):
 
     @property
     def is_built(self) -> bool:
-        return self._is_built
+        pass
 
     @property
     def viewer(self):
-        return self._viewer
+        pass
 
     @property
     def rasterizer(self):
-        return self._rasterizer
+        pass
 
     @property
     @gs.assert_built
     def is_software(self):
-        if self._batch_renderer is not None or self._raytracer is not None:
-            return False
-        if self._viewer is not None:
-            assert self._viewer._pyrender_viewer is not None
-            return self._viewer._pyrender_viewer._is_software
-        assert self._rasterizer is not None and self._rasterizer._renderer is not None
-        return self._rasterizer._renderer._is_software
+        pass
 
     @property
     def batch_renderer(self):
-        return self._batch_renderer
+        pass
 
     @property
     def context(self):
-        return self._context
+        pass
 
     @property
     def raytracer(self):
-        return self._raytracer
+        pass
 
     @property
     def renderer(self):
-        return self._renderer
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def has_display(self):
@@ -301,11 +295,8 @@ class Visualizer(RBC):
 
     @property
     def cameras(self):
-        return self._cameras
+        pass
 
     @property
     def segmentation_idx_dict(self):
-        if self._batch_renderer is not None:
-            return self._batch_renderer.seg_idxc_map
-        else:
-            return self._context.seg_idxc_map
+        pass

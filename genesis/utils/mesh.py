@@ -44,7 +44,7 @@ def color_f32_to_u8(color) -> np.ndarray:
 
 
 def color_u8_to_f32(color) -> np.ndarray:
-    return np.asarray(color, dtype=np.uint8).astype(np.float32) / 255.0
+    pass
 
 
 def glossiness_to_roughness(glossiness: float) -> float:
@@ -114,12 +114,11 @@ class MeshInfoGroup:
 
 
 def get_asset_path(file):
-    return os.path.join(get_src_dir(), "assets", file)
+    pass
 
 
 def get_gsd_path(verts, faces, sdf_cell_size, sdf_min_res, sdf_max_res):
-    hashkey = get_hashkey(verts, faces, sdf_cell_size, sdf_min_res, sdf_max_res)
-    return os.path.join(get_gsd_cache_dir(), f"{hashkey}.gsd")
+    pass
 
 
 def get_gnd_path(name, subterrain_types, subterrain_size, horizontal_scale, vertical_scale, n_subterrains):
@@ -148,8 +147,7 @@ def get_remesh_path(verts, faces, edge_len_abs, edge_len_ratio, fix):
 
 
 def get_exr_path(file_path):
-    hashkey = get_hashkey(Path(file_path))
-    return os.path.join(get_exr_cache_dir(), f"{hashkey}.exr")
+    pass
 
 
 def get_usd_zip_path(file_path):
@@ -548,8 +546,7 @@ def PIL_to_array(image):
 
 
 def tonemapped(image):
-    exposure = 0.5
-    return (np.clip(np.power(image / 255 * np.power(2, exposure), 1 / 2.2), 0, 1) * 255).astype(np.uint8)
+    pass
 
 
 def create_texture(image, factor, encoding):
@@ -1068,60 +1065,8 @@ def tetrahedralize_mesh(mesh, tet_cfg):
 
 
 def visualize_tet(tet, mesh, show_surface=True, plot_cell_qual=False):
-    grid = tet.grid
-    if show_surface:
-        grid.plot(show_edges=True)
-    else:
-        # get cell centroids
-        cells = grid.cells.reshape(-1, 5)[:, 1:]
-        cell_center = grid.points[cells].mean(axis=1)
-
-        # extract cells below the 0 xy plane
-        cell_ind = (cell_center[:, 2] < 0.0).nonzero(as_tuple=False)
-        subgrid = grid.extract_cells(cell_ind)
-
-        # advanced plotting
-        if plot_cell_qual:
-            cell_qual = subgrid.compute_cell_quality()["CellQuality"]
-            subgrid.plot(
-                scalars=cell_qual, stitle="Quality", cmap="bwr", clim=[0, 1], flip_scalars=True, show_edges=True
-            )
-        else:
-            # Delaying import of 'pyvista' because it is an optional dependency
-            import pyvista as pv
-
-            faces = np.concatenate([np.full((mesh.faces.shape[0], 1), mesh.faces.shape[1]), mesh.faces], axis=1)
-            pv_data = pv.PolyData(mesh.vertices, faces)
-
-            plotter = pv.Plotter()
-            plotter.add_mesh(subgrid, "lightgrey", lighting=True, show_edges=True)
-            plotter.add_mesh(pv_data, "r", "wireframe")
-            plotter.add_legend([[" Input Mesh ", "r"], [" Tessellated Mesh ", "black"]])
-            plotter.show()
+    pass
 
 
 def check_exr_compression(exr_path):
-    exr_file = OpenEXR.InputFile(exr_path)
-    exr_header = exr_file.header()
-    if exr_header["compression"].v > Imath.Compression.PIZ_COMPRESSION:
-        new_exr_path = get_exr_path(exr_path)
-        if os.path.exists(new_exr_path):
-            gs.logger.info(f"Assets of fixed compression detected and used: {new_exr_path}.")
-        else:
-            gs.logger.warning(
-                f"EXR image {exr_path}'s compression type {exr_header['compression']} is not supported. "
-                f"Converting to compression type ZIP_COMPRESSION and saving to {new_exr_path}."
-            )
-
-            channel_data = {channel: exr_file.channel(channel) for channel in exr_header["channels"]}
-            exr_header["compression"] = Imath.Compression(Imath.Compression.ZIP_COMPRESSION)
-
-            os.makedirs(os.path.dirname(new_exr_path), exist_ok=True)
-            new_exr_file = OpenEXR.OutputFile(new_exr_path, exr_header)
-            new_exr_file.writePixels(channel_data)
-            new_exr_file.close()
-
-        exr_path = new_exr_path
-
-    exr_file.close()
-    return exr_path
+    pass

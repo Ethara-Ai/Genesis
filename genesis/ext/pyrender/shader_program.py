@@ -148,16 +148,10 @@ class ShaderProgram(object):
             text = f.read()
 
         def ifdef(matchobj):
-            if matchobj.group(1) in self.defines:
-                return "#if 1"
-            else:
-                return "#if 0"
+            pass
 
         def ifndef(matchobj):
-            if matchobj.group(1) in self.defines:
-                return "#if 0"
-            else:
-                return "#if 1"
+            pass
 
         ifdef_regex = re.compile("#ifdef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$", re.MULTILINE)
         ifndef_regex = re.compile("#ifndef\\s+([a-zA-Z_][a-zA-Z_0-9]*)\\s*$", re.MULTILINE)

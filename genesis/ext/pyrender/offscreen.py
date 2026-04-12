@@ -40,31 +40,31 @@ class OffscreenRenderer(object):
     @property
     def viewport_width(self):
         """int : The width of the main viewport, in pixels."""
-        return 32
+        pass
         # return self._viewport_width
 
     @viewport_width.setter
     def viewport_width(self, value):
-        self._viewport_width = int(value)
+        pass
 
     @property
     def viewport_height(self):
         """int : The height of the main viewport, in pixels."""
-        return 32
+        pass
         # return self._viewport_height
 
     @viewport_height.setter
     def viewport_height(self, value):
-        self._viewport_height = int(value)
+        pass
 
     @property
     def point_size(self):
         """float : The pixel size of points in point clouds."""
-        return self._point_size
+        pass
 
     @point_size.setter
     def point_size(self, value):
-        self._point_size = float(value)
+        pass
 
     def make_current(self):
         """This function sets the current context and must be called before all rendering and GPU upload operations."""

@@ -27,7 +27,7 @@ def qd_j_cross_vec(vec):
 
 @qd.func
 def qd_k_cross_vec(vec):
-    return qd.Vector([-vec[1], vec[0], 0.0], dt=gs.qd_float)
+    pass
 
 
 @qd.func
@@ -70,18 +70,7 @@ def qd_R_to_xyz(R, eps):
     """
     Convert a rotation matrix into intrinsic x-y-z Euler angles.
     """
-    xyz = qd.Vector.zero(gs.qd_float, 3)
-
-    cy = qd.sqrt(R[2, 2] ** 2 + R[1, 2] ** 2)
-    if cy > eps:
-        xyz[0] = -qd.atan2(R[1, 2], R[2, 2])
-        xyz[1] = -qd.atan2(-R[0, 2], cy)
-        xyz[2] = -qd.atan2(R[0, 1], R[0, 0])
-    else:
-        xyz[0] = 0.0
-        xyz[1] = -qd.atan2(-R[0, 2], cy)
-        xyz[2] = -qd.atan2(-R[1, 0], R[1, 1])
-    return xyz
+    pass
 
 
 @qd.func
@@ -282,7 +271,7 @@ def qd_transform_by_T(pos, T):
 
 @qd.func
 def qd_inv_transform_by_T(pos, T):
-    return T[:3, :3].transpose() @ (pos - T[:3, 3])
+    pass
 
 
 @qd.func
@@ -305,9 +294,7 @@ def qd_transform_motion_by_trans_quat(m_ang, m_vel, trans, quat):
 
 @qd.func
 def qd_inv_transform_motion_by_trans_quat(m_ang, m_vel, trans, quat):
-    ang = qd_transform_by_quat(m_ang, quat)
-    vel = qd_transform_by_quat(m_vel, quat) + trans.cross(ang)
-    return ang, vel
+    pass
 
 
 @qd.func
@@ -458,12 +445,7 @@ def inv_T(T):
 
 
 def normalize(x, eps: float = 1e-12):
-    if isinstance(x, torch.Tensor):
-        return x / torch.linalg.vector_norm(x, ord=2, dim=-1, keepdim=True).clamp(min=eps, max=None)
-    elif isinstance(x, np.ndarray):
-        return x / np.maximum(np.linalg.norm(x, axis=-1, keepdims=True), eps)
-    else:
-        gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(x)=}")
+    pass
 
 
 def rot6d_to_R(d6):
@@ -478,23 +460,7 @@ def rot6d_to_R(d6):
 
     [1] http://arxiv.org/abs/1812.07035
     """
-    if isinstance(d6, torch.Tensor):
-        a1, a2 = d6[..., :3], d6[..., 3:]
-        b1 = F.normalize(a1, dim=-1)
-        b2 = a2 - (b1 * a2).sum(-1, keepdim=True) * b1
-        b2 = F.normalize(b2, dim=-1)
-        b3 = torch.cross(b1, b2, dim=-1)
-        return torch.stack((b1, b2, b3), dim=-2)
-    elif isinstance(d6, np.ndarray):
-        a1, a2 = d6[..., :3], d6[..., 3:]
-        b1 = a1 / np.linalg.norm(a1, axis=-1, keepdims=True)
-        dot = np.sum(b1 * a2, axis=-1, keepdims=True)
-        b2 = a2 - dot * b1
-        b2 = b2 / np.linalg.norm(b2, axis=-1, keepdims=True)
-        b3 = np.cross(b1, b2, axis=-1)
-        return np.stack((b1, b2, b3), axis=-2)
-    else:
-        gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(d6)=}")
+    pass
 
 
 def R_to_rot6d(R):
@@ -509,12 +475,7 @@ def R_to_rot6d(R):
 
     [1] http://arxiv.org/abs/1812.07035
     """
-    if isinstance(R, torch.Tensor):
-        return R[..., :2, :].flatten(start_dim=-2)
-    elif isinstance(R, np.ndarray):
-        return R[..., :2, :].reshape((*R.shape[:-2], 6))
-    else:
-        gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(R)=}")
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -670,112 +631,16 @@ def _np_quat_to_xyz(quat, rpy=False, out=None):
     :param out: Pre-allocated array in which to store the result. If not provided, a new array is freshly-allocated
                 and returned, which is slower.
     """
-    assert quat.ndim >= 1
-    if out is None:
-        out_ = np.empty((*quat.shape[:-1], 3), dtype=quat.dtype)
-    else:
-        assert out.shape == (*quat.shape[:-1], 3)
-        out_ = out
-
-    # Flatten batch dimensions
-    quat_2d = quat.reshape((-1, 4))
-    out_2d = out_.reshape((-1, 3))
-
-    s = 2.0 / np.sum(np.square(quat_2d), -1)
-    q_w, q_x, q_y, q_z = quat_2d[:, 0], quat_2d[:, 1], quat_2d[:, 2], quat_2d[:, 3]
-    q_xs, q_ys, q_zs = q_x * s, q_y * s, q_z * s
-    q_wx, q_wy, q_wz = q_w * q_xs, q_w * q_ys, q_w * q_zs
-    q_xx, q_xy, q_xz = q_x * q_xs, q_x * q_ys, q_x * q_zs
-    q_yy, q_yz, q_zz = q_y * q_ys, q_y * q_zs, q_z * q_zs
-
-    if rpy:
-        sinp = q_wy - q_xz
-        sinrcosp = q_wx + q_yz
-        sinycosp = q_wz + q_xy
-    else:
-        sinp = q_xz + q_wy
-        sinrcosp = q_wx - q_yz
-        sinycosp = q_wz - q_xy
-    cosr_cosp = 1.0 - (q_xx + q_yy)
-    cosycosp = 1.0 - (q_yy + q_zz)
-    cosp = np.sqrt(cosycosp**2 + sinycosp**2)
-
-    out_2d[:, 0] = np.arctan2(sinrcosp, cosr_cosp)
-    out_2d[:, 1] = np.arctan2(sinp, cosp)
-    out_2d[:, 2] = np.arctan2(sinycosp, cosycosp)
-
-    cosp_mask = cosp < gs.EPS
-    if rpy:
-        sinycosp_sinrsinpcosy = q_wz[cosp_mask] - q_xy[cosp_mask]
-    else:
-        sinycosp_sinrsinpcosy = q_wz[cosp_mask] + q_xy[cosp_mask]
-    cospcosy_sinrsinpsiny = 1.0 - (q_xx[cosp_mask] + q_zz[cosp_mask])
-    out_2d[cosp_mask, 0] = 0.0
-    out_2d[cosp_mask, 2] = np.arctan2(sinycosp_sinrsinpcosy, cospcosy_sinrsinpsiny)
-
-    return out_
+    pass
 
 
 @torch.jit.script
 def _tc_quat_to_xyz(quat, eps: float, rpy: bool = False):
-    xyz = torch.empty(quat.shape[:-1] + (3,), dtype=quat.dtype, device=quat.device)
-    x, y, z = xyz[..., :1], xyz[..., 1:2], xyz[..., 2:]
-
-    q_w, q_x, q_y, q_z = quat[..., :1], quat[..., 1:2], quat[..., 2:3], quat[..., 3:]
-    q_ww, q_wx, q_wy, q_wz = q_w * q_w, q_w * q_x, q_w * q_y, q_w * q_z
-    q_xx, q_xy, q_xz = q_x * q_x, q_x * q_y, q_x * q_z
-    q_yy, q_yz = q_y * q_y, q_y * q_z
-    q_zz = q_z**2
-
-    # Compute some intermediary quantities.
-    # Numerical robustness of 'cos(pitch)' could be improved using 'hypot' implementation from Eigen:
-    # https://gitlab.com/libeigen/eigen/-/blob/master/Eigen/src/Core/MathFunctionsImpl.h#L149
-    if rpy:
-        sinp = q_wy - q_xz
-        sinrcosp = q_wx + q_yz
-        sinycosp = q_wz + q_xy
-    else:
-        sinp = q_xz + q_wy
-        sinrcosp = q_wx - q_yz
-        sinycosp = q_wz - q_xy
-    cosrcosp = (q_ww - q_xx - q_yy + q_zz) / 2
-    cosycosp = (q_ww + q_xx - q_yy - q_zz) / 2
-    cosp = torch.sqrt(cosycosp**2 + sinycosp**2)
-
-    # Roll (x-axis rotation)
-    torch.atan2(sinrcosp, cosrcosp, out=x)
-
-    # Pitch (y-axis rotation)
-    torch.atan2(sinp, cosp, out=y)
-
-    # Yaw (z-axis rotation)
-    torch.atan2(sinycosp, cosycosp, out=z)
-
-    # Special treatment of nearly singular rotations
-    cosp_mask = cosp < eps
-    if rpy:
-        sinycosp_sinrsinpcosy = q_wz - q_xy
-    else:
-        sinycosp_sinrsinpcosy = q_wz + q_xy
-    cospcosy_sinrsinpsiny = (q_ww - q_xx + q_yy - q_zz) / 2
-    x.masked_fill_(cosp_mask, 0.0)
-    torch.where(cosp_mask, torch.arctan2(sinycosp_sinrsinpcosy, cospcosy_sinrsinpsiny), z, out=z)
-
-    return xyz
+    pass
 
 
 def quat_to_xyz(quat, rpy=False, degrees=False):
-    if isinstance(quat, torch.Tensor):
-        rpy = _tc_quat_to_xyz(quat, gs.EPS, rpy)
-        if degrees:
-            rpy = torch.rad2deg(rpy)
-    elif isinstance(quat, np.ndarray):
-        rpy = _np_quat_to_xyz(quat, rpy)
-        if degrees:
-            rpy = np.rad2deg(rpy)
-    else:
-        gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(quat)=}")
-    return rpy
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -878,7 +743,7 @@ def R_to_quat(R, *, out=None):
 
 
 def R_to_xyz(R, rpy=False, degrees=False):
-    return quat_to_xyz(R_to_quat(R), rpy=rpy, degrees=degrees)
+    pass
 
 
 def trans_R_to_T(trans=None, R=None, *, out=None):
@@ -915,7 +780,7 @@ def trans_R_to_T(trans=None, R=None, *, out=None):
 
 
 def R_to_T(R, *, out=None):
-    return trans_R_to_T(None, R, out=out)
+    pass
 
 
 def trans_to_T(trans, *, out=None):
@@ -1095,24 +960,11 @@ def transform_by_quat(v, quat):
 
 
 def axis_angle_to_quat(angle, axis):
-    if isinstance(angle, torch.Tensor) and isinstance(axis, torch.Tensor):
-        theta = (0.5 * angle).unsqueeze(-1)
-        xyz = normalize(axis) * theta.sin()
-        w = theta.cos()
-        return normalize(torch.cat([w, xyz], dim=-1))
-    elif isinstance(angle, np.ndarray) and isinstance(axis, np.ndarray):
-        theta = (0.5 * angle)[..., None]
-        xyz = normalize(axis) * np.sin(theta)
-        w = np.cos(theta)
-        return normalize(np.concatenate([w, xyz], axis=-1))
-    else:
-        gs.raise_exception(
-            f"both of the inputs must be torch.Tensor or np.ndarray. got: {type(angle)=} and {type(axis)=}"
-        )
+    pass
 
 
 def transform_by_xyz(pos, xyz):
-    return transform_by_quat(pos, xyz_to_quat(xyz))
+    pass
 
 
 def transform_by_trans_quat(pos, trans, quat):
@@ -1206,104 +1058,12 @@ def transform_by_T(pos, T):
 
 
 def inv_transform_by_T(pos, T):
-    trans, R = T[..., :3, 3], T[..., :3, :3]
-
-    R_inv = R.swapaxes(-1, -2)
-    if pos.ndim == T.ndim:
-        trans = trans.reshape((-1, 1, 3))
-
-    return transform_by_R(pos - trans, R_inv)
+    pass
 
 
 def _tc_polar(A: torch.Tensor, pure_rotation: bool, side: Literal["right", "left"], eps: float):
     """Torch implementation of polar decomposition with batched support."""
-    if A.ndim < 2:
-        gs.raise_exception(f"Input must be at least 2D. got: {A.ndim=} dimensions")
-
-    # Check if batched
-    is_batched = A.ndim > 2
-    M, N = A.shape[-2], A.shape[-1]
-
-    # Perform SVD (supports batching automatically)
-    U_svd, Sigma, Vt = torch.linalg.svd(A, full_matrices=False)
-
-    # Normalize SVD signs for consistency: ensure the largest magnitude element in each column of U is positive
-    # This resolves sign ambiguities that can differ between torch and numpy implementations
-    if is_batched:
-        # For batched case: max_indices shape is (*batch, N)
-        max_indices = torch.argmax(torch.abs(U_svd), dim=-2)  # Shape: (*batch, N)
-        # Use advanced indexing to get max values efficiently
-        batch_dims = U_svd.shape[:-2]
-        batch_size = math.prod(batch_dims) if batch_dims else 1
-        U_flat = U_svd.reshape(batch_size, M, N)
-        max_indices_flat = max_indices.reshape(batch_size, N)
-
-        # Create batch indices for advanced indexing
-        batch_idx = torch.arange(batch_size, device=U_svd.device).unsqueeze(1).expand(-1, N)  # (batch_size, N)
-        col_idx = torch.arange(N, device=U_svd.device).unsqueeze(0).expand(batch_size, -1)  # (batch_size, N)
-        max_vals = U_flat[batch_idx, max_indices_flat, col_idx]  # (batch_size, N)
-        max_vals_abs = torch.abs(max_vals)
-        signs = torch.where(max_vals_abs > eps, torch.sign(max_vals), torch.ones_like(max_vals))
-        signs = signs.reshape(*batch_dims, N)
-    else:
-        # For single matrix case
-        max_indices = torch.argmax(torch.abs(U_svd), dim=0)  # Shape: (N,)
-        max_vals = U_svd[max_indices, torch.arange(N, device=U_svd.device)]  # (N,)
-        max_vals_abs = torch.abs(max_vals)
-        signs = torch.where(max_vals_abs > eps, torch.sign(max_vals), torch.ones_like(max_vals))
-
-    U_svd = U_svd * signs.unsqueeze(-2) if is_batched else U_svd * signs
-    Vt = Vt * signs.unsqueeze(-1) if is_batched else Vt * signs.unsqueeze(-1)
-
-    # Handle pure_rotation: if det(U) < 0, flip signs to make it a pure rotation
-    is_square = M == N
-    if pure_rotation and is_square:  # Only for square matrices
-        # Compute U first to check its determinant
-        U_temp = U_svd @ Vt
-        if is_batched:
-            det_U = torch.linalg.det(U_temp)  # Shape: (*batch,)
-            # Flip signs where det < 0
-            flip_mask = det_U < 0
-            if flip_mask.any():
-                # Flip both the last column of U_svd and last row of Vt simultaneously
-                U_svd[..., :, -1] = torch.where(flip_mask.unsqueeze(-1), -U_svd[..., :, -1], U_svd[..., :, -1])
-                Vt[..., -1, :] = torch.where(flip_mask.unsqueeze(-1), -Vt[..., -1, :], Vt[..., -1, :])
-        else:
-            det_U = torch.linalg.det(U_temp)
-            if det_U < 0:
-                # Flip both the last column of U_svd and last row of Vt simultaneously
-                U_svd[:, -1] *= -1
-                Vt[-1, :] *= -1
-
-    # Compute U
-    U = U_svd @ Vt
-
-    # Use absolute value to ensure P is positive semi-definite
-    Sigma_abs = torch.abs(Sigma)
-
-    if side == "right":
-        # P = Vt.T @ diag(|Sigma|) @ Vt
-        # For batched: Vt is (*batch, N, M), need (*batch, M, N) -> transpose last two dims
-        # Create diagonal matrix using torch.diag_embed for batched support
-        if is_batched:
-            Sigma_diag = torch.diag_embed(Sigma_abs)  # Shape: (*batch, N, N)
-            # Vt is (*batch, N, M), need Vt.T which is (*batch, M, N)
-            Vt_T = Vt.transpose(-1, -2)  # Shape: (*batch, M, N)
-            P = Vt_T @ Sigma_diag @ Vt  # Shape: (*batch, N, N)
-        else:
-            Sigma_diag = torch.diag(Sigma_abs)  # Shape: (N, N)
-            P = Vt.T @ Sigma_diag @ Vt  # Shape: (N, N)
-    else:  # "left"
-        # P = U_svd @ diag(|Sigma|) @ U_svd.T (left polar: A = P @ U)
-        if is_batched:
-            Sigma_diag = torch.diag_embed(Sigma_abs)  # Shape: (*batch, M, M)
-            U_svd_T = U_svd.transpose(-1, -2)  # Shape: (*batch, N, M)
-            P = U_svd @ Sigma_diag @ U_svd_T  # Shape: (*batch, M, M)
-        else:
-            Sigma_diag = torch.diag(Sigma_abs)  # Shape: (M, M)
-            P = U_svd @ Sigma_diag @ U_svd.T  # Shape: (M, M)
-
-    return U, P
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -1327,59 +1087,7 @@ def _np_polar_core_single(A, pure_rotation: bool, side_int: int):
     P : np.ndarray
         Positive semi-definite matrix.
     """
-    M, N = A.shape[0], A.shape[1]
-
-    # Perform SVD
-    U_svd, Sigma, Vt = np.linalg.svd(A, full_matrices=False)
-
-    # Normalize SVD signs for consistency: ensure the largest magnitude element in each column of U is positive
-    # This resolves sign ambiguities that can differ between torch and numpy implementations
-    max_indices = np.argmax(np.abs(U_svd), axis=0)  # Shape: (N,)
-    signs = np.empty(N, dtype=U_svd.dtype)
-    for j in range(N):
-        max_val = np.abs(U_svd[max_indices[j], j])
-        if max_val > gs.EPS:
-            signs[j] = np.sign(U_svd[max_indices[j], j])
-        else:
-            signs[j] = 1.0
-    U_svd = U_svd * signs
-    Vt = Vt * signs[:, None]
-
-    # Handle pure_rotation: if det(U) < 0, flip signs to make it a pure rotation
-    is_square = M == N
-    if pure_rotation and is_square:  # Only for square matrices
-        # Compute U first to check its determinant
-        U_temp = U_svd @ Vt
-        det_U = np.linalg.det(U_temp)
-        if det_U < 0:
-            # Flip both the last column of U_svd and last row of Vt simultaneously
-            # This changes det(U) from -1 to 1 but maintains A = U_svd @ diag(Sigma) @ Vt
-            # because the two sign flips cancel out in the product
-            U_svd[:, -1] *= -1
-            Vt[-1, :] *= -1
-
-    # Compute U
-    U = U_svd @ Vt
-
-    # Use absolute value to ensure P is positive semi-definite
-    Sigma_abs = np.abs(Sigma)
-
-    if side_int == 0:  # "right"
-        # P = Vt.T @ diag(|Sigma|) @ Vt
-        # Create diagonal matrix manually for numba compatibility
-        Sigma_diag = np.zeros((N, N), dtype=Sigma.dtype)
-        for i in range(N):
-            Sigma_diag[i, i] = Sigma_abs[i]
-        P = Vt.T @ Sigma_diag @ Vt
-    else:  # "left"
-        # P = U_svd @ diag(|Sigma|) @ U_svd.T (left polar: A = P @ U)
-        # Create diagonal matrix manually for numba compatibility
-        Sigma_diag = np.zeros((M, M), dtype=Sigma.dtype)
-        for i in range(M):
-            Sigma_diag[i, i] = Sigma_abs[i]
-        P = U_svd @ Sigma_diag @ U_svd.T
-
-    return U, P
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -1404,55 +1112,12 @@ def _np_polar_core_batched(A, pure_rotation: bool, side_int: int, U_out, P_out):
     -------
     None (results written to U_out and P_out)
     """
-    M, N = A.shape[-2], A.shape[-1]
-
-    # Calculate batch size by flattening all batch dimensions
-    batch_size = 1
-    for i in range(A.ndim - 2):
-        batch_size *= A.shape[i]
-
-    # Flatten batch dimensions
-    A_flat = A.reshape(batch_size, M, N)
-    U_flat = U_out.reshape(batch_size, M, N)
-    if side_int == 0:  # "right"
-        P_flat = P_out.reshape(batch_size, N, N)
-    else:  # "left"
-        P_flat = P_out.reshape(batch_size, M, M)
-
-    # Process each matrix in the batch
-    for i in range(batch_size):
-        U_i, P_i = _np_polar_core_single(A_flat[i], pure_rotation, side_int)
-        U_flat[i] = U_i
-        P_flat[i] = P_i
+    pass
 
 
 def _np_polar(A: np.ndarray, pure_rotation: bool, side: Literal["right", "left"]):
     """Numpy implementation of polar decomposition with numba acceleration and batched support."""
-    if A.ndim < 2:
-        gs.raise_exception(f"Input must be at least 2D. got: {A.ndim=} dimensions")
-
-    # Convert side to int for numba compatibility
-    side_int = 0 if side == "right" else 1
-
-    # Check if batched
-    is_batched = A.ndim > 2
-    M, N = A.shape[-2], A.shape[-1]
-
-    if is_batched:
-        # Pre-allocate output arrays
-        B = A.shape[:-2]
-        U_out = np.empty((*B, M, N), dtype=A.dtype)
-        if side == "right":
-            P_out = np.empty((*B, N, N), dtype=A.dtype)
-        else:
-            P_out = np.empty((*B, M, M), dtype=A.dtype)
-
-        # Call batched numba function
-        _np_polar_core_batched(A, pure_rotation, side_int, U_out, P_out)
-        return U_out, P_out
-    else:
-        # Call single matrix numba function
-        return _np_polar_core_single(A, pure_rotation, side_int)
+    pass
 
 
 def polar(A, pure_rotation: bool = True, side: Literal["right", "left"] = "right"):
@@ -1479,50 +1144,17 @@ def polar(A, pure_rotation: bool = True, side: Literal["right", "left"] = "right
         - P : The positive semi-definite matrix (scaling part). For 'right' decomposition,
           P has shape (N, N) or (*batch, N, N). For 'left' decomposition, P has shape (M, M) or (*batch, M, M).
     """
-    if isinstance(A, np.ndarray):
-        return _np_polar(A, pure_rotation, side)
-    if isinstance(A, torch.Tensor):
-        return _tc_polar(A, pure_rotation, side, gs.EPS)
-    gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(A)=}")
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
 def _np_slerp(q0, q1, t):
-    q0_norm = np.sqrt(np.sum(np.square(q0.reshape((-1, 4))), -1).reshape((*q0.shape[:-1], 1)))
-    q0 = q0 / q0_norm
-    q1_norm = np.sqrt(np.sum(np.square(q1.reshape((-1, 4))), -1).reshape((*q1.shape[:-1], 1)))
-    q1 = q1 / q1_norm
-
-    d = q0 * q1
-    dot = np.sum(d.reshape((-1, 4)), -1).reshape((*d.shape[:-1], 1))
-    dot_abs = np.abs(dot)
-    t = t.reshape(dot.shape)
-
-    theta = np.arccos(dot_abs)
-    sin_theta_inv = 1.0 / np.sqrt(1.0 - dot_abs**2)
-
-    is_theta_eps = dot_abs > 1.0 - gs.EPS
-    s0 = np.where(is_theta_eps, 1.0 - t, np.sin((1.0 - t) * theta) * sin_theta_inv)
-    s1 = np.where(is_theta_eps, t, np.sin(t * theta) * sin_theta_inv) * np.where(dot < 0.0, -1.0, 1.0)
-    return s0 * q0 + s1 * q1
+    pass
 
 
 @torch.jit.script
 def _tc_slerp(q0, q1, t, eps: float):
-    q0 = q0 / torch.linalg.norm(q0, dim=-1, keepdim=True)
-    q1 = q1 / torch.linalg.norm(q1, dim=-1, keepdim=True)
-
-    dot = torch.sum(q0 * q1, dim=-1, keepdim=True)
-    dot_abs = dot.abs()
-    t = t.reshape(dot.shape)
-
-    theta = torch.acos(dot_abs)
-    sin_theta_inv = 1.0 / torch.sqrt(1.0 - dot_abs**2)
-
-    is_theta_eps = dot_abs > 1.0 - eps
-    s0 = torch.where(is_theta_eps, 1.0 - t, torch.sin((1.0 - t) * theta) * sin_theta_inv)
-    s1 = torch.where(is_theta_eps, t, torch.sin(t * theta) * sin_theta_inv) * torch.where(dot < 0.0, -1.0, 1.0)
-    return s0 * q0 + s1 * q1
+    pass
 
 
 def slerp(q0, q1, t):
@@ -1543,11 +1175,7 @@ def slerp(q0, q1, t):
     numpy.array | torch.Tensor
         The interpolated quaternion (w, x, y, z).
     """
-    if isinstance(q0, np.ndarray):
-        return _np_slerp(q0, q1, t)
-    if isinstance(q0, torch.Tensor):
-        return _tc_slerp(q0, q1, torch.as_tensor(t, dtype=gs.tc_float, device=gs.device), gs.EPS)
-    gs.raise_exception(f"the input must be either torch.Tensor or np.ndarray. got: {type(q0)=}")
+    pass
 
 
 # ------------------------------------------------------------------------------------
@@ -1778,69 +1406,20 @@ def rotvec_to_quat(rotvec: np.ndarray, out: np.ndarray | None = None) -> np.ndar
     :param out: Pre-allocated array into which to store the result. If not provided, a new array is freshly-allocated
                 and returned, which is slower.
     """
-    assert rotvec.ndim >= 1
-    B = rotvec.shape[:-1]
-    if out is None:
-        out_ = np.empty((*B, 4), dtype=rotvec.dtype)
-    else:
-        assert out.shape == (*B, 4)
-        out_ = out
-
-    # Split unit axis and positive angle
-    angle = np.sqrt(np.sum(np.square(rotvec.reshape((-1, 3))), -1)).reshape(B)
-    # FIXME: Taylor expansion should be used to handle angle ~ 0.0
-    axis = rotvec / np.maximum(angle[..., None], gs.EPS)
-
-    # Compute the quaternion representation
-    out_[..., 0] = np.cos(0.5 * angle)
-    out_[..., 1:] = np.sin(0.5 * angle[..., None]) * axis
-
-    return out_
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
 def _np_axis_cos_angle_to_R(axis: np.ndarray, cos_theta: np.ndarray, out: np.ndarray | None = None) -> np.ndarray:
-    if isinstance(cos_theta, (float, np.float32, np.float64)):
-        assert axis.ndim == 1
-    else:
-        assert axis.ndim - 1 == cos_theta.ndim
-    if out is None:
-        out_ = np.empty((*axis.shape[:-1], 3, 3), dtype=axis.dtype)
-    else:
-        assert out.shape == (*axis.shape[:-1], 3, 3)
-        out_ = out
-
-    axis_norm = np.sqrt(np.sum(np.square(axis.reshape((-1, 3))), -1).reshape((*axis.shape[:-1], 1)))
-    axis = axis / axis_norm
-    if not isinstance(cos_theta, (float, np.float32, np.float64)):
-        cos_theta = cos_theta[..., None]
-    sin_theta = np.sqrt(1.0 - cos_theta**2)
-    cos1_axis = (1.0 - cos_theta) * axis
-    sin_axis = sin_theta * axis
-
-    tmp = cos1_axis[..., 0] * axis[..., 1]
-    out_[..., 0, 1] = tmp - sin_axis[..., 2]
-    out_[..., 1, 0] = tmp + sin_axis[..., 2]
-    tmp = cos1_axis[..., 0] * axis[..., 2]
-    out_[..., 0, 2] = tmp + sin_axis[..., 1]
-    out_[..., 2, 0] = tmp - sin_axis[..., 1]
-    tmp = cos1_axis[..., 1] * axis[..., 2]
-    out_[..., 1, 2] = tmp - sin_axis[..., 0]
-    out_[..., 2, 1] = tmp + sin_axis[..., 0]
-    tmp = cos1_axis * axis + cos_theta
-    out_[..., 0, 0] = tmp[..., 0]
-    out_[..., 1, 1] = tmp[..., 1]
-    out_[..., 2, 2] = tmp[..., 2]
-
-    return out_
+    pass
 
 
 def axis_angle_to_R(axis: np.ndarray, theta: np.ndarray) -> np.ndarray:
-    return _np_axis_cos_angle_to_R(axis, np.cos(theta))
+    pass
 
 
 def rotvec_to_R(rotvec: np.ndarray) -> np.ndarray:
-    return axis_angle_to_R(rotvec, np.linalg.norm(rotvec, axis=-1))
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -1865,25 +1444,7 @@ def z_to_R(v_a: np.ndarray, out: np.ndarray | None = None) -> np.ndarray:
     This operation is computed by rotating the world frame by moving the original z-axis to the given vector via the
     shortest path.
     """
-    B = v_a.shape[:-1]
-
-    v_a_norm = np.sqrt(np.sum(np.square(v_a.reshape((-1, 3))), -1).reshape((*B, 1)))
-    v_a = v_a / v_a_norm
-
-    axis = np.empty((*B, 3), dtype=v_a.dtype)
-    cos_theta = np.empty(B, dtype=v_a.dtype)
-    for i in np.ndindex(B):
-        axis_i = axis[i]
-        v_x, v_y, v_z = v_a[i]
-        cos_theta[i] = v_z
-        if abs(cos_theta[i]) < 1.0 - gs.EPS:
-            axis_i[0] = -v_y
-            axis_i[1] = v_x
-            axis_i[2] = 0.0
-        else:
-            axis_i[:] = 0.0, 1.0, 0.0
-
-    return _np_axis_cos_angle_to_R(axis, cos_theta, out)
+    pass
 
 
 @nb.jit(nopython=True, cache=True)
@@ -1893,75 +1454,11 @@ def z_to_quat(v_a: np.ndarray, out: np.ndarray | None = None) -> np.ndarray:
 
     This method is (surprisingly) slower than `z_up_to_R`, w/ and w/o chaining `transform_by_(quat|R)`.
     """
-    if out is None:
-        out_ = np.empty((*v_a.shape[:-1], 4), dtype=v_a.dtype)
-    else:
-        assert out.shape == (*v_a.shape[:-1], 4)
-        out_ = out
-
-    v_a_norm = np.sqrt(np.sum(np.square(v_a.reshape((-1, 3))), -1).reshape((*v_a.shape[:-1], 1)))
-    v_a = v_a / v_a_norm
-    v_x, v_y, v_z = v_a[..., 0], v_a[..., 1], v_a[..., 2]
-
-    for i in np.ndindex(v_a.shape[:-1]):
-        v_x, v_y, v_z = v_a[i]
-        quat = out_[i]
-
-        if v_a_norm[i] < gs.EPS:
-            quat[:] = 1.0, 0.0, 0.0, 0.0
-        elif v_z > -1.0 + gs.EPS:
-            s = np.sqrt(2.0 * (1.0 + v_z))
-            s_inv = 1.0 / s
-            quat[:] = 0.5 * s, -v_y * s_inv, v_x * s_inv, 0.0
-        else:
-            eps_thr = np.sqrt(gs.EPS)
-            eps_x = abs(v_x) < gs.EPS
-            eps_y = abs(v_y) < gs.EPS
-            if not eps_y:
-                ratio = v_x / v_y
-                if eps_x:
-                    esp_ratio = abs(ratio) < eps_thr
-            elif eps_y and not eps_x:
-                ratio = v_y / v_x
-                esp_ratio = abs(ratio) < eps_thr
-            w_2 = 0.5 * (1.0 + max(v_z, -1.0))
-            quat[0] = np.sqrt(w_2)
-            if eps_x and eps_y:
-                # Both q_x and q_y would do fine. Picking q_y arbitrarily.
-                quat[1] = 0.0
-                quat[2] = 1.0
-            elif esp_ratio:
-                coef_abs = np.sqrt(1.0 - w_2) * (1.0 - 0.5 * ratio**2)
-                if eps_x:
-                    quat[1] = -np.sign(v_y) * coef_abs
-                    quat[2] = -quat[1] * ratio
-                else:
-                    quat[2] = np.sign(v_x) * coef_abs
-                    quat[1] = -quat[2] * ratio
-            else:
-                q_x_abs = np.sqrt((1.0 - w_2) / (1.0 + ratio**2))
-                quat[1] = -np.sign(v_y) * q_x_abs
-                quat[2] = +np.sign(v_x) * q_x_abs * ratio
-            quat[3] = 0.0
-
-            # First order quaternion normalization is accurate enough
-            quat *= 0.5 * (3.0 - np.sum(np.square(quat), -1))
-
-    return out_
+    pass
 
 
 def compute_camera_angle(camera_pos, camera_lookat):
-    camera_dir = np.asarray(camera_lookat) - np.asarray(camera_pos)
-
-    # rotation around vertical (y) axis
-    angle_x = np.arctan2(-camera_dir[0], -camera_dir[2])
-
-    # rotation w.r.t horizontal plane
-    angle_y = np.arctan2(camera_dir[1], np.linalg.norm([camera_dir[0], camera_dir[2]]))
-
-    angle_z = 0.0
-
-    return np.array([angle_x, angle_y, angle_z])
+    pass
 
 
 def transform_inertia_by_T(inertia_tensor, T, mass):
@@ -2034,32 +1531,7 @@ def generate_grid_points_on_plane(lo: Vec3FType, hi: Vec3FType, normal: Vec3FTyp
     grid: np.ndarray, shape (ny, nx, 3)
         Grid points on the plane
     """
-    # Compute tangent axes
-    normal = np.asarray(normal, dtype=gs.np_float)
-    n_norm = np.linalg.norm(normal)
-    if n_norm < gs.EPS:
-        gs.raise_exception(f"normal must be non-zero, got: {normal}")
-    normal = normal / n_norm
-    t0, t1 = orthogonals(normal)
-
-    # Compute lower and upper bounds in local basis
-    rot = np.stack((t0, t1, normal), axis=0, dtype=gs.np_float)
-    bounds = np.stack((lo, hi), axis=1, dtype=gs.np_float)
-    (lo_u, hi_u), (lo_v, hi_v), (lo_w, hi_w) = rot @ bounds
-
-    # Make sure that bounds are orthogonal to plane normal
-    extent_w = abs(hi_w - lo_w)
-    if extent_w > gs.EPS:
-        gs.logger.warning(f"Bounds does not lie on a plane orthogonal to normal (normal-axis mismatch={extent_w:.6e}).")
-    plane_w = 0.5 * (lo_w + hi_w)
-
-    # Sample point grid on plane
-    u_vals = np.linspace(lo_u, hi_u, num=nx, dtype=gs.np_float)
-    v_vals = np.linspace(lo_v, hi_v, num=ny, dtype=gs.np_float)
-    vv, uu = np.meshgrid(v_vals, u_vals, indexing="ij")
-    grid = t0 * np.expand_dims(uu, axis=-1) + t1 * np.expand_dims(vv, axis=-1) + normal * plane_w
-
-    return grid
+    pass
 
 
 # ------------------------------------------------------------------------------------
@@ -2076,11 +1548,11 @@ def identity_quat():
 
 
 def tc_zero_pos():
-    return torch.zeros(3, dtype=gs.tc_float, device=gs.device)
+    pass
 
 
 def tc_identity_quat():
-    return torch.tensor([1.0, 0.0, 0.0, 0.0], dtype=gs.tc_float, device=gs.device)
+    pass
 
 
 def nowhere():
@@ -2208,7 +1680,7 @@ class SpatialHasher:
 
     @qd.func
     def grid_to_pos(self, grid_id):
-        return (grid_id + 0.5) * self.cell_size
+        pass
 
     @qd.func
     def grid_to_slot(self, grid_id):

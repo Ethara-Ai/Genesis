@@ -650,7 +650,7 @@ class Scene(RBC):
         sensor_options : SensorOptions
             The options for the sensor.
         """
-        return self._sim._sensor_manager.create_sensor(sensor_options)
+        pass
 
     @gs.assert_unbuilt
     def start_recording(self, data_func: Callable, rec_options: "RecorderOptions") -> "Recorder":
@@ -672,7 +672,7 @@ class Scene(RBC):
         recorder : Recorder
             The created recorder object.
         """
-        return self._recorder_manager.add_recorder(data_func, rec_options)
+        pass
 
     @gs.assert_unbuilt
     def add_camera(
@@ -789,36 +789,7 @@ class Scene(RBC):
         emitter : genesis.Emitter
             The created emitter object.
         """
-        from genesis.engine.entities import Emitter
-
-        if self.requires_grad:
-            gs.raise_exception("Emitter is not supported in differentiable mode.")
-
-        if not isinstance(
-            material, (gs.materials.MPM.Base, gs.materials.SPH.Base, gs.materials.PBD.Particle, gs.materials.PBD.Liquid)
-        ):
-            gs.raise_exception(
-                "Non-supported material for emitter. Supported materials are: `gs.materials.MPM.Base`, "
-                "`gs.materials.SPH.Base`, `gs.materials.PBD.Particle`, `gs.materials.PBD.Liquid`."
-            )
-
-        if surface is None:
-            surface = gs.surfaces.Default(color=(0.6, 0.8, 1.0, 1.0))
-
-        if surface.vis_mode is None:
-            surface.vis_mode = "particle"
-        if surface.vis_mode == "visual":
-            gs.raise_exception("surface.vis_mode='visual' is not supported for fluid emitters.")
-
-        emitter = Emitter(max_particles)
-        entity = self.add_entity(
-            morph=gs.morphs.Nowhere(n_particles=max_particles),
-            material=material,
-            surface=surface,
-        )
-        emitter.set_entity(entity)
-        self._emitters.append(emitter)
-        return emitter
+        pass
 
     @gs.assert_unbuilt
     def add_force_field(self, force_field: ForceField):
@@ -835,9 +806,7 @@ class Scene(RBC):
         force_field : gs.force_fields.ForceField
             The added force field.
         """
-        force_field.scene = self
-        self._sim._add_force_field(force_field)
-        return force_field
+        pass
 
     @gs.assert_unbuilt
     def build(
@@ -898,11 +867,7 @@ class Scene(RBC):
 
         # Update global scene registry
         def _destroy_callback(scene_ref: weakref.ReferenceType["Scene"]):
-            scene = scene_ref()
-            for i, scene_ref_i in enumerate(gs._scene_registry):
-                if scene is scene_ref_i():
-                    del gs._scene_registry[i]
-                    break
+            pass
 
         gs._scene_registry.append(weakref.ref(self, _destroy_callback))
 
@@ -1036,12 +1001,10 @@ class Scene(RBC):
         self._recorder_manager.step(self._sim.cur_step_global)
 
     def stop_recording(self):
-        self._recorder_manager.stop()
+        pass
 
     def _step_grad(self):
-        self._sim.collect_output_grads()
-        self._sim._step_grad()
-        self._t -= 1
+        pass
 
     @gs.assert_built
     def draw_debug_line(self, start, end, radius=0.002, color=(1.0, 0.0, 0.0, 0.5)):
@@ -1114,8 +1077,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object.
         """
-        with self._visualizer.viewer_lock:
-            return self._visualizer.context.draw_debug_frame(T, axis_length, origin_size, axis_radius, color)
+        pass
 
     @gs.assert_built
     def draw_debug_frames(self, Ts, axis_length=1.0, origin_size=0.015, axis_radius=0.01, color=None):
@@ -1140,8 +1102,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object.
         """
-        with self._visualizer.viewer_lock:
-            return self._visualizer.context.draw_debug_frames(Ts, axis_length, origin_size, axis_radius, color)
+        pass
 
     @gs.assert_built
     def draw_debug_mesh(self, mesh, pos=np.zeros(3), T=None):
@@ -1236,10 +1197,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object.
         """
-        with self._visualizer.viewer_lock:
-            return self._visualizer.context.draw_debug_box(
-                bounds, color, wireframe=wireframe, wireframe_radius=wireframe_radius
-            )
+        pass
 
     @gs.assert_built
     def draw_debug_points(self, poss, colors=(1.0, 0.0, 0.0, 0.5)):
@@ -1258,8 +1216,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object.
         """
-        with self._visualizer.viewer_lock:
-            return self._visualizer.context.draw_debug_points(poss, colors)
+        pass
 
     @gs.assert_built
     def draw_debug_frustum(self, camera, color=(1.0, 1.0, 1.0, 0.3)):
@@ -1279,9 +1236,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object.
         """
-        with self._visualizer.viewer_lock:
-            mesh = mu.create_camera_frustum(camera, color)
-            return self._visualizer.context.draw_debug_mesh(mesh, T=camera.transform)
+        pass
 
     @gs.assert_built
     def draw_debug_trajectory(self, poss, radius=0.002, color=(1.0, 0.5, 0.0, 0.8)):
@@ -1302,15 +1257,7 @@ class Scene(RBC):
         node : genesis.ext.pyrender.mesh.Mesh
             The created debug object (a single merged mesh of all segments).
         """
-
-        poss = np.asarray(poss)
-        if len(poss) < 2:
-            return None
-
-        segments = [mu.create_line(poss[i], poss[i + 1], radius, color) for i in range(len(poss) - 1)]
-        merged = trimesh.util.concatenate(segments)
-        with self._visualizer.viewer_lock:
-            return self._visualizer.context.draw_debug_mesh(merged)
+        pass
 
     @gs.assert_built
     def draw_debug_path(self, qposs, entity, link_idx=-1, density=0.3, frame_scaling=1.0):
@@ -1344,20 +1291,7 @@ class Scene(RBC):
         The density parameter reduces FK computational load by sampling fewer points, with 1.0 representing the whole
         trajectory.
         """
-        with self._visualizer.viewer_lock:
-            N = len(qposs)
-            density = np.clip(density, 0.0, 1.0)
-            N_new = int(N * density)
-            indices = torch.linspace(0, N - 2, N_new, dtype=int)
-
-            Ts = np.zeros((N_new, 4, 4))
-            for i in range(N_new):
-                pos, quat = entity.forward_kinematics(qposs[indices[i]])
-                Ts[i] = tensor_to_array(gu.trans_quat_to_T(pos[link_idx], quat[link_idx]))
-
-            return self._visualizer.context.draw_debug_frames(
-                Ts, axis_length=frame_scaling * 0.1, origin_size=0.001, axis_radius=frame_scaling * 0.005
-            )
+        pass
 
     @gs.assert_built
     def render_all_cameras(
@@ -1393,15 +1327,7 @@ class Scene(RBC):
             otherwise a list of tensors of shape (n_envs, H, W) if depth is not None.
             If n_envs == 0, the first dimension of the tensor is squeezed.
         """
-        if self._visualizer.batch_renderer is None:
-            gs.raise_exception("Method only supported by 'BatchRenderer'")
-
-        rgb_out, depth_out, seg_out, normal_out = self._visualizer.batch_renderer.render(
-            rgb, depth, segmentation, normal, antialiasing, force_render
-        )
-        if segmentation and colorize_seg:
-            seg_out = tuple(self._visualizer.batch_renderer.colorize_seg_idxc_arr(seg) for seg in seg_out)
-        return rgb_out, depth_out, seg_out, normal_out
+        pass
 
     @gs.assert_built
     def update_debug_objects(self, objs, poses):
@@ -1417,8 +1343,7 @@ class Scene(RBC):
         poses : tuple of array_like, each of shape (4, 4)
             The new transformation matrices for each debug object.
         """
-        with self._visualizer.viewer_lock:
-            self._visualizer.context.update_debug_objects(objs, poses)
+        pass
 
     @gs.assert_built
     def clear_debug_object(self, obj):
@@ -1433,24 +1358,14 @@ class Scene(RBC):
         """
         Clears all the debug objects in the scene.
         """
-        with self._visualizer.viewer_lock:
-            self._visualizer.context.clear_debug_objects()
+        pass
 
     def _backward(self):
         """
         At this point, all the scene states the simulation run should have been filled with gradients.
         Next, we run backward from scene state back to scene's internal# Quadrants variables, then back through time.
         """
-
-        if not self._backward_ready:
-            gs.raise_exception("Multiple backward calls not allowed.")
-
-        # backward pass through time
-        while self._t > 0:
-            self._step_grad()
-
-        self._backward_ready = False
-        self._forward_ready = False
+        pass
 
     def dump_ckpt_to_numpy(self) -> dict[str, np.ndarray]:
         """
@@ -1462,16 +1377,7 @@ class Scene(RBC):
         dict[str, np.ndarray]
             Mapping ``"Class.attr[.member]" -> array`` with raw field data.
         """
-        arrays: dict[str, np.ndarray] = {}
-
-        for name, value in self.__dict__.items():
-            if isinstance(value, (qd.Field, qd.Ndarray)):
-                arrays[".".join((self.__class__.__name__, name))] = value.to_numpy()
-
-        for solver in self.active_solvers:
-            arrays.update(solver.dump_ckpt_to_numpy())
-
-        return arrays
+        pass
 
     def save_checkpoint(self, path: str | os.PathLike) -> None:
         """
@@ -1482,13 +1388,7 @@ class Scene(RBC):
         path : str | os.PathLike
             Destination filename.
         """
-        state = {
-            "timestamp": time.time(),
-            "step_index": self.t,
-            "arrays": self.dump_ckpt_to_numpy(),
-        }
-        with open(path, "wb") as f:
-            pickle.dump(state, f, protocol=pickle.HIGHEST_PROTOCOL)
+        pass
 
     def load_checkpoint(self, path: str | os.PathLike) -> None:
         """
@@ -1499,21 +1399,7 @@ class Scene(RBC):
         path : str | os.PathLike
             Path to the checkpoint pickle.
         """
-        with open(path, "rb") as f:
-            state = pickle.load(f)
-
-        arrays = state["arrays"]
-
-        for name, value in self.__dict__.items():
-            if isinstance(value, (qd.Field, qd.Ndarray)):
-                key = ".".join((self.__class__.__name__, name))
-                if key in arrays:
-                    value.from_numpy(arrays[key])
-
-        for solver in self.active_solvers:
-            solver.load_ckpt_from_numpy(arrays)
-
-        self._t = state.get("step_index", self._t)
+        pass
 
     # ------------------------------------------------------------------------------------
     # ----------------------------------- utilities --------------------------------------
@@ -1542,78 +1428,77 @@ class Scene(RBC):
     @property
     def uid(self):
         """The unique ID of the scene."""
-        return self._uid
+        pass
 
     @property
     def dt(self):
         """The time duration for each simulation step."""
-        return self._sim.dt
+        pass
 
     @property
     def t(self):
         """The current simulation time step."""
-        return self._t
+        pass
 
     @property
     def substeps(self):
         """The number of substeps per simulation step."""
-        return self._sim.substeps
+        pass
 
     @property
     def requires_grad(self):
         """Whether the scene is in differentiable mode."""
-        return self._sim.requires_grad
+        pass
 
     @property
     def is_built(self) -> bool:
         """Whether the scene has been built."""
-        return self._is_built
+        pass
 
     @property
     def show_FPS(self):
         """Whether to print the frames per second (FPS) in the terminal."""
-        warn_once("Scene.show_FPS is deprecated. Please use profiling_options.show_FPS")
-        return self.profiling_options.show_FPS
+        pass
 
     @property
     def gravity(self):
         """The gravity in the scene."""
-        return self._sim.gravity
+        pass
 
     @property
     def viewer(self):
         """The viewer object for the scene."""
-        return self._visualizer.viewer
+        pass
 
     @property
     def visualizer(self):
         """The visualizer object for the scene."""
-        return self._visualizer
+        pass
 
     @property
     def sim(self):
         """The scene's top-level simulator."""
-        return self._sim
+        pass
 
     @property
     def cur_t(self):
         """The current simulation time."""
-        return self._sim.cur_t
+        pass
 
     @property
     def solvers(self):
         """All the solvers managed by the scene's simulator."""
-        return self._sim.solvers
+        pass
 
     @property
     def active_solvers(self):
         """All the active solvers managed by the scene's simulator."""
-        return self._sim.active_solvers
+        pass
 
     @property
     def entities(self) -> list["Entity"]:
         """All the entities in the scene."""
-        return self._sim.entities
+        pass
 
     @property
     def entity_names(self) -> tuple[str, ...]:
@@ -1625,7 +1510,7 @@ class Scene(RBC):
         tuple[str, ...]
             Tuple of entity names in order of creation.
         """
-        return tuple(entity.name for entity in self.entities)
+        pass
 
     def get_entity(self, name: str | None = None, *, uid: str | None = None) -> "Entity":
         """
@@ -1643,60 +1528,47 @@ class Scene(RBC):
         Entity
             The matching entity.
         """
-        if not ((name is None) ^ (uid is None)):
-            gs.raise_exception("Please specify either one argument between `name` or `uid`.")
-
-        if name is not None:
-            try:
-                return next(entity for entity in self.entities if entity.name == name)
-            except StopIteration as e:
-                gs.raise_exception_from(f"Entity not found for name: '{name}'.", e)
-        else:  # uid is not None
-            matches = [entity for entity in self.entities if entity.uid.match(uid, short_only=True)]
-            if matches:
-                (match,) = matches
-                return match
-            gs.raise_exception(f"Entity not found for uid: '{uid}'.")
+        pass
 
     @property
     def emitters(self):
         """All the emitters in the scene."""
-        return self._emitters
+        pass
 
     @property
     def tool_solver(self):
         """The scene's `tool_solver`, managing all the `ToolEntity` in the scene."""
-        return self._sim.tool_solver
+        pass
 
     @property
     def rigid_solver(self):
         """The scene's `rigid_solver`, managing all the `RigidEntity` in the scene."""
-        return self._sim.rigid_solver
+        pass
 
     @property
     def kinematic_solver(self):
         """The scene's `kinematic_solver`, managing all the kinematic (visualization-only) entities in the scene."""
-        return self._sim.kinematic_solver
+        pass
 
     @property
     def mpm_solver(self):
         """The scene's `mpm_solver`, managing all the `MPMEntity` in the scene."""
-        return self._sim.mpm_solver
+        pass
 
     @property
     def sph_solver(self):
         """The scene's `sph_solver`, managing all the `SPHEntity` in the scene."""
-        return self._sim.sph_solver
+        pass
 
     @property
     def fem_solver(self):
         """The scene's `fem_solver`, managing all the `FEMEntity` in the scene."""
-        return self._sim.fem_solver
+        pass
 
     @property
     def pbd_solver(self):
         """The scene's `pbd_solver`, managing all the `PBDEntity` in the scene."""
-        return self._sim.pbd_solver
+        pass
 
     @property
     def segmentation_idx_dict(self):
@@ -1711,4 +1583,4 @@ class Scene(RBC):
             - `(entity_id, link_id, geom_id)`
           depending on the material type and the configured segmentation level.
         """
-        return self._visualizer.segmentation_idx_dict
+        pass

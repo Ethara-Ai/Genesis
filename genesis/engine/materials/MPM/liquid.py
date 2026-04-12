@@ -28,22 +28,12 @@ class Liquid(Base):
     viscous: StrictBool = False
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-        if not self.viscous:
-            self.mu = 0.0
-        self.update_F_S_Jp = self._update_F_S_Jp_liquid
-        self.update_stress = self._update_stress_liquid
+        pass
 
     @qd.func
     def _update_F_S_Jp_liquid(self, J, F_tmp, U, S, V, Jp):
-        F_new = qd.Matrix.identity(gs.qd_float, 3) * qd.pow(J, 1.0 / 3.0)
-        S_new = S
-        Jp_new = Jp
-        return F_new, S_new, Jp_new
+        pass
 
     @qd.func
     def _update_stress_liquid(self, U, S, V, F_tmp, F_new, J, Jp, actu, m_dir):
-        stress = 2 * self.mu * (F_tmp - U @ V.transpose()) @ F_tmp.transpose() + qd.Matrix.identity(
-            gs.qd_float, 3
-        ) * self.lam * J * (J - 1)
-        return stress
+        pass

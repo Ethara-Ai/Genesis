@@ -78,20 +78,7 @@ class KinematicContactProbe(
     stiffness: NonNegativeFloat = 1000.0
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-
-        if isinstance(self.probe_local_normal[0], Sequence) and len(self.probe_local_pos) != len(
-            self.probe_local_normal
-        ):
-            gs.raise_exception(
-                "probe_local_pos and probe_local_normal must have the same length. "
-                f"Got {len(self.probe_local_pos)} positions and {len(self.probe_local_normal)} normals."
-            )
-        if isinstance(self.probe_radius, Sequence) and len(self.probe_radius) != len(self.probe_local_pos):
-            gs.raise_exception(
-                "If radius is array-like, it must have the same length as probe_local_pos. "
-                f"Got {len(self.probe_radius)} radii and {len(self.probe_local_pos)} probe positions."
-            )
+        pass
 
 
 class ElastomerDisplacement(
@@ -140,19 +127,4 @@ class ElastomerDisplacement(
     twist_max_delta: NonNegativeFloat = 50.0
 
     def model_post_init(self, context: Any) -> None:
-        super().model_post_init(context)
-
-        num_prob = len(self.probe_local_pos)
-        if isinstance(self.probe_local_pos[0][0], Sequence):
-            num_prob *= len(self.probe_local_pos[0])
-
-        if isinstance(self.probe_local_normal[0], Sequence) and len(self.probe_local_normal) != num_prob:
-            gs.raise_exception(
-                "probe_local_pos and probe_local_normal must have the same length. "
-                f"Got {num_prob} positions and {len(self.probe_local_normal)} normals."
-            )
-        if isinstance(self.probe_radius, Sequence) and len(self.probe_radius) != num_prob:
-            gs.raise_exception(
-                "If radius is array-like, it must have the same length as probe_local_pos. "
-                f"Got {len(self.probe_radius)} radii and {num_prob} probe positions."
-            )
+        pass

@@ -24,4 +24,4 @@ class DepthCameraSensor(RaycasterSensor, Sensor[DepthCameraOptions, RaycasterSha
         torch.Tensor
             The depth image with shape (height, width).
         """
-        return self.read().distances.reshape(*self._shape)
+        pass

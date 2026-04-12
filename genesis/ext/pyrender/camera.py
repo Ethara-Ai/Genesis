@@ -41,37 +41,29 @@ class Camera(metaclass=ABCMeta):
     @property
     def name(self):
         """str : The user-defined name of this object."""
-        return self._name
+        pass
 
     @name.setter
     def name(self, value):
-        if value is not None:
-            value = str(value)
-        self._name = value
+        pass
 
     @property
     def znear(self):
         """float : The distance to the near clipping plane."""
-        return self._znear
+        pass
 
     @znear.setter
     def znear(self, value):
-        value = float(value)
-        if value < 0:
-            raise ValueError("z-near must be >= 0.0")
-        self._znear = value
+        pass
 
     @property
     def zfar(self):
         """float : The distance to the far clipping plane."""
-        return self._zfar
+        pass
 
     @zfar.setter
     def zfar(self, value):
-        value = float(value)
-        if value <= 0 or value <= self.znear:
-            raise ValueError("zfar must be >0 and >znear")
-        self._zfar = value
+        pass
 
     @abc.abstractmethod
     def get_projection_matrix(self, width=None, height=None):
@@ -117,40 +109,29 @@ class PerspectiveCamera(Camera):
     @property
     def yfov(self):
         """float : The vertical field of view in radians."""
-        return self._yfov
+        pass
 
     @yfov.setter
     def yfov(self, value):
-        value = float(value)
-        if value <= 0.0:
-            raise ValueError("Field of view must be positive")
-        self._yfov = value
+        pass
 
     @property
     def zfar(self):
         """float : The distance to the far clipping plane."""
-        return self._zfar
+        pass
 
     @zfar.setter
     def zfar(self, value):
-        if value is not None:
-            value = float(value)
-            if value <= 0 or value <= self.znear:
-                raise ValueError("zfar must be >0 and >znear")
-        self._zfar = value
+        pass
 
     @property
     def aspectRatio(self):
         """float : The ratio of the width to the height of the field of view."""
-        return self._aspectRatio
+        pass
 
     @aspectRatio.setter
     def aspectRatio(self, value):
-        if value is not None:
-            value = float(value)
-            if value <= 0.0:
-                raise ValueError("Aspect ratio must be positive")
-        self._aspectRatio = value
+        pass
 
     def get_projection_matrix(self, width=None, height=None):
         """Return the OpenGL projection matrix for this camera.
@@ -217,38 +198,29 @@ class OrthographicCamera(Camera):
     @property
     def xmag(self):
         """float : The horizontal magnification of the view."""
-        return self._xmag
+        pass
 
     @xmag.setter
     def xmag(self, value):
-        value = float(value)
-        if value <= 0.0:
-            raise ValueError("X magnification must be positive")
-        self._xmag = value
+        pass
 
     @property
     def ymag(self):
         """float : The vertical magnification of the view."""
-        return self._ymag
+        pass
 
     @ymag.setter
     def ymag(self, value):
-        value = float(value)
-        if value <= 0.0:
-            raise ValueError("Y magnification must be positive")
-        self._ymag = value
+        pass
 
     @property
     def znear(self):
         """float : The distance to the near clipping plane."""
-        return self._znear
+        pass
 
     @znear.setter
     def znear(self, value):
-        value = float(value)
-        if value <= 0:
-            raise ValueError("z-near must be > 0.0")
-        self._znear = value
+        pass
 
     def get_projection_matrix(self, width=None, height=None):
         """Return the OpenGL projection matrix for this camera.
@@ -315,38 +287,38 @@ class IntrinsicsCamera(Camera):
     @property
     def fx(self):
         """float : X-axis focal length in meters."""
-        return self._fx
+        pass
 
     @fx.setter
     def fx(self, value):
-        self._fx = float(value)
+        pass
 
     @property
     def fy(self):
         """float : Y-axis focal length in meters."""
-        return self._fy
+        pass
 
     @fy.setter
     def fy(self, value):
-        self._fy = float(value)
+        pass
 
     @property
     def cx(self):
         """float : X-axis optical center in pixels."""
-        return self._cx
+        pass
 
     @cx.setter
     def cx(self, value):
-        self._cx = float(value)
+        pass
 
     @property
     def cy(self):
         """float : Y-axis optical center in pixels."""
-        return self._cy
+        pass
 
     @cy.setter
     def cy(self, value):
-        self._cy = float(value)
+        pass
 
     def get_projection_matrix(self, width, height):
         """Return the OpenGL projection matrix for this camera.

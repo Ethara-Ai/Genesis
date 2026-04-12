@@ -57,7 +57,7 @@ class EnvironmentSphere:
         renderer.update_rigid(self.name, env_transform)
 
     def update_pose(self, transform):
-        self._renderer.update_rigid(self.name, transform)
+        pass
 
 
 class ShapeLight:
@@ -820,4 +820,4 @@ class Raytracer:
 
     @property
     def cameras(self):
-        return self.visualizer.cameras
+        pass

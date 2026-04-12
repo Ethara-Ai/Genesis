@@ -99,19 +99,7 @@ def tri_barycentric(p, tri_vertices, normal):
     -----
     This function assumes that the triangle is not degenerated.
     """
-    v0 = tri_vertices[:, 0]
-    v1 = tri_vertices[:, 1]
-    v2 = tri_vertices[:, 2]
-
-    # Compute the areas of the triangles formed by the vertices
-    area_tri_inv = 1.0 / (v1 - v0).cross((v2 - v0)).dot(normal)
-
-    # Compute the barycentric coordinates
-    b0 = (v2 - v1).cross(p - v1).dot(normal) * area_tri_inv
-    b1 = (v0 - v2).cross(p - v2).dot(normal) * area_tri_inv
-    b2 = 1.0 - b0 - b1
-
-    return gs.qd_vec3(b0, b1, b2)
+    pass
 
 
 @qd.func
@@ -654,7 +642,7 @@ class SAPCoupler(RBC):
             self.update_vel(i_step, dofs_state=self.rigid_solver.dofs_state)
 
     def couple_grad(self, i_step):
-        gs.raise_exception("couple_grad is not available for SAPCoupler. Please use LegacyCoupler instead.")
+        pass
 
     @qd.kernel
     def update_vel(self, i_step: qd.i32, dofs_state: array_class.DofsState):
@@ -1837,7 +1825,7 @@ class SAPCoupler(RBC):
     @property
     def active_solvers(self):
         """All the active solvers managed by the scene's simulator."""
-        return self.sim.active_solvers
+        pass
 
 
 @qd.data_oriented

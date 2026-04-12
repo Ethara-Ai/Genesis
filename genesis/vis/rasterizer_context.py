@@ -25,7 +25,7 @@ class SegmentationColorMap:
         return seg_idxc
 
     def seg_idxc_to_key(self, seg_idxc):
-        return self.idxc_map[seg_idxc]
+        pass
 
     def colorize_seg_idxc_arr(self, seg_idxc_arr):
         return self.idxc_to_color[seg_idxc_arr]
@@ -260,9 +260,7 @@ class RasterizerContext:
             del self.external_nodes[node.name]
 
     def clear_external_nodes(self):
-        for external_node in self.external_nodes.values():
-            self.remove_node(external_node)
-        self.external_nodes.clear()
+        pass
 
     def set_node_pose(self, node, pose):
         self._scene.set_pose(node, pose)
@@ -283,11 +281,7 @@ class RasterizerContext:
             self.camera_frustum_shown = True
 
     def off_camera_frustum(self):
-        if self.camera_frustum_shown:
-            for camera in self.cameras:
-                self.remove_node(self.frustum_nodes[camera.uid])
-            self.frustum_nodes.clear()
-            self.camera_frustum_shown = False
+        pass
 
     def on_world_frame(self):
         if not self.world_frame_shown:
@@ -296,10 +290,7 @@ class RasterizerContext:
             self.world_frame_shown = True
 
     def off_world_frame(self):
-        if self.world_frame_shown:
-            self.remove_node(self.world_frame_node)
-            self.world_frame_node = None
-            self.world_frame_shown = False
+        pass
 
     def on_link_frame(self):
         if not self.link_frame_shown:
@@ -331,15 +322,7 @@ class RasterizerContext:
             self.link_frame_shown = True
 
     def off_link_frame(self):
-        if self.link_frame_shown:
-            if self.env_separate_rigid:
-                for node in self.link_frame_nodes.values():
-                    self.remove_node(node)
-                self.link_frame_nodes.clear()
-            else:
-                self.remove_node(self.link_frame_node)
-                self.link_frame_node = None
-            self.link_frame_shown = False
+        pass
 
     def update_link_frame(self):
         if self.link_frame_shown:
@@ -878,31 +861,10 @@ class RasterizerContext:
             return node
 
     def draw_debug_frame(self, T, axis_length=1.0, origin_size=0.015, axis_radius=0.01, color=None):
-        mesh = trimesh.creation.axis(origin_size=origin_size, axis_radius=axis_radius, axis_length=axis_length)
-        if color is not None:
-            visual = trimesh.visual.ColorVisuals()
-            visual._data["vertex_colors"] = np.tile(mu.color_f32_to_u8(color), (len(mesh.vertices), 1))
-            mesh.visual = visual
-
-        n_envs = len(self.rendered_envs_idx)
-        poses = tensor_to_array(T)
-        if poses.ndim != 3:
-            poses = np.tile(poses[np.newaxis], (n_envs, 1, 1))
-        assert len(poses) == n_envs, "Inconsistent batch size."
-
-        node = pyrender.Mesh.from_trimesh(mesh, name=f"debug_frame_{gs.UID()}", poses=poses, is_marker=True)
-        self.add_external_node(node)
-        return node
+        pass
 
     def draw_debug_frames(self, poses, axis_length=1.0, origin_size=0.015, axis_radius=0.01, color=None):
-        mesh = trimesh.creation.axis(origin_size=origin_size, axis_radius=axis_radius, axis_length=axis_length)
-        if color is not None:
-            visual = trimesh.visual.ColorVisuals()
-            visual._data["vertex_colors"] = np.tile(mu.color_f32_to_u8(color), (len(mesh.vertices), 1))
-            mesh.visual = visual
-        node = pyrender.Mesh.from_trimesh(mesh, name=f"debug_frame_{gs.UID()}", poses=poses, is_marker=True)
-        self.add_external_node(node)
-        return node
+        pass
 
     def draw_debug_mesh(self, mesh, pos=np.zeros(3), T=None):
         n_envs = len(self.rendered_envs_idx)
@@ -954,42 +916,7 @@ class RasterizerContext:
             The height of the pyramid (distance from apex to base).
         color: RGBA color tuple
         """
-        T = tensor_to_array(T, dtype=np.float32)
-        right = T[:3, 0]
-        up = T[:3, 1]
-        forward = -T[:3, 2]
-
-        base_center = forward * height
-        half_width = base_width / 2
-        half_height = base_height / 2
-        vertices = np.array(
-            [
-                [0, 0, 0],  # apex
-                base_center + half_width * right + half_height * up,  # top-right
-                base_center - half_width * right + half_height * up,  # top-left
-                base_center - half_width * right - half_height * up,  # bottom-left
-                base_center + half_width * right - half_height * up,  # bottom-right
-            ]
-        )
-        faces = np.array(
-            [
-                # Base (2 triangles) - facing away from apex
-                [1, 2, 3],
-                [1, 3, 4],
-                # Sides (4 triangles from apex to base edges)
-                [0, 2, 1],  # left side
-                [0, 3, 2],  # back side
-                [0, 4, 3],  # right side
-                [0, 1, 4],  # front side
-            ]
-        )
-
-        mesh = trimesh.Trimesh(vertices=vertices, faces=faces, process=False)
-        mesh.visual.face_colors = np.tile(mu.color_f32_to_u8(color), (len(faces), 1))
-
-        node = pyrender.Mesh.from_trimesh(mesh, name=f"debug_pyramid_{gs.UID()}", smooth=False, is_marker=True)
-        self.add_external_node(node)
-        return node
+        pass
 
     def draw_debug_spheres(self, poss, radius=0.01, color=(1.0, 0.0, 0.0, 0.5), persistent=True):
         mesh = mu.create_sphere(radius=radius, color=color)
@@ -1004,50 +931,19 @@ class RasterizerContext:
         return node
 
     def draw_debug_box(self, bounds, color=(1.0, 0.0, 0.0, 1.0), wireframe=True, wireframe_radius=0.002):
-        bounds = tensor_to_array(bounds)
-        mesh = mu.create_box(
-            bounds=bounds,
-            wireframe=wireframe,
-            wireframe_radius=wireframe_radius,
-            color=color,
-        )
-        node = pyrender.Mesh.from_trimesh(mesh, name=f"debug_box_{gs.UID()}", is_marker=True)
-        self.add_external_node(node)
-        return node
+        pass
 
     def draw_debug_points(self, poss, colors=(1.0, 0.0, 0.0, 0.5)):
-        poss = tensor_to_array(poss)
-        colors = tensor_to_array(colors)
-        if len(colors.shape) == 1:
-            colors = np.tile(colors, [len(poss), 1])
-        elif len(colors.shape) == 2:
-            assert colors.shape[0] == len(poss)
-
-        node = pyrender.Mesh.from_points(poss, name=f"debug_box_{gs.UID()}", colors=colors, is_marker=True)
-        self.add_external_node(node)
-        return node
+        pass
 
     def update_debug_objects(self, objs, poses):
-        n_envs = len(self.rendered_envs_idx)
-        for obj, pose in zip(objs, poses):
-            if not any(
-                obj.name.startswith(prefix)
-                for prefix in ("debug_sphere_", "debug_frame_", "debug_mesh_", "debug_arrow_")
-            ):
-                gs.raise_exception("This method is only supported by individual spheres, frames, meshes, and arrows.")
-            pose = tensor_to_array(pose)
-            if pose.ndim != 3:
-                pose = np.tile(pose[np.newaxis], (n_envs, 1, 1))
-            assert len(pose) == n_envs, "Inconsistent batch size."
-            obj.primitives[0].poses = pose
-            node = self.external_nodes[obj.name]
-            self.jit.update_buffer(self._scene.get_buffer_id(node, "model"), pose.transpose((0, 2, 1)))
+        pass
 
     def clear_debug_object(self, obj):
         self.clear_external_node(obj)
 
     def clear_debug_objects(self):
-        self.clear_external_nodes()
+        pass
 
     def update(self, force_render: bool = False):
         # Early return if already updated previously
@@ -1121,8 +1017,8 @@ class RasterizerContext:
 
     @property
     def cameras(self):
-        return self.visualizer.cameras
+        pass
 
     @property
     def seg_idxc_map(self):
-        return self.seg_color_map.idxc_map
+        pass

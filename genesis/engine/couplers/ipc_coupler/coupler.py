@@ -70,21 +70,7 @@ def _animate_rigid_link(coupler_ref, link, env_idx, info):
 
     Uses a weakref to the coupler to avoid preventing garbage collection.
     """
-    coupler = coupler_ref()
-    if coupler is None:
-        gs.raise_exception("IPCCoupler was garbage collected while animator callback is still active.")
-
-    geom_slots = info.geo_slots()
-    if not geom_slots:
-        return
-    geom = geom_slots[0].geometry()
-
-    # Enable constraint and set target transform (q_genesis^n)
-    is_constrained_attr = geom.instances().find(uipc.builtin.is_constrained)
-    aim_transform_attr = geom.instances().find(uipc.builtin.aim_transform)
-    assert is_constrained_attr and aim_transform_attr
-    uipc.view(is_constrained_attr)[0] = 1
-    uipc.view(aim_transform_attr)[:] = coupler._abd_transforms_by_link[link][env_idx]
+    pass
 
 
 class IPCCoupler(RBC):
@@ -850,7 +836,7 @@ class IPCCoupler(RBC):
     @property
     def is_active(self) -> bool:
         """Check if IPC coupling is active"""
-        return self._ipc_world is not None
+        pass
 
     @property
     def has_any_rigid_coupling(self) -> bool:
@@ -863,7 +849,7 @@ class IPCCoupler(RBC):
             True if at least one rigid entity has a coupling type (two_way_soft_constraint,
             external_articulation, or ipc_only).
         """
-        return bool(self._coup_type_by_entity)
+        pass
 
     # ============================================================
     # Section 3: Helpers

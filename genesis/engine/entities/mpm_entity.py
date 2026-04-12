@@ -12,12 +12,7 @@ from .particle_entity import assert_active, ParticleEntity
 
 def assert_muscle(method):
     @functools.wraps(method)
-    def wrapper(self, *args, **kwargs):
-        if not isinstance(self.material, gs.materials.MPM.Muscle):
-            gs.raise_exception("This method is only supported by entities with 'MPM.Muscle' material.")
-        return method(self, *args, **kwargs)
-
-    return wrapper
+    pass
 
 
 @qd.data_oriented
@@ -148,25 +143,7 @@ class MPMEntity(ParticleEntity):
         state : MPMEntityState
             The state object containing gradients for physical quantities.
         """
-        if state.pos.grad is not None:
-            state.pos.assert_contiguous()
-            self._kernel_add_frame_particles_pos_grad(self._sim.cur_substep_local, state.pos.grad)
-
-        if state.vel.grad is not None:
-            state.vel.assert_contiguous()
-            self._kernel_add_frame_particles_vel_grad(self._sim.cur_substep_local, state.vel.grad)
-
-        if state.C.grad is not None:
-            state.C.assert_contiguous()
-            self._kernel_add_frame_particles_C_grad(self._sim.cur_substep_local, state.C.grad)
-
-        if state.F.grad is not None:
-            state.F.assert_contiguous()
-            self._kernel_add_frame_particles_F_grad(self._sim.cur_substep_local, state.F.grad)
-
-        if state.Jp.grad is not None:
-            state.Jp.assert_contiguous()
-            self._kernel_add_frame_particles_Jp_grad(self._sim.cur_substep_local, state.Jp.grad)
+        pass
 
     @qd.kernel
     def _kernel_add_frame_particles_pos_grad(self, f: qd.i32, poss_grad: qd.types.ndarray()):
@@ -180,10 +157,7 @@ class MPMEntity(ParticleEntity):
         poss_grad : ndarray
             Gradient of particle positions, shape (B, n_particles, 3).
         """
-        for i_p, i_b in qd.ndrange(self.n_particles, self._sim._B):
-            i_global = i_p + self._particle_start
-            for j in qd.static(range(3)):
-                self._solver.particles.grad[f, i_global, i_b].pos[j] += poss_grad[i_b, i_p, j]
+        pass
 
     @qd.kernel
     def _kernel_add_frame_particles_vel_grad(self, f: qd.i32, vels_grad: qd.types.ndarray()):
@@ -197,10 +171,7 @@ class MPMEntity(ParticleEntity):
         vels_grad : ndarray
             Gradient of particle velocities, shape (B, n_particles, 3).
         """
-        for i_p, i_b in qd.ndrange(self.n_particles, self._sim._B):
-            i_global = i_p + self._particle_start
-            for j in qd.static(range(3)):
-                self._solver.particles.grad[f, i_global, i_b].vel[j] += vels_grad[i_b, i_p, j]
+        pass
 
     @qd.kernel
     def _kernel_add_frame_particles_C_grad(self, f: qd.i32, C_grad: qd.types.ndarray()):
@@ -214,11 +185,7 @@ class MPMEntity(ParticleEntity):
         C_grad : ndarray
             Gradient of C matrices, shape (B, n_particles, 3, 3).
         """
-        for i_p, i_b in qd.ndrange(self.n_particles, self._sim._B):
-            i_global = i_p + self._particle_start
-            for j in qd.static(range(3)):
-                for k in qd.static(range(3)):
-                    self._solver.particles.grad[f, i_global, i_b].C[j, k] += C_grad[i_b, i_p, j, k]
+        pass
 
     @qd.kernel
     def _kernel_add_frame_particles_F_grad(self, f: qd.i32, F_grad: qd.types.ndarray()):
@@ -232,11 +199,7 @@ class MPMEntity(ParticleEntity):
         F_grad : ndarray
             Gradient of F matrices, shape (B, n_particles, 3, 3).
         """
-        for i_p, i_b in qd.ndrange(self.n_particles, self._sim._B):
-            i_global = i_p + self._particle_start
-            for j in qd.static(range(3)):
-                for k in qd.static(range(3)):
-                    self._solver.particles.grad[f, i_global, i_b].F[j, k] += F_grad[i_b, i_p, j, k]
+        pass
 
     @qd.kernel
     def _kernel_add_frame_particles_Jp_grad(self, f: qd.i32, Jp_grad: qd.types.ndarray()):
@@ -250,9 +213,7 @@ class MPMEntity(ParticleEntity):
         Jp_grad : ndarray
             Gradient of Jp values, shape (B, n_particles).
         """
-        for i_p, i_b in qd.ndrange(self.n_particles, self._sim._B):
-            i_global = i_p + self._particle_start
-            self._solver.particles.grad[f, i_global, i_b].Jp += Jp_grad[i_b, i_p]
+        pass
 
     def process_input(self, in_backward=False):
         if isinstance(self.material, gs.materials.MPM.Muscle) and self._tgt["actu"] is not None:
@@ -267,12 +228,7 @@ class MPMEntity(ParticleEntity):
         """
         Process gradients for buffered inputs and backpropagate using custom kernels.
         """
-        if isinstance(self.material, gs.materials.MPM.Muscle):
-            _tgt_actu = self._tgt_buffer["actu"].pop()
-            if _tgt_actu is not None and _tgt_actu.requires_grad:
-                _tgt_actu._backward_from_qd(self._set_particles_actu_grad)
-
-        super().process_input_grad()
+        pass
 
     @gs.assert_built
     def get_state(self):
@@ -360,19 +316,10 @@ class MPMEntity(ParticleEntity):
 
     @gs.assert_built
     def _set_particles_pos_grad(self, poss_grad):
-        self.solver._kernel_set_particles_pos_grad(
-            self._sim.cur_substep_local, self._particle_start, self._n_particles, poss_grad
-        )
+        pass
 
     def get_particles_pos(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        poss = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_pos(
-            self._sim.cur_substep_local, self._particle_start, self.n_particles, envs_idx, poss
-        )
-        if self._scene.n_envs == 0:
-            poss = poss[0]
-        return poss
+        pass
 
     @gs.assert_built
     def set_particles_vel(self, vels, particles_idx_local=None, envs_idx=None):
@@ -384,19 +331,10 @@ class MPMEntity(ParticleEntity):
 
     @gs.assert_built
     def _set_particles_vel_grad(self, vels_grad):
-        self.solver._kernel_set_particles_vel_grad(
-            self._sim.cur_substep_local, self._particle_start, self._n_particles, vels_grad
-        )
+        pass
 
     def get_particles_vel(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        vels = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (3,))
-        self.solver._kernel_get_particles_vel(
-            self._sim.cur_substep_local, self._particle_start, self.n_particles, envs_idx, vels
-        )
-        if self._scene.n_envs == 0:
-            vels = vels[0]
-        return vels
+        pass
 
     @gs.assert_built
     def set_particles_active(self, actives, particles_idx_local=None, envs_idx=None):
@@ -412,14 +350,7 @@ class MPMEntity(ParticleEntity):
         self.solver._kernel_set_particles_active(self._sim.cur_substep_local, particles_idx, envs_idx, actives)
 
     def get_particles_active(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        actives = self._sanitize_particles_tensor(None, gs.tc_bool, None, envs_idx)
-        self.solver._kernel_get_particles_active(
-            self._sim.cur_substep_local, self._particle_start, self.n_particles, envs_idx, actives
-        )
-        if self._scene.n_envs == 0:
-            actives = actives[0]
-        return actives
+        pass
 
     @assert_muscle
     def set_actuation(self, actus, envs_idx=None):
@@ -433,10 +364,7 @@ class MPMEntity(ParticleEntity):
         envs_idx : None | int | array_like, shape (M,), optional
             The indices of the environments to set. If None, all environments will be considered. Defaults to None.
         """
-        actus = to_gs_tensor(actus)
-        if actus.ndim == 0:
-            actus = actus.reshape((1,)).expand((self.material.n_groups,))
-        self._set_particles_target_state("actu", "actuation", (self.material.n_groups,), gs.tc_float, actus, envs_idx)
+        pass
 
     @assert_muscle
     @gs.assert_built
@@ -471,19 +399,10 @@ class MPMEntity(ParticleEntity):
         actu_grad : torch.Tensor
             A tensor containing gradients for actuation inputs.
         """
-        self.solver._kernel_set_particles_actu_grad(
-            self._sim.cur_substep_local, self._particle_start, self._n_particles, actu_grad
-        )
+        pass
 
     def get_particles_actu(self, envs_idx=None):
-        envs_idx = self._scene._sanitize_envs_idx(envs_idx)
-        actus = self._sanitize_particles_tensor(None, gs.tc_float, None, envs_idx, (self.material.n_groups,))
-        self.solver._kernel_get_particles_actu(
-            self._sim.cur_substep_local, self._particle_start, self.n_particles, envs_idx, actus
-        )
-        if self._scene.n_envs == 0:
-            actus = actus[0]
-        return actus
+        pass
 
     @assert_muscle
     def set_muscle_group(self, muscle_group):
@@ -516,9 +435,7 @@ class MPMEntity(ParticleEntity):
         muscle_group : torch.Tensor, shape (n_particles,)
             A tensor containing the muscle group ID of each particle.
         """
-        muscle_group = gs.zeros((self._n_particles,), dtype=gs.tc_int, requires_grad=False, scene=self._scene)
-        self.solver._kernel_get_particles_muscle_group(self._particle_start, self._n_particles, muscle_group)
-        return muscle_group
+        pass
 
     @assert_muscle
     @assert_active
@@ -570,15 +487,7 @@ class MPMEntity(ParticleEntity):
         free : torch.Tensor, shape ([n_particles,])
             A tensor indicating if each particle is free (1) or fixed (0).
         """
-        particles_idx_local = self._sanitize_particles_idx_local(None)
-        particles_idx = particles_idx_local + self._particle_start
-        free = self._sanitize_particles_tensor(free, gs.tc_bool, particles_idx, batched=False)
-
-        # FIXME: This check is too expensive
-        # if not torch.isin(free, torch.Tensor([False, True], dtype=gs.tc_bool, device=gs.device)).all():
-        #     gs.raise_exception("Elements of `free' must be either True or False.")
-
-        self.solver._kernel_set_particles_free(particles_idx, free)
+        pass
 
     @assert_active
     def get_free(self):
@@ -590,9 +499,7 @@ class MPMEntity(ParticleEntity):
         free : torch.Tensor, shape (n_particles,)
             A tensor indicating free (1) or fixed (0) status.
         """
-        free = self._sanitize_particles_tensor(None, gs.tc_bool)
-        self.solver._kernel_get_particles_free(self._particle_start, self._n_particles, free)
-        return free
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------ particle constraints --------------------------------
@@ -615,17 +522,7 @@ class MPMEntity(ParticleEntity):
         mask : torch.Tensor, shape (n_envs, n_particles)
             Boolean mask where True indicates particle is within the bounding box.
         """
-        bbox_min = torch.as_tensor(bbox_min, dtype=gs.tc_float, device=gs.device)
-        bbox_max = torch.as_tensor(bbox_max, dtype=gs.tc_float, device=gs.device)
-
-        # Get particle positions: shape (n_envs, n_particles, 3)
-        poss = self.get_particles_pos()
-        if poss.ndim == 2:
-            poss = poss.unsqueeze(0)  # (1, n_particles, 3)
-
-        # Vectorized bbox check: (n_envs, n_particles)
-        mask = ((bbox_min <= poss) & (poss <= bbox_max)).all(dim=-1)
-        return mask
+        pass
 
     @gs.assert_built
     def set_particle_constraints(self, particles_mask, link_idx, stiffness):
@@ -644,31 +541,7 @@ class MPMEntity(ParticleEntity):
         stiffness : float
             Spring stiffness for the constraint.
         """
-        if not isinstance(link_idx, int):
-            gs.raise_exception("link_idx must be an integer.")
-
-        if not self._solver._constraints_initialized:
-            self._solver.init_constraints()
-
-        # Get link position and quaternion for all envs
-        rigid_solver = self._sim.coupler.rigid_solver
-        link_pos = rigid_solver.get_links_pos(links_idx=[link_idx])  # (n_envs, 1, 3)
-        link_quat = rigid_solver.get_links_quat(links_idx=[link_idx])  # (n_envs, 1, 4)
-        if link_pos.ndim == 2:
-            link_pos = link_pos.unsqueeze(0)
-            link_quat = link_quat.unsqueeze(0)
-        link_pos = link_pos[:, 0, :]  # (n_envs, 3)
-        link_quat = link_quat[:, 0, :]  # (n_envs, 4)
-
-        self._solver._kernel_set_particle_constraints(
-            self._sim.cur_substep_local,
-            particles_mask,
-            self._particle_start,
-            stiffness,
-            link_idx,
-            link_pos,
-            link_quat,
-        )
+        pass
 
     @gs.assert_built
     def remove_particle_constraints(self, particles_mask=None):
@@ -680,14 +553,7 @@ class MPMEntity(ParticleEntity):
         particles_mask : torch.Tensor, shape (n_envs, n_particles), optional
             Boolean mask indicating which particles to unconstrain. If None, removes all constraints for this entity.
         """
-        if not self._solver._constraints_initialized:
-            return
-
-        # Remove all constraints for this entity if mask not specified
-        if particles_mask is None:
-            particles_mask = torch.ones((self._sim._B, self.n_particles), dtype=torch.bool, device=gs.device)
-
-        self._solver._kernel_remove_particle_constraints(particles_mask, self._particle_start)
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------

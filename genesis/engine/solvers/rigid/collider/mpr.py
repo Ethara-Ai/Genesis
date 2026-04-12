@@ -28,9 +28,7 @@ def clear(mpr_state: qd.template()):
 @qd.func
 def func_find_intersect_midpoint(geoms_state: array_class.GeomsState, i_ga, i_gb, i_b):
     # return the center of the intersecting AABB of AABBs of two geoms
-    intersect_lower = qd.max(geoms_state.aabb_min[i_ga, i_b], geoms_state.aabb_min[i_gb, i_b])
-    intersect_upper = qd.min(geoms_state.aabb_max[i_ga, i_b], geoms_state.aabb_max[i_gb, i_b])
-    return 0.5 * (intersect_lower + intersect_upper)
+    pass
 
 
 @qd.func
@@ -211,22 +209,7 @@ def func_geom_support(
     pos: qd.types.vector(3, dtype=gs.qd_float),
     quat: qd.types.vector(4, dtype=gs.qd_float),
 ):
-    direction_in_init_frame = gu.qd_inv_transform_by_quat(direction, quat)
-
-    dot_max = gs.qd_float(-1e10)
-    v = qd.Vector.zero(gs.qd_float, 3)
-    vid = 0
-
-    for i_v in range(geoms_info.vert_start[i_g], geoms_info.vert_end[i_g]):
-        pos_local = verts_info.init_pos[i_v]
-        dot = pos_local.dot(direction_in_init_frame)
-        if dot > dot_max:
-            v = pos_local
-            dot_max = dot
-            vid = i_v
-    v_world = gu.qd_transform_by_trans_quat(v, pos, quat)
-
-    return v_world, vid
+    pass
 
 
 @qd.func

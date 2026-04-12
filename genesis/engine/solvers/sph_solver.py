@@ -170,7 +170,7 @@ class SPHSolver(Solver):
 
     @property
     def is_active(self):
-        return self.n_particles > 0
+        pass
 
     def add_entity(self, idx, material, morph, surface, name: str | None = None) -> "SPHEntity":
         entity = SPHEntity(
@@ -232,9 +232,7 @@ class SPHSolver(Solver):
 
     @qd.func
     def _task_compute_rho(self, i, j, ret: qd.template(), i_b):
-        ret += self._particle_volume * self.cubic_kernel(
-            (self.particles_reordered[i, i_b].pos - self.particles_reordered[j, i_b].pos).norm()
-        )
+        pass
 
     @qd.kernel
     def _kernel_compute_rho(self, f: qd.i32):
@@ -253,43 +251,7 @@ class SPHSolver(Solver):
 
     @qd.func
     def _task_compute_non_pressure_forces(self, i, j, ret: qd.template(), i_b: qd.i32):
-        d_ij = self.particles_reordered[i, i_b].pos - self.particles_reordered[j, i_b].pos
-        dist = d_ij.norm()
-
-        gamma_i = self.particles_info_reordered[i, i_b].gamma
-        mass_i = self.particles_info_reordered[i, i_b].mass
-        mu_i = self.particles_info_reordered[i, i_b].mu
-
-        mass_j = self.particles_info_reordered[j, i_b].mass
-
-        # -----------------------------
-        # Surface Tension term
-        # -----------------------------
-        # If distance is bigger than _particle_size, use d_ij.norm() directly; otherwise clamp.
-        effective_dist = dist if dist > self._particle_size else self._particle_size
-
-        ret -= gamma_i / mass_i * mass_j * d_ij * self.cubic_kernel(effective_dist)
-
-        # -----------------------------
-        # Viscosity Force
-        # -----------------------------
-        v_ij = (self.particles_reordered[i, i_b].vel - self.particles_reordered[j, i_b].vel).dot(d_ij)
-
-        # Some constant factor used in the viscosity formula
-        d = 2 * (3 + 2)
-
-        # The density of the neighbor j in batch b
-        rho_j = self.particles_reordered[j, i_b].rho
-
-        f_v = (
-            d
-            * mu_i
-            * (mass_j / rho_j)
-            * v_ij
-            / (dist**2 + 0.01 * self._support_radius**2)
-            * self.cubic_kernel_derivative(d_ij)
-        )
-        ret += f_v
+        pass
 
     @qd.kernel
     def _kernel_compute_non_pressure_forces(self, f: qd.i32, t: qd.f32):
@@ -314,21 +276,7 @@ class SPHSolver(Solver):
 
     @qd.func
     def _task_compute_pressure_forces(self, i, j, ret: qd.template(), i_b):
-        dp_i = self.particles_reordered[i, i_b].p / self.particles_reordered[i, i_b].rho ** 2
-        rho_j = (
-            self.particles_reordered[j, i_b].rho
-            * self.particles_info_reordered[j, i_b].rho
-            / self.particles_info_reordered[j, i_b].rho
-        )
-        dp_j = self.particles_reordered[j, i_b].p / rho_j**2
-
-        # Compute the pressure force contribution, Symmetric Formula
-        ret += (
-            -self.particles_info_reordered[j, i_b].rho
-            * self._particle_volume
-            * (dp_i + dp_j)
-            * self.cubic_kernel_derivative(self.particles_reordered[i, i_b].pos - self.particles_reordered[j, i_b].pos)
-        )
+        pass
 
     @qd.kernel
     def _kernel_compute_pressure_forces(self, f: qd.i32):
@@ -387,12 +335,7 @@ class SPHSolver(Solver):
     @qd.func
     def _task_compute_DFSPH_factor(self, i, j, ret: qd.template(), i_b):
         # Fluid neighbors
-        grad_j = -self._particle_volume * self.cubic_kernel_derivative(
-            self.particles_reordered[i, i_b].pos - self.particles_reordered[j, i_b].pos
-        )
-        ret[3] += grad_j.norm_sqr()  # sum_grad_p_k
-        for ii in qd.static(range(3)):  # grad_p_i
-            ret[ii] -= grad_j[ii]
+        pass
 
     @qd.kernel
     def _kernel_compute_DFSPH_factor(self, f: qd.i32):
@@ -423,15 +366,7 @@ class SPHSolver(Solver):
 
     @qd.func
     def _task_compute_density_time_derivative(self, i, j, ret: qd.template(), i_b):
-        v_i = self.particles_reordered[i, i_b].vel
-        v_j = self.particles_reordered[j, i_b].vel
-
-        x_i = self.particles_reordered[i, i_b].pos
-        x_j = self.particles_reordered[j, i_b].pos
-
-        # Fluid neighbors
-        ret.drho += self._particle_volume * (v_i - v_j).dot(self.cubic_kernel_derivative(x_i - x_j))
-        ret.num_neighbors += 1
+        pass
 
     @qd.kernel
     def _kernel_compute_density_time_derivative(self):
@@ -460,18 +395,7 @@ class SPHSolver(Solver):
     @qd.func
     def _task_divergence_solver_iteration(self, i, j, ret: qd.template(), i_b):
         # Fluid neighbors
-        b_j = self.particles_reordered[j, i_b].drho
-        k_j = b_j * self.particles_reordered[j, i_b].dfsph_factor
-        k_sum = (
-            self._density0 / self._density0 * ret.k_i + k_j
-        )  # TODO: make the neighbor density different for multiphase fluid
-        if qd.abs(k_sum) > self._df_eps:
-            grad_p_j = -self._particle_volume * self.cubic_kernel_derivative(
-                self.particles_reordered.pos[i, i_b] - self.particles_reordered.pos[j, i_b]
-            )
-            ret.dv -= (
-                k_sum * grad_p_j
-            )  # ki, kj already contain inverse density, i.e., density canceled if not mutiphase flow
+        pass
 
     @qd.kernel
     def _kernel_divergence_solver_iteration(self):
@@ -547,11 +471,7 @@ class SPHSolver(Solver):
 
     @qd.func
     def _task_compute_density_star(self, i, j, ret: qd.template(), i_b):
-        v_i = self.particles_reordered[i, i_b].vel
-        v_j = self.particles_reordered[j, i_b].vel
-        x_i = self.particles_reordered[i, i_b].pos
-        x_j = self.particles_reordered[j, i_b].pos
-        ret += self._particle_volume * (v_i - v_j).dot(self.cubic_kernel_derivative(x_i - x_j))
+        pass
 
     @qd.kernel
     def _kernel_compute_density_star(self):
@@ -567,19 +487,7 @@ class SPHSolver(Solver):
     @qd.func
     def density_solve_iteration_task(self, i, j, ret: qd.template(), i_b):
         # Fluid neighbors
-        b_j = self.particles_reordered[j, i_b].drho - 1.0
-        k_j = b_j * self.particles_reordered[j, i_b].dfsph_factor
-        k_sum = (
-            self._density0 / self._density0 * ret.k_i + k_j
-        )  # TODO: make the neighbor density0 different for multiphase fluid
-        if qd.abs(k_sum) > self._df_eps:
-            grad_p_j = -self._particle_volume * self.cubic_kernel_derivative(
-                self.particles_reordered[i, i_b].pos - self.particles_reordered[j, i_b].pos
-            )
-            # Directly update velocities instead of storing pressure accelerations
-            ret.dv -= (
-                self._substep_dt * k_sum * grad_p_j
-            )  # ki, kj already contain inverse density, i.e., density canceled if not mutiphase flow
+        pass
 
     @qd.kernel
     def _kernel_density_solve_iteration(self):
@@ -659,19 +567,7 @@ class SPHSolver(Solver):
         """
         Derivative of cubic spline smoothing kernel.
         """
-        res = qd.Vector.zero(gs.qd_float, 3)
-
-        r_norm = r.norm()
-        h = self._support_radius
-        k = 8.0 / np.pi / h**3
-        q = r_norm / h
-        if r_norm > 1e-5 and q <= 1.0:
-            grad_q = r / (r_norm * h)
-            if q <= 0.5:
-                res = 6.0 * k * q * (3.0 * q - 2.0) * grad_q
-            else:
-                res = -6.0 * k * (1.0 - q) ** 2 * grad_q
-        return res
+        pass
 
     # ------------------------------------------------------------------------------------
     # ------------------------------------ stepping --------------------------------------
@@ -682,8 +578,7 @@ class SPHSolver(Solver):
             entity.process_input(in_backward=in_backward)
 
     def process_input_grad(self):
-        for entity in self.entities[::-1]:
-            entity.process_input_grad()
+        pass
 
     def substep_pre_coupling(self, f):
         if self.is_active:
@@ -845,11 +740,7 @@ class SPHSolver(Solver):
         envs_idx: qd.types.ndarray(),
         poss: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                poss[i_b_, i_p_, i] = self.particles[i_p, i_b].pos[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_vel(
@@ -873,11 +764,7 @@ class SPHSolver(Solver):
         envs_idx: qd.types.ndarray(),
         vels: qd.types.ndarray(),
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            for i in qd.static(range(3)):
-                vels[i_b_, i_p_, i] = self.particles[i_p, i_b].vel[i]
+        pass
 
     @qd.kernel
     def _kernel_set_particles_active(
@@ -899,10 +786,7 @@ class SPHSolver(Solver):
         envs_idx: qd.types.ndarray(),
         actives: qd.types.ndarray(),  # shape [B, n_particles]
     ):
-        for i_p_, i_b_ in qd.ndrange(n_particles, envs_idx.shape[0]):
-            i_p = i_p_ + particle_start
-            i_b = envs_idx[i_b_]
-            actives[i_b_, i_p_] = self.particles_ng[i_p, i_b].active
+        pass
 
     @qd.kernel
     def _kernel_get_mass(
@@ -919,39 +803,36 @@ class SPHSolver(Solver):
 
     @property
     def n_particles(self):
-        if self.is_built:
-            return self._n_particles
-        else:
-            return sum([entity.n_particles for entity in self._entities])
+        pass
 
     @property
     def particle_volume(self):
-        return self._particle_volume
+        pass
 
     @property
     def particle_size(self):
-        return self._particle_size
+        pass
 
     @property
     def particle_radius(self):
-        return self._particle_size / 2.0
+        pass
 
     @property
     def support_radius(self):
-        return self._support_radius
+        pass
 
     @property
     def hash_grid_res(self):
-        return self.sh.grid_res
+        pass
 
     @property
     def hash_grid_cell_size(self):
-        return self.sh.cell_size
+        pass
 
     @property
     def upper_bound(self):
-        return self._upper_bound
+        pass
 
     @property
     def lower_bound(self):
-        return self._lower_bound
+        pass

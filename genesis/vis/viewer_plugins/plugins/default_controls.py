@@ -41,109 +41,40 @@ class DefaultControlsPlugin(ViewerPlugin):
         )
 
     def _toggle_cam_rotation(self):
-        self.viewer.viewer_flags["rotate"] = not self.viewer.viewer_flags["rotate"]
-        if self.viewer.viewer_flags["rotate"]:
-            self.viewer.set_message_text("Rotation On")
-        else:
-            self.viewer.set_message_text("Rotation Off")
+        pass
 
     def _toggle_fullscreen(self):
-        self.viewer.viewer_flags["fullscreen"] = not self.viewer.viewer_flags["fullscreen"]
-        self.viewer.set_fullscreen(self.viewer.viewer_flags["fullscreen"])
-        self.viewer.activate()
-        if self.viewer.viewer_flags["fullscreen"]:
-            self.viewer.set_message_text("Fullscreen On")
-        else:
-            self.viewer.set_message_text("Fullscreen Off")
+        pass
 
     def _toggle_shadow(self):
-        self.viewer.render_flags["shadows"] = not self.viewer.render_flags["shadows"]
-        if self.viewer.render_flags["shadows"]:
-            self.viewer.set_message_text("Shadows On")
-        else:
-            self.viewer.set_message_text("Shadows Off")
+        pass
 
     def _toggle_world_frame(self):
-        if not self.viewer.gs_context.world_frame_shown:
-            self.viewer.gs_context.on_world_frame()
-            self.viewer.set_message_text("World Frame On")
-        else:
-            self.viewer.gs_context.off_world_frame()
-            self.viewer.set_message_text("World Frame Off")
+        pass
 
     def _toggle_link_frame(self):
-        if not self.viewer.gs_context.link_frame_shown:
-            self.viewer.gs_context.on_link_frame()
-            self.viewer.set_message_text("Link Frame On")
-        else:
-            self.viewer.gs_context.off_link_frame()
-            self.viewer.set_message_text("Link Frame Off")
+        pass
 
     def _toggle_camera_frustum(self):
-        if not self.viewer.gs_context.camera_frustum_shown:
-            self.viewer.gs_context.on_camera_frustum()
-            self.viewer.set_message_text("Camera Frustum On")
-        else:
-            self.viewer.gs_context.off_camera_frustum()
-            self.viewer.set_message_text("Camera Frustum Off")
+        pass
 
     def _toggle_face_normals(self):
-        self.viewer.render_flags["face_normals"] = not self.viewer.render_flags["face_normals"]
-        if self.viewer.render_flags["face_normals"]:
-            self.viewer.set_message_text("Face Normals On")
-        else:
-            self.viewer.set_message_text("Face Normals Off")
+        pass
 
     def _toggle_vertex_normals(self):
-        self.viewer.render_flags["vertex_normals"] = not self.viewer.render_flags["vertex_normals"]
-        if self.viewer.render_flags["vertex_normals"]:
-            self.viewer.set_message_text("Vert Normals On")
-        else:
-            self.viewer.set_message_text("Vert Normals Off")
+        pass
 
     def _toggle_record_video(self):
-        if self.viewer.viewer_flags["record"]:
-            self.viewer.save_video()
-            self.viewer.set_caption(self.viewer.viewer_flags["window_title"])
-        else:
-            # Importing moviepy is very slow and not used very often. Let's delay import.
-            from moviepy.video.io.ffmpeg_writer import FFMPEG_VideoWriter
-
-            self.viewer._video_recorder = FFMPEG_VideoWriter(
-                filename=os.path.join(gs.utils.misc.get_cache_dir(), "tmp_video.mp4"),
-                fps=self.viewer.viewer_flags["refresh_rate"],
-                size=self.viewer.viewport_size,
-            )
-            self.viewer.set_caption("{} (RECORDING)".format(self.viewer.viewer_flags["window_title"]))
-        self.viewer.viewer_flags["record"] = not self.viewer.viewer_flags["record"]
+        pass
 
     def _save_image(self):
-        self.viewer._save_image()
+        pass
 
     def _toggle_wireframe(self):
-        if self.viewer.render_flags["flip_wireframe"]:
-            self.viewer.render_flags["flip_wireframe"] = False
-            self.viewer.render_flags["all_wireframe"] = True
-            self.viewer.render_flags["all_solid"] = False
-            self.viewer.set_message_text("All Wireframe")
-        elif self.viewer.render_flags["all_wireframe"]:
-            self.viewer.render_flags["flip_wireframe"] = False
-            self.viewer.render_flags["all_wireframe"] = False
-            self.viewer.render_flags["all_solid"] = True
-            self.viewer.set_message_text("All Solid")
-        elif self.viewer.render_flags["all_solid"]:
-            self.viewer.render_flags["flip_wireframe"] = False
-            self.viewer.render_flags["all_wireframe"] = False
-            self.viewer.render_flags["all_solid"] = False
-            self.viewer.set_message_text("Default Wireframe")
-        else:
-            self.viewer.render_flags["flip_wireframe"] = True
-            self.viewer.render_flags["all_wireframe"] = False
-            self.viewer.render_flags["all_solid"] = False
-            self.viewer.set_message_text("Flip Wireframe")
+        pass
 
     def _reset_camera(self):
-        self.viewer._reset_view()
+        pass
 
     def _reload_shader(self):
-        self.viewer._renderer.reload_program()
+        pass

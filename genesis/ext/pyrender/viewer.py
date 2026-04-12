@@ -400,12 +400,12 @@ class Viewer(pyglet.window.Window):
     @property
     def scene(self):
         """:class:`.Scene` : The scene being visualized."""
-        return self._scene
+        pass
 
     @property
     def viewport_size(self):
         """(2,) int : The width and height of the viewing window."""
-        return self._viewport_size
+        pass
 
     @property
     def render_lock(self):
@@ -417,19 +417,19 @@ class Viewer(pyglet.window.Window):
         :meth:`.Viewer.render_lock.release` once you're done to let the viewer
         continue.
         """
-        return self._render_lock
+        pass
 
     @property
     def is_active(self):
         """bool : `True` if the viewer is active, or `False` if it has
         been closed.
         """
-        return self._is_active and (not self._run_in_thread or self._thread.is_alive())
+        pass
 
     @property
     def run_in_thread(self):
         """bool : Whether the viewer was run in a separate thread."""
-        return self._run_in_thread
+        pass
 
     @property
     def render_flags(self):
@@ -453,11 +453,11 @@ class Viewer(pyglet.window.Window):
         - ``point_size`` : float, The point size in pixels. Defaults to 1px.
 
         """
-        return self._render_flags
+        pass
 
     @render_flags.setter
     def render_flags(self, value):
-        self._render_flags = value
+        pass
 
     @property
     def viewer_flags(self):
@@ -496,11 +496,11 @@ class Viewer(pyglet.window.Window):
           the viewer. Defaults to `None`.
 
         """
-        return self._viewer_flags
+        pass
 
     @viewer_flags.setter
     def viewer_flags(self, value):
-        self._viewer_flags = value
+        pass
 
     def register_plugin(self, plugin: ViewerPlugin) -> None:
         """
@@ -550,13 +550,7 @@ class Viewer(pyglet.window.Window):
         new_key_action : KeyAction, optional
             The new type of key action. If not provided, the key action of the old keybind is used.
         """
-        self._keybindings.rebind(
-            keybind_name,
-            new_key_code,
-            new_key_mods,
-            new_key_action,
-        )
-        self._update_instr_texts()
+        pass
 
     def remove_keybind(self, keybind_name: str) -> None:
         """
@@ -567,8 +561,7 @@ class Viewer(pyglet.window.Window):
         keybind_name : str
             The name of the keybind to remove.
         """
-        self._keybindings.remove(keybind_name)
-        self._update_instr_texts()
+        pass
 
     def close(self):
         """Close the viewer.
@@ -602,13 +595,7 @@ class Viewer(pyglet.window.Window):
             a file dialog will be opened to ask the user where
             to save the video file.
         """
-        self._video_recorder.close()
-        if filename is None:
-            filename = self._get_save_filename(["mp4"])
-        if filename is None:
-            os.remove(self._video_recorder.filename)
-        else:
-            shutil.move(self._video_recorder.filename, filename)
+        pass
 
     def on_close(self):
         """Exit the event loop when the window is closed."""
@@ -771,50 +758,11 @@ class Viewer(pyglet.window.Window):
 
     def on_draw(self):
         """Redraw the scene into the viewing window."""
-        if self._renderer is None:
-            return
-
-        with self.render_lock if self._run_in_thread or not self.auto_start else nullcontext():
-            # Make OpenGL context current
-            self.switch_to()
-
-            # Render the scene
-            self.clear()
-            self._render()
-
-        if self.viewer_flags["caption"] is not None:
-            for caption in self.viewer_flags["caption"]:
-                xpos, ypos = self._location_to_x_y(caption["location"])
-                self._renderer.render_text(
-                    caption["text"],
-                    xpos,
-                    ypos,
-                    font_name=caption["font_name"],
-                    font_pt=caption["font_pt"],
-                    color=caption["color"],
-                    scale=caption["scale"],
-                    align=caption["location"],
-                )
-
-        # Render help text
-        self._render_help_text()
-
-        for plugin in self.plugins:
-            plugin.on_draw()
+        pass
 
     def on_resize(self, width: int, height: int) -> EVENT_HANDLE_STATE:
         """Resize the camera and trackball when the window is resized."""
-        if self._renderer is None:
-            return
-
-        self._renderer._delete_shadow_framebuffer()
-        self._renderer._delete_floor_framebuffer()
-
-        self._viewport_size = (width, height)
-        self._trackball.resize(self._viewport_size)
-        self._renderer.viewport_width = width
-        self._renderer.viewport_height = height
-        self.on_draw()
+        pass
 
     def on_mouse_motion(self, x: int, y: int, dx: int, dy: int) -> EVENT_HANDLE_STATE:
         """The mouse was moved with no buttons held down."""
@@ -822,57 +770,19 @@ class Viewer(pyglet.window.Window):
 
     def on_mouse_press(self, x: int, y: int, button: int, modifiers: int) -> EVENT_HANDLE_STATE:
         """Record an initial mouse press."""
-        # Stop animating while using the mouse
-        self.viewer_flags["mouse_pressed"] = True
-
-        self._trackball.set_state(Trackball.STATE_ROTATE)
-        if button == pyglet.window.mouse.LEFT:
-            ctrl = modifiers & pyglet.window.key.MOD_CTRL
-            shift = modifiers & pyglet.window.key.MOD_SHIFT
-            alt = modifiers & pyglet.window.key.MOD_ALT
-            if ctrl:
-                self._trackball.set_state(Trackball.STATE_ZOOM)
-            elif alt or shift:
-                self._trackball.set_state(Trackball.STATE_PAN)
-        elif button == pyglet.window.mouse.MIDDLE:
-            self._trackball.set_state(Trackball.STATE_PAN)
-        elif button == pyglet.window.mouse.RIGHT:
-            self._trackball.set_state(Trackball.STATE_ZOOM)
-
-        self._trackball.down(np.array([x, y]))
-
-        return EVENT_HANDLED
+        pass
 
     def on_mouse_drag(self, x: int, y: int, dx: int, dy: int, buttons: int, modifiers: int) -> EVENT_HANDLE_STATE:
         """The mouse was moved with one or more buttons held down."""
-        result = self._trackball.drag(np.array([x, y]))
-        return result
+        pass
 
     def on_mouse_release(self, x: int, y: int, button: int, modifiers: int) -> EVENT_HANDLE_STATE:
         """Record a mouse release."""
-        self.viewer_flags["mouse_pressed"] = False
-        return EVENT_HANDLED
+        pass
 
     def on_mouse_scroll(self, x, y, dx, dy) -> EVENT_HANDLE_STATE:
         """Record a mouse scroll."""
-        if self.viewer_flags["use_perspective_cam"]:
-            self._trackball.scroll(dy)
-        else:
-            spfc = 0.95
-            spbc = 1.0 / 0.95
-            sf = 1.0
-            if dy > 0:
-                sf = spfc * dy
-            elif dy < 0:
-                sf = -spbc * dy
-
-            c = self._camera_node.camera
-            xmag = max(c.xmag * sf, 1e-8)
-            ymag = max(c.ymag * sf, 1e-8 * c.ymag / c.xmag)
-            c.xmag = xmag
-            c.ymag = ymag
-
-        return EVENT_HANDLED
+        pass
 
     def _call_keybind_callback(self, symbol: int, modifiers: int, action: KeyAction) -> None:
         """Call registered keybind callbacks for the given key event."""
@@ -882,34 +792,20 @@ class Viewer(pyglet.window.Window):
 
     def on_key_press(self, symbol: int, modifiers: int) -> EVENT_HANDLE_STATE:
         """Record a key press."""
-        if (symbol, modifiers) not in self._held_keys:
-            self._call_keybind_callback(symbol, modifiers, KeyAction.PRESS)
-
-        self._held_keys[(symbol, modifiers)] = True
+        pass
 
     def on_key_release(self, symbol: int, modifiers: int) -> EVENT_HANDLE_STATE:
         """Record a key release."""
-        self._held_keys.pop((symbol, modifiers), None)
-
-        self._call_keybind_callback(symbol, modifiers, KeyAction.RELEASE)
+        pass
 
     def on_deactivate(self) -> EVENT_HANDLE_STATE:
         """Clear held keys when window loses focus."""
-        self._held_keys.clear()
+        pass
 
     @staticmethod
     def _time_event(dt, self):
         """The timer callback."""
-        # Don't run old dead events after we've already closed
-        if not self._is_active:
-            return
-
-        if self.viewer_flags["record"]:
-            self._record()
-        if self.viewer_flags["rotate"] and not self.viewer_flags["mouse_pressed"]:
-            self._rotate()
-
-        self.on_draw()
+        pass
 
     def _reset_view(self):
         """Reset the view to a good initial state.
@@ -930,60 +826,19 @@ class Viewer(pyglet.window.Window):
         self._trackball = Trackball(self._default_camera_pose, self.viewport_size, scale, centroid)
 
     def _get_save_filename(self, file_exts):
-        global root
-
-        file_types = {
-            "mp4": ("video files", "*.mp4"),
-            "png": ("png files", "*.png"),
-            "jpg": ("jpeg files", "*.jpg"),
-            "gif": ("gif files", "*.gif"),
-            "all": ("all files", "*"),
-        }
-        filetypes = [file_types[x] for x in file_exts]
-        save_dir = self.viewer_flags["save_directory"]
-        if save_dir is None:
-            save_dir = os.getcwd()
-
-        try:
-            # Importing tkinter is very slow and not used very often. Let's delay import.
-            from tkinter import filedialog
-
-            dialog = filedialog.SaveAs(
-                parent=None,
-                initialdir=save_dir,
-                title="Select file save location",
-                filetypes=filetypes,
-                defaultextension=".png",
-            )
-            filename = dialog.show()
-        except Exception as e:
-            gs.logger.warning(f"Failed to open file save location dialog: {e}")
-            return None
-
-        if not filename:
-            return None
-        return os.path.normpath(filename)
+        pass
 
     def _save_image(self):
         # Postpone import of OpenCV at runtime to reduce hard system dependencies
-        import cv2
-
-        filename = self._get_save_filename(["png", "jpg", "gif", "all"])
-        if filename is not None:
-            self.viewer_flags["save_directory"] = os.path.dirname(filename)
-            data = self._renderer.jit.read_color_buf(*self._viewport_size, rgba=False)
-            cv2.imwrite(filename, np.flip(data, axis=-1))
+        pass
 
     def _record(self):
         """Save another frame for the GIF."""
-        data = self._renderer.jit.read_color_buf(*self._viewport_size, rgba=False)
-        if not np.all(data == 0.0):
-            self._video_recorder.write_frame(data)
+        pass
 
     def _rotate(self):
         """Animate the scene by rotating the camera."""
-        az = self.viewer_flags["rotate_rate"] / self.viewer_flags["refresh_rate"]
-        self._trackball.rotate(az, self.viewer_flags["rotate_axis"])
+        pass
 
     def _render(self, camera_node=None, renderer=None, normal=False):
         """Render the scene into the framebuffer and flip."""
@@ -1368,24 +1223,7 @@ class Viewer(pyglet.window.Window):
         return n
 
     def _location_to_x_y(self, location):
-        if location == TextAlign.CENTER:
-            return (self.viewport_size[0] / 2.0, self.viewport_size[1] / 2.0)
-        elif location == TextAlign.CENTER_LEFT:
-            return (TEXT_PADDING, self.viewport_size[1] / 2.0)
-        elif location == TextAlign.CENTER_RIGHT:
-            return (self.viewport_size[0] - TEXT_PADDING, self.viewport_size[1] / 2.0)
-        elif location == TextAlign.BOTTOM_LEFT:
-            return (TEXT_PADDING, TEXT_PADDING)
-        elif location == TextAlign.BOTTOM_RIGHT:
-            return (self.viewport_size[0] - TEXT_PADDING, TEXT_PADDING)
-        elif location == TextAlign.BOTTOM_CENTER:
-            return (self.viewport_size[0] / 2.0, TEXT_PADDING)
-        elif location == TextAlign.TOP_LEFT:
-            return (TEXT_PADDING, self.viewport_size[1] - TEXT_PADDING)
-        elif location == TextAlign.TOP_RIGHT:
-            return (self.viewport_size[0] - TEXT_PADDING, self.viewport_size[1] - TEXT_PADDING)
-        elif location == TextAlign.TOP_CENTER:
-            return (self.viewport_size[0] / 2.0, self.viewport_size[1] - TEXT_PADDING)
+        pass
 
     def _update_instr_texts(self):
         """Update the instruction text based on current keybindings."""
@@ -1401,57 +1239,15 @@ class Viewer(pyglet.window.Window):
 
     def _toggle_instructions(self):
         """Toggle the display of keyboard instructions."""
-        if not self._enable_help_text:
-            raise RuntimeError("Instructions display is disabled.")
-        self._collapse_instructions = not self._collapse_instructions
+        pass
 
     def set_message_text(self, text: str):
         """Set a temporary message to display on the viewer."""
-        self._message_text = text
-        self._message_opac = 1.0 + self._ticks_till_fade
+        pass
 
     def _render_help_text(self):
         """Render help text and messages on the viewer."""
-        if not self._enable_help_text:
-            return
-
-        # Render temporary message
-        if self._message_text is not None:
-            self._renderer.render_text(
-                self._message_text,
-                self._viewport_size[0] - TEXT_PADDING,
-                TEXT_PADDING,
-                font_pt=FONT_SIZE,
-                color=np.array([0.1, 0.7, 0.2, np.clip(self._message_opac, 0.0, 1.0)]),
-                align=TextAlign.BOTTOM_RIGHT,
-            )
-
-            if self._message_opac > 1.0:
-                self._message_opac -= 1.0
-            else:
-                self._message_opac *= 0.90
-
-            if self._message_opac < 0.05:
-                self._message_opac = 1.0 + self._ticks_till_fade
-                self._message_text = None
-
-        # Render keyboard instructions
-        if self._collapse_instructions:
-            self._renderer.render_texts(
-                self._instr_texts[0],
-                TEXT_PADDING,
-                self._viewport_size[1] - TEXT_PADDING,
-                font_pt=FONT_SIZE,
-                color=np.array([1.0, 1.0, 1.0, 0.85]),
-            )
-        else:
-            self._renderer.render_texts(
-                self._key_instr_texts,
-                TEXT_PADDING,
-                self._viewport_size[1] - TEXT_PADDING,
-                font_pt=FONT_SIZE,
-                color=np.array([1.0, 1.0, 1.0, 0.85]),
-            )
+        pass
 
 
 __all__ = ["Viewer"]

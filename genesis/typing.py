@@ -10,26 +10,11 @@ from pydantic_core import PydanticCustomError, core_schema
 
 def _coerce_int(v):
     """Accept numpy integers, reject booleans and floats."""
-    if isinstance(v, (bool, np.bool_)):
-        raise PydanticCustomError("invalid_type", "Input should be a valid integer, not boolean", {"value": v})
-    if isinstance(v, np.integer):
-        return int(v)
-    return v
+    pass
 
 
 def _normalize(vec):
-    if not is_sequence(vec):
-        raise PydanticCustomError("invalid_type", "Input should be a valid sequence of scalars", {"value": vec})
-    sq_norm = 0.0
-    for e in vec:
-        if is_sequence(e):
-            raise PydanticCustomError("invalid_type", "Input should be a valid sequence of scalars", {"value": vec})
-        sq_norm += e**2
-    if sq_norm > 0:
-        inv_norm = 1.0 / math.sqrt(sq_norm)
-        vec = tuple(e * inv_norm for e in vec)
-        return vec
-    raise PydanticCustomError("zero_division", "Cannot be normalized", {"value": vec})
+    pass
 
 
 def is_sequence(v):

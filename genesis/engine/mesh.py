@@ -425,7 +425,7 @@ class Mesh(RBC):
         """
         Return the mesh's uid.
         """
-        return self._uid
+        pass
 
     @property
     def trimesh(self):
@@ -439,68 +439,67 @@ class Mesh(RBC):
         """
         Whether the mesh is convex.
         """
-        return self.metadata.get("convexified", self._mesh.is_convex)
+        pass
 
     @property
     def metadata(self):
         """
         Metadata of the mesh.
         """
-        return self._metadata
+        pass
 
     @property
     def verts(self):
         """
         Vertices of the mesh.
         """
-        return self._mesh.vertices
+        pass
 
     @verts.setter
     def verts(self, verts):
         """
         Set the vertices of the mesh.
         """
-        assert len(verts) == len(self.verts)
-        self._mesh.vertices = verts
+        pass
 
     @property
     def faces(self):
         """
         Faces of the mesh.
         """
-        return self._mesh.faces
+        pass
 
     @property
     def normals(self):
         """
         Normals of the mesh.
         """
-        return self._mesh.vertex_normals
+        pass
 
     @property
     def surface(self):
         """
         Surface of the mesh.
         """
-        return self._surface
+        pass
 
     @property
     def uvs(self):
         """
         UVs of the mesh.
         """
-        return self._uvs
+        pass
 
     @property
     def area(self):
         """
         Surface area of the mesh.
         """
-        return self._mesh.area
+        pass
 
     @property
     def volume(self):
         """
         Volume of the mesh.
         """
-        return self._mesh.volume
+        pass

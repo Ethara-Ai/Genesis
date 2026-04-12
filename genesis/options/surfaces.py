@@ -97,35 +97,7 @@ class Surface(Options):
 
     @model_validator(mode="after")
     def _resolve_shortcuts(self) -> Self:
-        color_target = type(self)._color_target
-        if self.color is not None:
-            if getattr(self, color_target) is not None:
-                gs.raise_exception(f"'color' and '{color_target}' cannot both be set.")
-            setattr(self, color_target, ColorTexture(color=tuple(self.color)))
-
-        for shortcut, texture_field in (
-            ("opacity", "opacity_texture"),
-            ("roughness", "roughness_texture"),
-            ("metallic", "metallic_texture"),
-        ):
-            value = getattr(self, shortcut, None)
-            if value is not None:
-                if texture_field in self.model_fields:
-                    if getattr(self, texture_field) is not None:
-                        gs.raise_exception(f"'{shortcut}' and '{texture_field}' cannot both be set.")
-                    setattr(self, texture_field, ColorTexture(color=(float(value),)))
-
-        if self.emissive is not None:
-            if "emissive_texture" in self.model_fields:
-                if self.emissive_texture is not None:
-                    gs.raise_exception("'emissive' and 'emissive_texture' cannot both be set.")
-                self.emissive_texture = ColorTexture(color=tuple(self.emissive))
-
-        # Sync default_roughness with roughness shortcut unless explicitly set
-        if self.roughness is not None and "default_roughness" not in self.model_fields_set:
-            self.default_roughness = float(self.roughness)
-
-        return self
+        pass
 
     @property
     def texture(self) -> Texture | None:
@@ -137,11 +109,11 @@ class Surface(Options):
 
     @property
     def emission(self) -> Texture | None:
-        return None
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return False
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         return self._make_rgba(self.texture, None, batch)
@@ -195,15 +167,7 @@ class Surface(Options):
     def _extract_opacity_from(
         texture: Texture | None, emissive: Texture | None, opacity: Texture | None
     ) -> Texture | None:
-        if texture is not None:
-            tex = texture.check_dim(3)
-            if opacity is None and tex is not None:
-                opacity = tex
-        if emissive is not None:
-            tex = emissive.check_dim(3)
-            if opacity is None and tex is not None:
-                opacity = tex
-        return opacity
+        pass
 
     @staticmethod
     def _make_rgba(
@@ -318,47 +282,23 @@ class Glass(Surface):
     @model_validator(mode="after")
     def _post_init(self) -> Self:
         # Handle thickness shortcut
-        if self.thickness is not None:
-            if self.thickness_texture is not None:
-                gs.raise_exception("'thickness' and 'thickness_texture' cannot both be set.")
-            self.thickness_texture = ColorTexture(color=(float(self.thickness),))
-
-        # Truncate specular/emissive textures to 3 channels (discard alpha for Glass which has no opacity_texture)
-        if self.specular_texture is not None:
-            self.specular_texture.check_dim(3)
-        if self.emissive_texture is not None:
-            self.emissive_texture.check_dim(3)
-        if self.specular_texture is not None and self.transmission_texture is None:
-            self.transmission_texture = self.specular_texture
-        return self
+        pass
 
     @property
     def texture(self) -> Texture | None:
-        return self.specular_texture
+        pass
 
     @texture.setter
     def texture(self, value: Texture | None) -> None:
-        self.specular_texture = value
-        self.transmission_texture = value
+        pass
 
     @property
     def emission(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return any(
-            t is not None and t.requires_uv
-            for t in (
-                self.specular_texture,
-                self.diffuse_texture,
-                self.transmission_texture,
-                self.thickness_texture,
-                self.roughness_texture,
-                self.normal_texture,
-                self.emissive_texture,
-            )
-        )
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         color = self.emissive_texture if self.emissive_texture is not None else self.specular_texture
@@ -415,28 +355,19 @@ class Metal(Surface):
 
     @property
     def texture(self) -> Texture | None:
-        return self.diffuse_texture
+        pass
 
     @texture.setter
     def texture(self, value: Texture | None) -> None:
-        self.diffuse_texture = value
+        pass
 
     @property
     def emission(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return any(
-            t is not None and t.requires_uv
-            for t in (
-                self.diffuse_texture,
-                self.opacity_texture,
-                self.roughness_texture,
-                self.normal_texture,
-                self.emissive_texture,
-            )
-        )
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         color = self.emissive_texture if self.emissive_texture is not None else self.diffuse_texture
@@ -444,10 +375,7 @@ class Metal(Surface):
 
     @model_validator(mode="after")
     def _post_init(self) -> Self:
-        self.opacity_texture = self._extract_opacity_from(
-            self.diffuse_texture, self.emissive_texture, self.opacity_texture
-        )
-        return self
+        pass
 
     def update_texture(
         self,
@@ -505,29 +433,19 @@ class Plastic(Surface):
 
     @property
     def texture(self) -> Texture | None:
-        return self.diffuse_texture
+        pass
 
     @texture.setter
     def texture(self, value: Texture | None) -> None:
-        self.diffuse_texture = value
+        pass
 
     @property
     def emission(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return any(
-            t is not None and t.requires_uv
-            for t in (
-                self.diffuse_texture,
-                self.specular_texture,
-                self.opacity_texture,
-                self.roughness_texture,
-                self.normal_texture,
-                self.emissive_texture,
-            )
-        )
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         color = self.emissive_texture if self.emissive_texture is not None else self.diffuse_texture
@@ -535,10 +453,7 @@ class Plastic(Surface):
 
     @model_validator(mode="after")
     def _post_init(self) -> Self:
-        self.opacity_texture = self._extract_opacity_from(
-            self.diffuse_texture, self.emissive_texture, self.opacity_texture
-        )
-        return self
+        pass
 
     def update_texture(
         self,
@@ -602,29 +517,19 @@ class BSDF(Surface):
 
     @property
     def texture(self) -> Texture | None:
-        return self.diffuse_texture
+        pass
 
     @texture.setter
     def texture(self, value: Texture | None) -> None:
-        self.diffuse_texture = value
+        pass
 
     @property
     def emission(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return any(
-            t is not None and t.requires_uv
-            for t in (
-                self.diffuse_texture,
-                self.opacity_texture,
-                self.roughness_texture,
-                self.metallic_texture,
-                self.normal_texture,
-                self.emissive_texture,
-            )
-        )
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         color = self.emissive_texture if self.emissive_texture is not None else self.diffuse_texture
@@ -632,10 +537,7 @@ class BSDF(Surface):
 
     @model_validator(mode="after")
     def _post_init(self) -> Self:
-        self.opacity_texture = self._extract_opacity_from(
-            self.diffuse_texture, self.emissive_texture, self.opacity_texture
-        )
-        return self
+        pass
 
     def update_texture(
         self,
@@ -681,28 +583,26 @@ class Emission(Surface):
 
     @property
     def texture(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @texture.setter
     def texture(self, value: Texture | None) -> None:
-        self.emissive_texture = value
+        pass
 
     @property
     def emission(self) -> Texture | None:
-        return self.emissive_texture
+        pass
 
     @property
     def requires_uv(self) -> bool:
-        return self.emissive_texture is not None and self.emissive_texture.requires_uv
+        pass
 
     def get_rgba(self, batch: bool = False) -> BatchTexture | Texture:
         return self._make_rgba(self.emissive_texture, None, batch)
 
     @model_validator(mode="after")
     def _post_init(self) -> Self:
-        if self.emissive_texture is not None:
-            self.emissive_texture.check_dim(3)
-        return self
+        pass
 
     def update_texture(self, *, emissive_texture: Texture | None = None, force: bool = False, **kwargs) -> None:
         super().update_texture(force=force, **kwargs)

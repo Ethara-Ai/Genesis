@@ -29,14 +29,7 @@ def _to_tuple(*values: NumArrayType, length_per_value: int = 3) -> tuple[Numeric
     """
     Convert all input values to one flattened tuple, where each value is ensured to be a tuple of length_per_value.
     """
-    full_tuple = ()
-    for value in values:
-        if isinstance(value, NumericType):
-            value = (value,) * length_per_value
-        elif isinstance(value, torch.Tensor):
-            value = value.reshape((-1,))
-        full_tuple += tuple(value)
-    return full_tuple
+    pass
 
 
 # Note: dataclass is used as opposed to pydantic.BaseModel since torch.Tensors are not supported by default
@@ -253,11 +246,11 @@ class Sensor(RBC, Generic[OptionsT, SharedSensorMetadataT, DataT]):
         rec_options : RecorderOptions
             The options for the recording.
         """
-        return self._manager._sim._scene._recorder_manager.add_recorder(self.read, rec_options)
+        pass
 
     @property
     def is_built(self) -> bool:
-        return self._is_built
+        pass
 
     # =============================== private shared methods ===============================
 
@@ -340,16 +333,7 @@ class Sensor(RBC, Generic[OptionsT, SharedSensorMetadataT, DataT]):
         return self._manager._sim._scene._sanitize_envs_idx(envs_idx)
 
     def _set_metadata_field(self, value, field, field_size, envs_idx=None):
-        envs_idx = self._sanitize_envs_idx(envs_idx)
-        if field.ndim == 2:
-            # flat field structure
-            idx = self._idx * field_size
-            index_slice = slice(idx, idx + field_size)
-        else:
-            # per sensor field structure
-            index_slice = self._idx
-
-        field[:, index_slice] = broadcast_tensor(value, field.dtype, (len(envs_idx), field_size), ("envs_idx", ""))
+        pass
 
 
 @dataclass
@@ -409,11 +393,11 @@ class RigidSensorMixin(Generic[RigidSensorMetadataMixinT]):
 
     @gs.assert_built
     def set_pos_offset(self, pos_offset, envs_idx=None):
-        self._set_metadata_field(pos_offset, self._shared_metadata.offsets_pos, 3, envs_idx)
+        pass
 
     @gs.assert_built
     def set_quat_offset(self, quat_offset, envs_idx=None):
-        self._set_metadata_field(quat_offset, self._shared_metadata.offsets_quat, 4, envs_idx)
+        pass
 
 
 @dataclass
@@ -444,28 +428,27 @@ class NoisySensorMixin(Generic[NoisySensorMetadataMixinT]):
 
     @gs.assert_built
     def set_resolution(self, resolution, envs_idx=None):
-        self._set_metadata_field(resolution, self._shared_metadata.resolution, self._cache_size, envs_idx)
+        pass
 
     @gs.assert_built
     def set_bias(self, bias, envs_idx=None):
-        self._set_metadata_field(bias, self._shared_metadata.bias, self._cache_size, envs_idx)
+        pass
 
     @gs.assert_built
     def set_random_walk(self, random_walk, envs_idx=None):
-        self._set_metadata_field(random_walk, self._shared_metadata.random_walk, self._cache_size, envs_idx)
+        pass
 
     @gs.assert_built
     def set_noise(self, noise, envs_idx=None):
-        self._set_metadata_field(noise, self._shared_metadata.noise, self._cache_size, envs_idx)
+        pass
 
     @gs.assert_built
     def set_jitter(self, jitter, envs_idx=None):
-        jitter_ts = np.asarray(jitter, dtype=gs.np_float) / self._dt
-        self._set_metadata_field(jitter_ts, self._shared_metadata.jitter_ts, 1, envs_idx)
+        pass
 
     @gs.assert_built
     def set_delay(self, delay, envs_idx=None):
-        self._set_metadata_field(delay, self._shared_metadata.delay_in_steps, 1, envs_idx)
+        pass
 
     def build(self):
         """
@@ -518,4 +501,4 @@ class NoisySensorMixin(Generic[NoisySensorMetadataMixinT]):
 
     @classmethod
     def get_cache_dtype(cls) -> torch.dtype:
-        return gs.tc_float
+        pass

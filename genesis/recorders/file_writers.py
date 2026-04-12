@@ -218,7 +218,7 @@ class VideoFileWriter(BaseFileWriter):
 
     @property
     def run_in_thread(self) -> bool:
-        return False
+        pass
 
 
 @register_recording(CSVFileWriterOptions)
@@ -279,7 +279,7 @@ class CSVFileWriter(BaseFileWriter):
 
     @property
     def run_in_thread(self) -> bool:
-        return True
+        pass
 
 
 @register_recording(NPZFileWriterOptions)
@@ -315,4 +315,4 @@ class NPZFileWriter(BaseFileWriter):
 
     @property
     def run_in_thread(self) -> bool:
-        return True
+        pass

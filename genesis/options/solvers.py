@@ -54,19 +54,10 @@ class SimOptions(Options):
     @model_validator(mode="before")
     @classmethod
     def _resolve_substeps(cls, data: dict) -> dict:
-        if data.get("substeps_local") is None:
-            # use 1 to save gpu memory when not in differentiable mode
-            data["substeps_local"] = data.get("substeps", 1) if data.get("requires_grad", False) else 1
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if self.requires_grad:
-            if self.substeps_local % self.substeps != 0:
-                gs.raise_exception("`substeps_local` must be divisible by `substeps` when `requires_grad` is True.")
-            else:
-                self._steps_local = int(self.substeps_local / self.substeps)
-        else:
-            self._steps_local = None
+        pass
 
 
 class BaseCouplerOptions(Options):
@@ -540,9 +531,7 @@ class RigidOptions(Options):
             gs.logger.warning("'contact_resolve_time' is deprecated. Use 'constraint_timeconst' instead.")
 
     def model_post_init(self, context):
-        super().model_post_init(context)
-        if self.broadphase_traversal == gs.broadphase_traversal.ALL_VS_ALL and self.use_hibernation:
-            gs.raise_exception("ALL_VS_ALL broadphase traversal does not support hibernation")
+        pass
 
 
 class MPMOptions(Options):
@@ -595,13 +584,10 @@ class MPMOptions(Options):
     @model_validator(mode="before")
     @classmethod
     def _resolve_defaults(cls, data: dict) -> dict:
-        if data.get("particle_size") is None:
-            data["particle_size"] = 0.01 * 64.0 / data.get("grid_density", 64)
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if not np.all(np.array(self.upper_bound) > np.array(self.lower_bound)):
-            gs.raise_exception("Invalid pair of upper_bound and lower_bound.")
+        pass
 
 
 class SPHOptions(Options):
@@ -664,28 +650,10 @@ class SPHOptions(Options):
     @model_validator(mode="before")
     @classmethod
     def _resolve_defaults(cls, data: dict) -> dict:
-        particle_size = data.get("particle_size", 0.02)
-        support_radius = 2 * particle_size
-        if data.get("hash_grid_cell_size") is None:
-            data["hash_grid_cell_size"] = support_radius
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if not np.all(np.array(self.upper_bound) > np.array(self.lower_bound)):
-            gs.raise_exception("Invalid pair of upper_bound and lower_bound.")
-
-        self._support_radius = 2 * self.particle_size
-
-        if self.hash_grid_cell_size < self._support_radius:
-            gs.raise_exception("`hash_grid_cell_size` should not be smaller than 2 * `particle_size`.")
-
-        if self.hash_grid_res is None:
-            max_hash_grid_res = np.ceil(
-                (np.array(self.upper_bound) - np.array(self.lower_bound)) / self.hash_grid_cell_size
-            ).astype(gs.np_int)
-            self._hash_grid_res = np.minimum(max_hash_grid_res, np.array([150, 150, 150], dtype=gs.np_int))
-        else:
-            self._hash_grid_res = np.ceil(np.array(self.hash_grid_res) / self.hash_grid_cell_size).astype(gs.np_int)
+        pass
 
 
 class PBDOptions(Options):
@@ -749,28 +717,10 @@ class PBDOptions(Options):
     @model_validator(mode="before")
     @classmethod
     def _resolve_defaults(cls, data: dict) -> dict:
-        particle_size = data.get("particle_size", 1e-2)
-        # NOTE: 1.25 is a safety factor, as inside one single substep, multiple substages can change the position of
-        # the particles but we only do spatial hashing once. The grid cell needs to be a bit bigger so that neighbours
-        # are not missed.
-        if data.get("hash_grid_cell_size") is None:
-            data["hash_grid_cell_size"] = 1.25 * particle_size
-        return data
+        pass
 
     def model_post_init(self, context: Any) -> None:
-        if not np.all(np.array(self.upper_bound) > np.array(self.lower_bound)):
-            gs.raise_exception("Invalid pair of upper_bound and lower_bound.")
-
-        if self.hash_grid_cell_size < 1.25 * self.particle_size:
-            gs.raise_exception("`hash_grid_cell_size` should not be smaller than 1.25 * `particle_size`.")
-
-        if self.hash_grid_res is None:
-            max_hash_grid_res = np.ceil(
-                (np.array(self.upper_bound) - np.array(self.lower_bound)) / self.hash_grid_cell_size
-            ).astype(gs.np_int)
-            self._hash_grid_res = np.minimum(max_hash_grid_res, np.array([150, 150, 150], dtype=gs.np_int))
-        else:
-            self._hash_grid_res = np.ceil(np.array(self.hash_grid_res) / self.hash_grid_cell_size).astype(gs.np_int)
+        pass
 
 
 class FEMOptions(Options):

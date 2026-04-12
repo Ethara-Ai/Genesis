@@ -92,29 +92,29 @@ class Renderer(object):
     @property
     def viewport_width(self):
         """int : The width of the main viewport, in pixels."""
-        return self._viewport_width
+        pass
 
     @viewport_width.setter
     def viewport_width(self, value):
-        self._viewport_width = self.dpscale * value
+        pass
 
     @property
     def viewport_height(self):
         """int : The height of the main viewport, in pixels."""
-        return self._viewport_height
+        pass
 
     @viewport_height.setter
     def viewport_height(self, value):
-        self._viewport_height = self.dpscale * value
+        pass
 
     @property
     def point_size(self):
         """float : The size of screen-space points, in pixels."""
-        return self._point_size
+        pass
 
     @point_size.setter
     def point_size(self, value):
-        self._point_size = float(value)
+        pass
 
     def render(self, scene, flags, seg_node_map=None, *, is_first_pass=True, force_skip_shadows=False):
         """Render a scene with the given set of flags.
@@ -247,73 +247,10 @@ class Renderer(object):
             :attr:`TextAlign.BOTTOM_LEFT` means that ``x`` and ``y`` indicate
             the position of the bottom-left corner of the textbox.
         """
-        x *= self.dpscale
-        y *= self.dpscale
-        font_pt *= self.dpscale
-
-        if color is None:
-            color = np.array([0.0, 0.0, 0.0, 1.0])
-        else:
-            color = format_color_vector(color, 4)
-
-        # Set up viewport for render
-        self._configure_forward_pass_viewport(0)
-
-        # Load font
-        font = self._font_cache.get_font(font_name, font_pt)
-        if not font._in_context():
-            font._add_to_context()
-
-        # Load program
-        program = self._get_text_program()
-        program._bind()
-
-        # Set uniforms
-        p = np.eye(4)
-        p[0, 0] = 2.0 / self.viewport_width
-        p[0, 3] = -1.0
-        p[1, 1] = 2.0 / self.viewport_height
-        p[1, 3] = -1.0
-        program.set_uniform("projection", p)
-        program.set_uniform("text_color", color)
-
-        # Draw text
-        font.render_string(text, x, y, scale, align)
+        pass
 
     def render_texts(self, texts, x, y, font_name="UbuntuMono-Regular", font_pt=40, color=None, scale=1.0):
-        x *= self.dpscale
-        y *= self.dpscale
-        font_pt *= self.dpscale
-
-        if color is None:
-            color = np.array([0.0, 0.0, 0.0, 1.0])
-        else:
-            color = format_color_vector(color, 4)
-
-        # Set up viewport for render
-        self._configure_forward_pass_viewport(0)
-
-        # Load font
-        font = self._font_cache.get_font(font_name, font_pt)
-        if not font._in_context():
-            font._add_to_context()
-
-        # Load program
-        program = self._get_text_program()
-        program._bind()
-
-        # Set uniforms
-        p = np.eye(4)
-        p[0, 0] = 2.0 / self.viewport_width
-        p[0, 3] = -1.0
-        p[1, 1] = 2.0 / self.viewport_height
-        p[1, 3] = -1.0
-        program.set_uniform("projection", p)
-        program.set_uniform("text_color", color)
-
-        # Draw text
-        for i, text in enumerate(texts):
-            font.render_string(text, x, int(y - i * font_pt * 1.1), scale, TextAlign.TOP_LEFT)
+        pass
 
     def delete(self):
         """Free all allocated OpenGL resources."""
@@ -791,12 +728,7 @@ class Renderer(object):
     ###########################################################################
 
     def _get_text_program(self):
-        program = self._program_cache.get_program(vertex_shader="text.vert", fragment_shader="text.frag")
-
-        if not program._in_context():
-            program._add_to_context()
-
-        return program
+        pass
 
     def _compute_max_n_lights(self, flags):
         max_n_lights = [MAX_N_LIGHTS, MAX_N_LIGHTS, MAX_N_LIGHTS]
@@ -1149,5 +1081,4 @@ class Renderer(object):
         return np.array(img, copy=False)
 
     def reload_program(self):
-        self._program_cache.clear()
-        self.jit.program_id.clear()
+        pass

@@ -131,14 +131,14 @@ class UsdContext:
         """
         Get the USD stage object.
         """
-        return self._stage
+        pass
 
     @property
     def stage_file(self) -> str:
         """
         Get the path to the USD stage file.
         """
-        return self._stage_file
+        pass
 
     def get_prim_id(self, prim: Usd.Prim) -> str:
         """
@@ -157,72 +157,31 @@ class UsdContext:
         """
         Get the material bound to a geometry prim.
         """
-        prim_path = str(prim.GetPath())
-        if prim_path in self._prim_material_bindings:
-            return UsdShade.Material(self._stage.GetPrimAtPath(self._prim_material_bindings[prim_path]))
-        return None
+        pass
 
     def compute_transform(self, prim: Usd.Prim) -> np.ndarray:
         """
         Compute the local-to-world transformation matrix for a prim.
         """
-        transform = self._xform_cache.GetLocalToWorldTransform(prim)
-        T_usd = np.asarray(transform, dtype=np.float32)  # translation on the bottom row
-        if self._is_yup:
-            T_usd @= mu.Y_UP_TRANSFORM
-        T_usd[:, :3] *= self._meter_scale
-        return T_usd.transpose()
+        pass
 
     def compute_gs_transform(self, prim: Usd.Prim, ref_prim: Usd.Prim = None) -> tuple[np.ndarray, np.ndarray]:
         """
         Compute the Genesis transform (pose and scale) for a prim.
         """
-        Q, S = extract_scale(self.compute_transform(prim))
-        if ref_prim is None:
-            return Q, S
-
-        Q_ref, S_ref = self.compute_gs_transform(ref_prim)
-        Q_rel = np.linalg.inv(Q_ref) @ Q
-        return Q_rel, S
+        pass
 
     def apply_surface(self, geom_prim: Usd.Prim, surface: gs.surfaces.Surface):
         """
         Apply material properties from USD to a Genesis surface object.
         """
-        geom_path = str(geom_prim.GetPath())
-        applied_surface = surface.model_copy()
-
-        if geom_path in self._prim_material_bindings:
-            surface_id = self._prim_material_bindings[geom_path]
-            surface_dict, uv_name = self._material_properties.get(surface_id, ({}, "st"))
-            # accepted keys: color_texture, opacity_texture, roughness_texture, metallic_texture, normal_texture, emissive_texture, ior
-            applied_surface.update_texture(**surface_dict)
-            if surface_id in self._bake_material_paths:
-                bake_success = True if surface_dict else False
-                if not bake_success:
-                    gs.logger.warning(f"Material for '{geom_path}' could not be loaded. Using default material.")
-            else:
-                bake_success = None
-        else:
-            uv_name, surface_id = "st", None
-            bake_success = None
-
-        return applied_surface, uv_name, surface_id, bake_success
+        pass
 
     def find_all_rigid_entities(self) -> list[Usd.Prim]:
         """
         Find all rigid body entities in the USD stage.
         """
-        entity_prims = []
-        stage_iter = iter(Usd.PrimRange(self._stage.GetPseudoRoot()))
-        for prim in stage_iter:
-            if prim.HasAPI(UsdPhysics.ArticulationRootAPI):
-                entity_prims.append(prim)
-                stage_iter.PruneChildren()
-            elif prim.HasAPI(UsdPhysics.RigidBodyAPI) or prim.HasAPI(UsdPhysics.CollisionAPI):
-                entity_prims.append(prim)
-                stage_iter.PruneChildren()
-        return entity_prims
+        pass
 
     def find_all_materials(self):
         """

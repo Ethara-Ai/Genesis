@@ -54,39 +54,39 @@ class Entity(RBC):
 
     @property
     def uid(self):
-        return self._uid
+        pass
 
     @property
     def idx(self):
-        return self._idx
+        pass
 
     @property
     def scene(self):
-        return self._scene
+        pass
 
     @property
     def sim(self):
-        return self._sim
+        pass
 
     @property
     def solver(self):
-        return self._solver
+        pass
 
     @property
     def surface(self):
-        return self._surface
+        pass
 
     @property
     def morph(self):
-        return self._morph
+        pass
 
     @property
     def material(self):
-        return self._material
+        pass
 
     @property
     def is_built(self):
-        return self._solver._scene._is_built
+        pass
 
     @property
     def name(self) -> str:
@@ -100,7 +100,7 @@ class Entity(RBC):
             that name is returned. Otherwise, an auto-generated name based on the
             morph type and UID is returned.
         """
-        return self._name
+        pass
 
     # ------------------------------------------------------------------------------------
     # --------------------------------- naming methods -----------------------------------
